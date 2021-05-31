@@ -17,3 +17,12 @@ linux平台下請命名為AI1與AI2
 此程式會將版面以"++++++++++++++OX++++XO++++++++++++++ 1"形式傳送給AI之stdin  
 (X表示黑方，O表示白方；1表示現在為黑方行動，2反之)  
 程式在AI之stdout接收回傳值，若回傳值不合法，則在log file內印出錯誤訊息並退出  
+
+# 下載
+https://github.com/lemon37564/othello-board/releases
+
+# 自行編譯
+### windows
+```go build -ldflags="-H=windowsgui"```
+### linux
+```go build```
