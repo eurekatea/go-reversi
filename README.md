@@ -22,6 +22,7 @@ linux平台下請命名為AI1與AI2
 https://github.com/lemon37564/othello-board/releases
 
 # 自行編譯
+require go 1.16+
 ### windows
 ```
 go get github.com/hajimehoshi/ebiten/v2
