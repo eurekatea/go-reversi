@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"othello/board"
 	"strings"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -86,9 +87,9 @@ func (c *com) isDone() bool {
 		col, row := (output[0] - 'A'), (output[1] - 'a')
 		p := board.Point{X: int(row), Y: int(col)}
 		if !c.bd.PutPoint(c.color, p) {
-			fmt.Printf("this place <%s> was not valid\n", output[:2])
-			c.bd.Visualize()
-			os.Exit(0)
+			r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
+			r += c.bd.Visualize()
+			c.fatal(r)
 		}
 		c.ran = false
 		return true
@@ -102,15 +103,29 @@ func (c com) execute() {
 	cmd.Stdin = strings.NewReader(c.bd.String() + c.id)
 	out, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+		c.fatal(err.Error())
 	}
 
 	output := string(out)
 	if len(output) != 3 && len(output) != 2 {
-		fmt.Println("unknown output: " + output)
-		os.Exit(0)
+		c.fatal("unknown output: " + output)
 	}
 
 	c.result <- output
+}
+
+func (c com) fatal(text string) {
+	f, err := os.Create("error.log")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	text = time.Now().String() + "\n" + text
+
+	_, err = f.Write([]byte(text))
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(0)
 }

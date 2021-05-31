@@ -43,7 +43,9 @@ func (bd Board) String() (res string) {
 }
 
 func (bd Board) Visualize() (res string) {
+	res = "  a b c d e f\n"
 	for i := 0; i < BOARD_LEN; i++ {
+		res += string(rune('A'+i)) + " "
 		for j := 0; j < BOARD_LEN; j++ {
 			switch bd.AtXY(j, i) {
 			case NONE:

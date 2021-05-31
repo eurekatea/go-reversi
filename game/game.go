@@ -63,9 +63,12 @@ func (g *game) Update() error {
 			fmt.Println(g.bd)
 			g.lastClick = time.Now()
 		}
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyR) {
+	} else if ebiten.IsKeyPressed(ebiten.KeyV) {
+		if time.Since(g.lastClick) > COOLDOWN {
+			fmt.Println(g.bd.Visualize())
+			g.lastClick = time.Now()
+		}
+	} else if ebiten.IsKeyPressed(ebiten.KeyR) {
 		if time.Since(g.lastClick) > COOLDOWN {
 			g.restart()
 			g.lastClick = time.Now()
