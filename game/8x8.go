@@ -3,11 +3,11 @@
 package game
 
 const (
-	BOARDPIC    = "img/board.webp"
-	BLACKWONPIC = "img/blackwon8x8.webp"
-	WHITEWONPIC = "img/whitewon8x8.webp"
-	DRAWPIC     = "img/gamedraw8x8.webp"
-	GAMEOVERPIC = "img/gameover8x8.webp"
+	BOARDPIC    = "img/8x8/board.webp"
+	BLACKWONPIC = "img/8x8/blackwon.webp"
+	WHITEWONPIC = "img/8x8/whitewon.webp"
+	DRAWPIC     = "img/8x8/gamedraw.webp"
+	GAMEOVERPIC = "img/8x8/gameover.webp"
 
 	WIN_WIDTH  = 600
 	WIN_HEIGHT = 600

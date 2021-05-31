@@ -3,7 +3,7 @@
 package game
 
 const (
-	BOARDPIC    = "img/board6x6.webp"
+	BOARDPIC    = "img/board.webp"
 	BLACKWONPIC = "img/blackwon.webp"
 	WHITEWONPIC = "img/whitewon.webp"
 	DRAWPIC     = "img/gamedraw.webp"
