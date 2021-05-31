@@ -3,6 +3,7 @@
 package game
 
 const (
-	execCmd     = ".\\"
-	programName = ".exe"
+	execCmd = ".\\"
+	AI1     = "engine/AI1.exe"
+	AI2     = "engine/AI2.exe"
 )

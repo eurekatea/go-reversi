@@ -79,9 +79,9 @@ const (
 	FIX      = 0.1 // FIX the position inaccuracy
 )
 
-func (g *game) drawImageFromPoint(screen *ebiten.Image, p board.Point, draw *ebiten.Image) {
-	x := float64(p.X)*SPACE + MARGIN_X
-	y := float64(p.Y)*SPACE + MARGIN_Y
+func (g *game) drawImageWithPos(screen *ebiten.Image, i, j int, draw *ebiten.Image) {
+	x := float64(i)*SPACE + MARGIN_X
+	y := float64(j)*SPACE + MARGIN_Y
 
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(x, y)
@@ -92,19 +92,15 @@ func (g *game) drawImageFromPoint(screen *ebiten.Image, p board.Point, draw *ebi
 func (g *game) drawStones(screen *ebiten.Image) {
 	for i := 0; i < board.BOARD_LEN; i++ {
 		for j := 0; j < board.BOARD_LEN; j++ {
-			p := board.NewPoint(i, j)
-			cl := g.bd.AtPoint(p)
-			if cl == board.NONE {
-				continue
-			} else if cl == board.BLACK {
-				g.drawImageFromPoint(screen, p, blackImg)
+			cl := g.bd.AtXY(i, j)
+			if cl == board.BLACK {
+				g.drawImageWithPos(screen, i, j, blackImg)
 			} else if cl == board.WHITE {
-				g.drawImageFromPoint(screen, p, whiteImg)
+				g.drawImageWithPos(screen, i, j, whiteImg)
 			}
 		}
 	}
-
 	for _, v := range g.available {
-		g.drawImageFromPoint(screen, v, possible)
+		g.drawImageWithPos(screen, v.X, v.Y, possible)
 	}
 }

@@ -34,7 +34,7 @@ func (h *human) move() {
 		y = int(float64(y-MARGIN_Y)/SPACE + FIX)
 
 		p := board.NewPoint(x, y)
-		if h.bd.PutPoint(h.color, p) {
+		if h.bd.Put(h.color, p) {
 			h.done = true
 		}
 	}
@@ -84,9 +84,9 @@ func (c *com) move() {
 func (c *com) isDone() bool {
 	select {
 	case output := <-c.result:
-		col, row := (output[0] - 'A'), (output[1] - 'a')
-		p := board.Point{X: int(row), Y: int(col)}
-		if !c.bd.PutPoint(c.color, p) {
+		col, row := int(output[0]-'A'), int(output[1]-'a')
+		p := board.NewPoint(row, col)
+		if !c.bd.Put(c.color, p) {
 			r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
 			r += c.bd.Visualize()
 			c.fatal(r)
@@ -129,10 +129,15 @@ func (c com) fatal(text string) {
 	defer f.Close()
 
 	text = time.Now().String() + "\n" + text
+	if len(text) > 500 {
+		text = text[:500]
+		text += "\n...skipped\n"
+	}
 
 	_, err = f.Write([]byte(text))
 	if err != nil {
 		panic(err)
 	}
-	os.Exit(0)
+
+	panic("error")
 }

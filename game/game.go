@@ -28,27 +28,27 @@ type game struct {
 }
 
 func NewGame() *game {
-	var player1, player2 player
+	var p1, p2 player
 	bd := board.NewBoard()
 
-	if _, err := os.Stat("engine/AI1" + programName); err == nil {
-		player1 = newCom(bd, board.BLACK, "engine/AI1"+programName)
+	if _, err := os.Stat(AI1); err == nil {
+		p1 = newCom(bd, board.BLACK, AI1)
 	} else {
-		player1 = newHuman(bd, board.BLACK)
+		p1 = newHuman(bd, board.BLACK)
 	}
 
-	if _, err := os.Stat("engine/AI2" + programName); err == nil {
-		player2 = newCom(bd, board.WHITE, "engine/AI2"+programName)
+	if _, err := os.Stat(AI2); err == nil {
+		p2 = newCom(bd, board.WHITE, AI2)
 	} else {
-		player2 = newHuman(bd, board.WHITE)
+		p2 = newHuman(bd, board.WHITE)
 	}
 
 	g := &game{
 		turn:      true,
 		over:      false,
 		bd:        bd,
-		player1:   player1,
-		player2:   player2,
+		player1:   p1,
+		player2:   p2,
 		winner:    board.NONE,
 		available: bd.AllValidPoint(board.BLACK),
 	}
@@ -101,7 +101,6 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	return outsideWidth, outsideHeight
 }
 
-// available wrong wrong wrong
 func (g *game) round() {
 	if g.turn {
 		g.player1.move()

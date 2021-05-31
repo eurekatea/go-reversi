@@ -10,18 +10,18 @@ type Board struct {
 }
 
 func NewBoard() *Board {
-	b := Board{}
+	bd := new(Board)
 	for i := 0; i < BOARD_REAL; i++ {
-		b.Content[i][0] = BORDER
-		b.Content[0][i] = BORDER
-		b.Content[BOARD_REAL-1][i] = BORDER
-		b.Content[i][BOARD_REAL-1] = BORDER
+		bd.Content[i][0] = BORDER
+		bd.Content[0][i] = BORDER
+		bd.Content[BOARD_REAL-1][i] = BORDER
+		bd.Content[i][BOARD_REAL-1] = BORDER
 	}
-	b.Content[3][3] = WHITE
-	b.Content[3][4] = BLACK
-	b.Content[4][3] = BLACK
-	b.Content[4][4] = WHITE
-	return &b
+	bd.Assign(WHITE, 2, 2)
+	bd.Assign(BLACK, 2, 3)
+	bd.Assign(BLACK, 3, 2)
+	bd.Assign(WHITE, 3, 3)
+	return bd
 }
 
 func (bd Board) String() (res string) {
@@ -69,17 +69,21 @@ func (bd Board) AtXY(x, y int) Color {
 	return bd.Content[x+1][y+1]
 }
 
-func (bd *Board) PutPoint(cl Color, p Point) bool {
+func (bd *Board) Assign(cl Color, x, y int) {
+	bd.Content[x+1][y+1] = cl
+}
+
+func (bd *Board) Put(cl Color, p Point) bool {
 	if p.X < 0 || p.X >= BOARD_LEN || p.Y < 0 || p.Y >= BOARD_LEN {
 		return false
 	}
-	if bd.Content[p.X+1][p.Y+1] != NONE {
+	if bd.AtPoint(p) != NONE {
 		return false
 	}
 	if !bd.isValidPoint(cl, p) {
 		return false
 	}
-	bd.Content[p.X+1][p.Y+1] = cl
+	bd.Assign(cl, p.X, p.Y)
 	bd.flip(cl, p)
 	return true
 }
@@ -122,7 +126,7 @@ func (bd Board) AllValidPoint(cl Color) []Point {
 	var all []Point
 	for i := 0; i < BOARD_LEN; i++ {
 		for j := 0; j < BOARD_LEN; j++ {
-			p := Point{X: i, Y: j}
+			p := NewPoint(i, j)
 			if bd.isValidPoint(cl, p) {
 				all = append(all, p)
 			}
@@ -133,7 +137,7 @@ func (bd Board) AllValidPoint(cl Color) []Point {
 
 func (bd *Board) flipPoint(p Point) {
 	cl := bd.AtPoint(p)
-	bd.Content[p.X+1][p.Y+1] = cl.Opponent()
+	bd.Assign(cl.Opponent(), p.X, p.Y)
 }
 
 func (bd *Board) flip(cl Color, p Point) {
@@ -145,7 +149,7 @@ func (bd *Board) flip(cl Color, p Point) {
 		}
 		for {
 			x, y = x+direction[i][0], y+direction[i][1]
-			p := Point{X: x, Y: y}
+			p := NewPoint(x, y)
 			if bd.AtPoint(p) == opponent {
 				bd.flipPoint(p)
 			} else {
