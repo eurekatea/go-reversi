@@ -95,31 +95,46 @@ func (bd Board) isValidPoint(cl Color, p Point) bool {
 		return false
 	}
 	for i := 0; i < 8; i++ {
-		if bd.isValidDir(cl, p, direction[i]) {
+		if bd.countFlipPieces(cl, p, direction[i]) > 0 {
 			return true
 		}
 	}
 	return false
 }
 
-func (bd Board) isValidDir(cl Color, p Point, dir [2]int) bool {
+func (bd Board) countFlipPieces(cl Color, p Point, dir [2]int) int {
+	count := 0
 	x, y := p.X, p.Y
 	opponent := cl.Opponent()
 
 	x, y = x+dir[0], y+dir[1]
 	if bd.AtXY(x, y) != opponent {
-		return false
+		return 0
 	}
+	count++
 
 	for {
 		x, y = x+dir[0], y+dir[1]
 		now := bd.AtXY(x, y)
 		if now != opponent {
-			break
+			if now == cl {
+				return count
+			} else {
+				return 0
+			}
+		}
+		count++
+	}
+}
+
+func (bd *Board) flip(cl Color, p Point) {
+	for i := 0; i < 8; i++ {
+		if count := bd.countFlipPieces(cl, p, direction[i]); count > 0 {
+			for j := 1; j <= count; j++ {
+				bd.Assign(cl, p.X+direction[i][0]*j, p.Y+direction[i][1]*j)
+			}
 		}
 	}
-
-	return bd.AtXY(x, y) == cl
 }
 
 func (bd Board) AllValidPoint(cl Color) []Point {
@@ -133,30 +148,6 @@ func (bd Board) AllValidPoint(cl Color) []Point {
 		}
 	}
 	return all
-}
-
-func (bd *Board) flipPoint(p Point) {
-	cl := bd.AtPoint(p)
-	bd.Assign(cl.Opponent(), p.X, p.Y)
-}
-
-func (bd *Board) flip(cl Color, p Point) {
-	opponent := cl.Opponent()
-	for i := 0; i < 8; i++ {
-		x, y := p.X, p.Y
-		if !bd.isValidDir(cl, p, direction[i]) {
-			continue
-		}
-		for {
-			x, y = x+direction[i][0], y+direction[i][1]
-			p := NewPoint(x, y)
-			if bd.AtPoint(p) == opponent {
-				bd.flipPoint(p)
-			} else {
-				break
-			}
-		}
-	}
 }
 
 func (bd Board) Winner() Color {
