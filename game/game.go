@@ -41,13 +41,13 @@ func NewGame() *game {
 	if _, err := os.Stat(AI1); err == nil {
 		g.player1 = newCom(bd, board.BLACK, AI1)
 	} else {
-		g.player1 = newHuman(g, bd, board.BLACK)
+		g.player1 = newHuman(bd, board.BLACK)
 	}
 
 	if _, err := os.Stat(AI2); err == nil {
 		g.player2 = newCom(bd, board.WHITE, AI2)
 	} else {
-		g.player2 = newHuman(g, bd, board.WHITE)
+		g.player2 = newHuman(bd, board.WHITE)
 	}
 
 	return g
@@ -95,12 +95,12 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func (g *game) round() {
 	if g.turn {
-		g.player1.move()
+		g.player1.move(g.available)
 		if g.player1.isDone() {
 			g.check(board.BLACK)
 		}
 	} else {
-		g.player2.move()
+		g.player2.move(g.available)
 		if g.player2.isDone() {
 			g.check(board.WHITE)
 		}

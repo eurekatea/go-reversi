@@ -12,28 +12,27 @@ import (
 )
 
 type player interface {
-	move()
+	move([]board.Point)
 	isDone() bool
 }
 
 type human struct {
-	g     *game
 	bd    *board.Board
 	color board.Color
 	done  bool
 }
 
-func newHuman(g *game, bd *board.Board, cl board.Color) *human {
-	return &human{g: g, bd: bd, color: cl, done: false}
+func newHuman(bd *board.Board, cl board.Color) *human {
+	return &human{bd: bd, color: cl, done: false}
 }
 
-func (h *human) move() {
+func (h *human) move(available []board.Point) {
 	x, y := ebiten.CursorPosition()
 
 	x = int(float64(x-MARGIN_X)/SPACE + FIX)
 	y = int(float64(y-MARGIN_Y)/SPACE + FIX)
 
-	h.hint(x, y)
+	h.hint(available, x, y)
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		p := board.NewPoint(x, y)
@@ -44,9 +43,9 @@ func (h *human) move() {
 	}
 }
 
-func (h *human) hint(x, y int) {
+func (h *human) hint(available []board.Point, x, y int) {
 	var need = false
-	for _, p := range h.g.available {
+	for _, p := range available {
 		if p.X == x && p.Y == y {
 			need = true
 		}
@@ -92,7 +91,7 @@ func newCom(bd *board.Board, cl board.Color, name string) *com {
 	return c
 }
 
-func (c *com) move() {
+func (c *com) move(available []board.Point) {
 	if !c.ran {
 		c.ran = true
 		go c.execute()
