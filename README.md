@@ -7,12 +7,13 @@
 # 使用方式
 在engine資料夾下放AI1.exe為先攻，執黑子，若沒有此檔案則先攻為人類玩家  
 同理AI2.exe執白子後攻，無此檔案則為人類玩家   
+linux/macOS平台下請命名為AI1與AI2  
 資料夾結構如圖示  
 ├── engine  
 │   ├── AI1.exe  
 │   └── AI2.exe  
 └── othello.exe  
-linux/macOS平台下請命名為AI1與AI2  
+
 
 # 規則
 規則與一般黑白棋相同，版面大小為6x6，若有一方無處可下會自動PASS，換另一方下  
