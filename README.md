@@ -25,7 +25,7 @@ https://github.com/lemon37564/othello-board/releases
 ### windows
 ```
 go get github.com/hajimehoshi/ebiten/v2
-go build -ldflags="-H=windowsgui"
+go build -ldflags="-H windowsgui"
 ```
 ### linux
 ```
