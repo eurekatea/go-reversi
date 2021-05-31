@@ -107,11 +107,18 @@ func (c com) execute() {
 	}
 
 	output := string(out)
-	if len(output) != 3 && len(output) != 2 {
+	if c.invalid(output) {
 		c.fatal("unknown output: " + output)
 	}
 
 	c.result <- output
+}
+
+func (c com) invalid(output string) bool {
+	l := len(output) < 2
+	first := output[0] < 'A' || output[0] > 'A'+board.BOARD_LEN
+	second := output[1] < 'a' || output[1] > 'a'+board.BOARD_LEN
+	return l || first || second
 }
 
 func (c com) fatal(text string) {
