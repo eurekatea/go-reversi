@@ -13,13 +13,14 @@ import (
 
 type player interface {
 	move([]board.Point)
-	isDone() bool
+	isDone() (board.Point, bool)
 }
 
 type human struct {
-	bd    *board.Board
-	color board.Color
-	done  bool
+	bd     *board.Board
+	color  board.Color
+	done   bool
+	result board.Point
 }
 
 func newHuman(bd *board.Board, cl board.Color) *human {
@@ -38,6 +39,7 @@ func (h *human) move(available []board.Point) {
 		p := board.NewPoint(x, y)
 		if h.bd.Put(h.color, p) {
 			h.done = true
+			h.result = p
 			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		}
 	}
@@ -57,12 +59,12 @@ func (h *human) hint(available []board.Point, x, y int) {
 	}
 }
 
-func (h *human) isDone() bool {
+func (h *human) isDone() (board.Point, bool) {
 	if h.done {
 		h.done = false
-		return true
+		return h.result, true
 	} else {
-		return false
+		return board.NewPoint(-1, -1), false
 	}
 }
 
@@ -98,7 +100,7 @@ func (c *com) move(available []board.Point) {
 	}
 }
 
-func (c *com) isDone() bool {
+func (c *com) isDone() (board.Point, bool) {
 	select {
 	case output := <-c.result:
 		col, row := int(output[0]-'A'), int(output[1]-'a')
@@ -109,9 +111,9 @@ func (c *com) isDone() bool {
 			c.fatal(r)
 		}
 		c.ran = false
-		return true
+		return p, true
 	default:
-		return false
+		return board.NewPoint(-1, -1), false
 	}
 }
 

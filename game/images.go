@@ -18,6 +18,7 @@ var (
 	blackImg   *ebiten.Image
 	whiteImg   *ebiten.Image
 	possible   *ebiten.Image
+	current    *ebiten.Image
 	over       *ebiten.Image
 	blackWon   *ebiten.Image
 	whiteWon   *ebiten.Image
@@ -30,6 +31,7 @@ func init() {
 	temp, blackImg = imageFromFS("img/black.webp")
 	_, whiteImg = imageFromFS("img/white.webp")
 	_, possible = imageFromFS("img/possible.webp")
+	_, current = imageFromFS("img/current.webp")
 	_, over = imageFromFS("img/gameover.webp")
 	_, blackWon = imageFromFS("img/blackwon.webp")
 	_, whiteWon = imageFromFS("img/whitewon.webp")
@@ -103,4 +105,5 @@ func (g *game) drawStones(screen *ebiten.Image) {
 	for _, v := range g.available {
 		g.drawImageWithPos(screen, v.X, v.Y, possible)
 	}
+	g.drawImageWithPos(screen, g.lastMove.X, g.lastMove.Y, current)
 }

@@ -23,6 +23,7 @@ type game struct {
 	lastClick time.Time
 	player1   player
 	player2   player
+	lastMove  board.Point
 	winner    board.Color
 	available []board.Point
 }
@@ -34,6 +35,7 @@ func NewGame() *game {
 		turn:      true,
 		over:      false,
 		bd:        bd,
+		lastMove:  board.NewPoint(-9, -9),
 		winner:    board.NONE,
 		available: bd.AllValidPoint(board.BLACK),
 	}
@@ -96,13 +98,15 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func (g *game) round() {
 	if g.turn {
 		g.player1.move(g.available)
-		if g.player1.isDone() {
+		if p, ok := g.player1.isDone(); ok {
 			g.check(board.BLACK)
+			g.lastMove = p
 		}
 	} else {
 		g.player2.move(g.available)
-		if g.player2.isDone() {
+		if p, ok := g.player2.isDone(); ok {
 			g.check(board.WHITE)
+			g.lastMove = p
 		}
 	}
 }
