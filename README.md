@@ -23,6 +23,12 @@ https://github.com/lemon37564/othello-board/releases
 
 # 自行編譯
 ### windows
-```go build -ldflags="-H=windowsgui"```
+```
+go get github.com/hajimehoshi/ebiten/v2
+go build -ldflags="-H=windowsgui"
+```
 ### linux
-```go build```
+```
+go get github.com/hajimehoshi/ebiten/v2
+go build
+```
