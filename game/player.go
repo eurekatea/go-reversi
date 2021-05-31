@@ -17,26 +17,44 @@ type player interface {
 }
 
 type human struct {
+	g     *game
 	bd    *board.Board
 	color board.Color
 	done  bool
 }
 
-func newHuman(bd *board.Board, cl board.Color) *human {
-	return &human{bd: bd, color: cl, done: false}
+func newHuman(g *game, bd *board.Board, cl board.Color) *human {
+	return &human{g: g, bd: bd, color: cl, done: false}
 }
 
 func (h *human) move() {
+	x, y := ebiten.CursorPosition()
+
+	x = int(float64(x-MARGIN_X)/SPACE + FIX)
+	y = int(float64(y-MARGIN_Y)/SPACE + FIX)
+
+	h.hint(x, y)
+
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
-
-		x = int(float64(x-MARGIN_X)/SPACE + FIX)
-		y = int(float64(y-MARGIN_Y)/SPACE + FIX)
-
 		p := board.NewPoint(x, y)
 		if h.bd.Put(h.color, p) {
 			h.done = true
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		}
+	}
+}
+
+func (h *human) hint(x, y int) {
+	var need = false
+	for _, p := range h.g.available {
+		if p.X == x && p.Y == y {
+			need = true
+		}
+	}
+	if need {
+		ebiten.SetCursorShape(ebiten.CursorShapePointer)
+	} else {
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	}
 }
 

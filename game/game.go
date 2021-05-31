@@ -28,29 +28,26 @@ type game struct {
 }
 
 func NewGame() *game {
-	var p1, p2 player
 	bd := board.NewBoard()
-
-	if _, err := os.Stat(AI1); err == nil {
-		p1 = newCom(bd, board.BLACK, AI1)
-	} else {
-		p1 = newHuman(bd, board.BLACK)
-	}
-
-	if _, err := os.Stat(AI2); err == nil {
-		p2 = newCom(bd, board.WHITE, AI2)
-	} else {
-		p2 = newHuman(bd, board.WHITE)
-	}
 
 	g := &game{
 		turn:      true,
 		over:      false,
 		bd:        bd,
-		player1:   p1,
-		player2:   p2,
 		winner:    board.NONE,
 		available: bd.AllValidPoint(board.BLACK),
+	}
+
+	if _, err := os.Stat(AI1); err == nil {
+		g.player1 = newCom(bd, board.BLACK, AI1)
+	} else {
+		g.player1 = newHuman(g, bd, board.BLACK)
+	}
+
+	if _, err := os.Stat(AI2); err == nil {
+		g.player2 = newCom(bd, board.WHITE, AI2)
+	} else {
+		g.player2 = newHuman(g, bd, board.WHITE)
 	}
 
 	return g
@@ -77,11 +74,6 @@ func (g *game) Update() error {
 
 	if !g.over {
 		g.round()
-	}
-	if g.hint() {
-		ebiten.SetCursorShape(ebiten.CursorShapePointer)
-	} else {
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	}
 
 	return nil
@@ -126,20 +118,6 @@ func (g *game) check(cl board.Color) {
 			g.winner = g.bd.Winner()
 		}
 	}
-}
-
-func (g game) hint() bool {
-	x, y := ebiten.CursorPosition()
-
-	x = int(float64(x-MARGIN_X)/SPACE + FIX)
-	y = int(float64(y-MARGIN_Y)/SPACE + FIX)
-
-	for _, p := range g.available {
-		if p.X == x && p.Y == y {
-			return true
-		}
-	}
-	return false
 }
 
 func (g *game) restart() {
