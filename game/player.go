@@ -106,7 +106,7 @@ func (c *com) isDone() (board.Point, bool) {
 		col, row := int(output[0]-'A'), int(output[1]-'a')
 		p := board.NewPoint(row, col)
 		if !c.bd.Put(c.color, p) {
-			r := fmt.Sprintf("this place <%s> was not valid", output[:2])
+			r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
 			r += c.bd.Visualize()
 			c.fatal(r)
 		}

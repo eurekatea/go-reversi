@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	WIN_WIDTH  = 425
-	WIN_HEIGHT = 450
-	COOLDOWN   = time.Millisecond * 500
+	COOLDOWN = time.Millisecond * 500
 )
 
 type game struct {

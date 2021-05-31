@@ -2,12 +2,12 @@
 海大1091 人工智慧 黑白棋前端界面
 
 # 遊戲截圖
-![alt 文字](https://raw.githubusercontent.com/lemon37564/othello-board/main/game/img/screenshot.webp "Logo 標題文字 1")
+![](https://raw.githubusercontent.com/lemon37564/othello-board/main/screenshot/screenshot.webp)
 
 # 使用方式
 在engine資料夾下放AI1.exe為先攻，執黑子，若沒有此檔案則先攻為人類玩家  
 同理AI2.exe執白子後攻，無此檔案則為人類玩家  
-linux平台下請命名為AI1與AI2  
+linux/macOS平台下請命名為AI1與AI2  
 資料夾結構如圖示  
 ├── engine  
 │   ├── AI1.exe  
@@ -29,13 +29,12 @@ https://github.com/lemon37564/othello-board/releases
 
 # 自行編譯
 require go 1.16+
+先```go get github.com/hajimehoshi/ebiten/v2```
 ### windows
-```
-go get github.com/hajimehoshi/ebiten/v2
-go build -ldflags="-H windowsgui"
-```
-### linux
-```
-go get github.com/hajimehoshi/ebiten/v2
-go build
-```
+```go build -ldflags="-H windowsgui"```  
+使用原始大小的棋盤(8x8):  
+```go build -tags=8x8 -ldflags="-H windowsgui"```
+### linux or macOS
+```go build```  
+使用原始大小的棋盤(8x8):  
+```go build -tags=8x8```

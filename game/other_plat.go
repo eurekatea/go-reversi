@@ -1,4 +1,4 @@
-// +build linux wasm
+// +build !windows
 
 package game
 

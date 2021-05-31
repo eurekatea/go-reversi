@@ -27,15 +27,15 @@ var (
 
 func init() {
 	var temp image.Image
-	_, backGround = imageFromFS("img/board6x6.webp")
+	_, backGround = imageFromFS(BOARDPIC)
 	temp, blackImg = imageFromFS("img/black.webp")
 	_, whiteImg = imageFromFS("img/white.webp")
 	_, possible = imageFromFS("img/possible.webp")
 	_, current = imageFromFS("img/current.webp")
-	_, over = imageFromFS("img/gameover.webp")
-	_, blackWon = imageFromFS("img/blackwon.webp")
-	_, whiteWon = imageFromFS("img/whitewon.webp")
-	_, gameDraw = imageFromFS("img/gamedraw.webp")
+	_, over = imageFromFS(GAMEOVERPIC)
+	_, blackWon = imageFromFS(BLACKWONPIC)
+	_, whiteWon = imageFromFS(WHITEWONPIC)
+	_, gameDraw = imageFromFS(DRAWPIC)
 	icon = []image.Image{temp}
 }
 
@@ -73,13 +73,6 @@ func (g *game) drawEnd(screen *ebiten.Image) {
 		screen.DrawImage(gameDraw, options)
 	}
 }
-
-const (
-	SPACE    = 59  // the SPACE between every stone
-	MARGIN_X = 42  // for the first stone
-	MARGIN_Y = 42  // for the first stone
-	FIX      = 0.1 // FIX the position inaccuracy
-)
 
 func (g *game) drawImageWithPos(screen *ebiten.Image, i, j int, draw *ebiten.Image) {
 	x := float64(i)*SPACE + MARGIN_X

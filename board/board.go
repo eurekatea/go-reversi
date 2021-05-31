@@ -1,10 +1,5 @@
 package board
 
-const (
-	BOARD_LEN  = 6
-	BOARD_REAL = BOARD_LEN + 2
-)
-
 type Board struct {
 	Content [BOARD_REAL][BOARD_REAL]Color
 }
@@ -17,10 +12,10 @@ func NewBoard() *Board {
 		bd.Content[BOARD_REAL-1][i] = BORDER
 		bd.Content[i][BOARD_REAL-1] = BORDER
 	}
-	bd.Assign(WHITE, 2, 2)
-	bd.Assign(BLACK, 2, 3)
-	bd.Assign(BLACK, 3, 2)
-	bd.Assign(WHITE, 3, 3)
+	bd.Assign(WHITE, INIT_WHITE1X, INIT_WHITE1Y)
+	bd.Assign(WHITE, INIT_WHITE2X, INIT_WHITE2Y)
+	bd.Assign(BLACK, INIT_BLACK1X, INIT_BLACK1Y)
+	bd.Assign(BLACK, INIT_BLACK2X, INIT_BLACK2Y)
 	return bd
 }
 
@@ -43,7 +38,11 @@ func (bd Board) String() (res string) {
 }
 
 func (bd Board) Visualize() (res string) {
-	res = "  a b c d e f\n"
+	res = "  "
+	for i := 0; i < BOARD_LEN; i++ {
+		res += string(rune('a'+i)) + " "
+	}
+	res += "\n"
 	for i := 0; i < BOARD_LEN; i++ {
 		res += string(rune('A'+i)) + " "
 		for j := 0; j < BOARD_LEN; j++ {
