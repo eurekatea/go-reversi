@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"othello/game/board"
 	"time"
 
@@ -106,15 +107,24 @@ func (g *game) update() {
 		g.showValidAndCount()
 	}
 	if g.over = g.bd.IsOver(); g.over {
-		winner := g.bd.Winner()
-		var text string
-		if winner == board.NONE {
-			text = "draw"
-		} else {
-			text = winner.String() + " won"
-		}
-		dialog.NewInformation("Game Over", text, g.window).Show()
+		g.gameOver()
 	}
+}
+
+func (g *game) gameOver() {
+	winner := g.bd.Winner()
+	var text string
+	if winner == board.NONE {
+		text = "draw"
+	} else {
+		text = winner.String() + " won"
+	}
+	text += "\n"
+	text += fmt.Sprintf("black pieces: %d\n", g.bd.CountPieces(board.BLACK))
+	text += fmt.Sprintf("white pieces: %d\n", g.bd.CountPieces(board.WHITE))
+	d := dialog.NewInformation("Game Over", text, g.window)
+	d.Resize(fyne.NewSize(250, 0))
+	d.Show()
 }
 
 func (g *game) showValidAndCount() int {

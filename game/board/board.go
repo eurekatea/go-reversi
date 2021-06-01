@@ -166,18 +166,22 @@ func (bd Board) AllValidPoint(cl Color) []Point {
 	return all
 }
 
-func (bd Board) Winner() Color {
-	var bCount, wCount int
+func (bd Board) CountPieces(cl Color) int {
+	count := 0
 	for i := 0; i < bd.Size(); i++ {
 		for j := 0; j < bd.Size(); j++ {
 			p := bd.AtXY(i, j)
-			if p == BLACK {
-				bCount++
-			} else if p == WHITE {
-				wCount++
+			if p == cl {
+				count++
 			}
 		}
 	}
+	return count
+}
+
+func (bd Board) Winner() Color {
+	bCount := bd.CountPieces(BLACK)
+	wCount := bd.CountPieces(WHITE)
 	if bCount > wCount {
 		return BLACK
 	} else if bCount < wCount {
