@@ -3,5 +3,5 @@
 package game
 
 const (
-	execCmd = "./"
+	execCmd = ""
 )
