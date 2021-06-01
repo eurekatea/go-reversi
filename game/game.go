@@ -1,7 +1,6 @@
 package game
 
 import (
-	"os"
 	"othello/game/board"
 	"time"
 
@@ -26,8 +25,7 @@ type game struct {
 	over   bool
 }
 
-func New(a fyne.App, size int) {
-	window := a.NewWindow("othello")
+func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Container {
 	g := &game{}
 	bd := board.NewBoard(size)
 
@@ -43,7 +41,6 @@ func New(a fyne.App, size int) {
 			units[i][j] = u
 		}
 	}
-	window.SetContent(grid)
 
 	g.window = window
 	g.units = units
@@ -51,16 +48,11 @@ func New(a fyne.App, size int) {
 	g.bd = bd
 	g.over = false
 
-	if _, err := os.Stat(AI1); err == nil {
-		g.com1 = newCom(bd, board.BLACK, AI1)
-	} else {
-		g.com1 = nil
+	if comPath[0] != "human" {
+		g.com1 = newCom(bd, board.BLACK, comPath[0])
 	}
-
-	if _, err := os.Stat(AI2); err == nil {
-		g.com2 = newCom(bd, board.WHITE, AI2)
-	} else {
-		g.com2 = nil
+	if comPath[1] != "human" {
+		g.com2 = newCom(bd, board.WHITE, comPath[1])
 	}
 
 	if g.com1 != nil || g.com2 != nil {
@@ -69,9 +61,7 @@ func New(a fyne.App, size int) {
 
 	g.updateWindow()
 
-	window.CenterOnScreen()
-	window.SetFixedSize(true)
-	window.ShowAndRun()
+	return grid
 }
 
 func (g *game) isBot(cl board.Color) bool {
