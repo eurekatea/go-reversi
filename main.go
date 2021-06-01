@@ -27,7 +27,7 @@ func main() {
 	sel1 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
 		if s == "computer" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
-				if e == nil {
+				if e == nil && uc != nil {
 					pathes[0] = uc.URI().Path()
 				}
 			}, ui).Show()
@@ -45,7 +45,7 @@ func main() {
 	sel2 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
 		if s == "computer" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
-				if e == nil {
+				if e == nil && uc != nil {
 					pathes[1] = uc.URI().Path()
 				}
 			}, ui).Show()

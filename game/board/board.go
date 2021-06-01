@@ -188,5 +188,5 @@ func (bd Board) Winner() Color {
 }
 
 func (bd Board) IsOver() bool {
-	return len(bd.AllValidPoint(BLACK))+len(bd.AllValidPoint(WHITE)) == 0
+	return len(bd.AllValidPoint(BLACK)) == 0 && len(bd.AllValidPoint(WHITE)) == 0
 }

@@ -42,7 +42,7 @@ func (c *com) move() {
 }
 
 func (c com) execute() string {
-	cmd := exec.Command(execCmd+c.program, "")
+	cmd := exec.Command(c.program, "")
 	cmd.Stdin = strings.NewReader(c.bd.String() + c.id)
 	out, err := cmd.Output()
 	if err != nil {

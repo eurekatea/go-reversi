@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"othello/game/board"
 	"time"
 
@@ -59,7 +60,7 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 		go g.round()
 	}
 
-	g.updateWindow()
+	g.update()
 
 	return grid
 }
@@ -81,22 +82,16 @@ func (g *game) round() {
 				g.com2.move()
 			}
 			g.now = g.now.Opponent()
-			g.updateWindow()
+			g.update()
 		}
+
 		time.Sleep(time.Millisecond * 30)
 	}
 }
 
-func (g *game) updateWindow() {
-	for i, line := range g.units {
-		for j, u := range line {
-			u.setColor(g.bd.AtXY(i, j))
-			if g.bd.IsValidPoint(g.now, board.NewPoint(i, j)) {
-				u.SetResource(possible)
-			}
-		}
-	}
+func (g *game) update() {
 	if g.over = g.bd.IsOver(); g.over {
+		fmt.Println("over")
 		winner := g.bd.Winner()
 		var text string
 		if winner == board.NONE {
@@ -105,6 +100,20 @@ func (g *game) updateWindow() {
 			text = winner.String() + " won"
 		}
 		dialog.NewInformation("Game Over", text, g.window).Show()
+		return
+	}
+	count := 0
+	for i, line := range g.units {
+		for j, u := range line {
+			u.setColor(g.bd.AtXY(i, j))
+			if g.bd.IsValidPoint(g.now, board.NewPoint(i, j)) {
+				u.SetResource(possible)
+				count++
+			}
+		}
+	}
+	if count == 0 {
+		g.now = g.now.Opponent()
 	}
 }
 
@@ -133,7 +142,7 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 
 	temp := u.g.now
 	u.g.now = u.g.now.Opponent()
-	u.g.updateWindow()
+	u.g.update()
 	if temp == board.BLACK {
 		u.SetResource(blackCurr)
 	} else {
