@@ -62,7 +62,15 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 
 	g.update()
 
-	return grid
+	restart := widget.NewButton("restart", func() {
+		g.bd = board.NewBoard(size)
+		g.now = board.BLACK
+		g.update()
+	})
+
+	window.Resize(fyne.NewSize(315.8, 356.6))
+
+	return container.NewVBox(grid, restart)
 }
 
 func (g *game) isBot(cl board.Color) bool {
@@ -75,6 +83,7 @@ func (g *game) isBot(cl board.Color) bool {
 
 func (g *game) round() {
 	for !g.over {
+		fmt.Println(g.window.Canvas().Size())
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
 				g.com1.move()
