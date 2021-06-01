@@ -3,16 +3,10 @@ package main
 import (
 	"othello/game"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"fyne.io/fyne/v2/app"
 )
 
 func main() {
-	ebiten.SetWindowIcon(game.Icon())
-	ebiten.SetWindowSize(game.WIN_WIDTH, game.WIN_HEIGHT)
-	ebiten.SetWindowTitle("othello")
-
-	g := game.NewGame()
-	if err := ebiten.RunGame(g); err != nil {
-		panic(err)
-	}
+	a := app.New()
+	game.New(a, 8)
 }

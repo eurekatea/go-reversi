@@ -1,27 +1,35 @@
 package board
 
-type Board struct {
-	Content [BOARD_REAL][BOARD_REAL]Color
-}
+type Board [][]Color
 
-func NewBoard() *Board {
-	bd := new(Board)
-	for i := 0; i < BOARD_REAL; i++ {
-		bd.Content[i][0] = BORDER
-		bd.Content[0][i] = BORDER
-		bd.Content[BOARD_REAL-1][i] = BORDER
-		bd.Content[i][BOARD_REAL-1] = BORDER
+func NewBoard(size int) Board {
+	realSize := size + 2
+	bd := make(Board, realSize)
+	for i := range bd {
+		bd[i] = make([]Color, realSize)
 	}
-	bd.Assign(WHITE, INIT_WHITE1X, INIT_WHITE1Y)
-	bd.Assign(WHITE, INIT_WHITE2X, INIT_WHITE2Y)
-	bd.Assign(BLACK, INIT_BLACK1X, INIT_BLACK1Y)
-	bd.Assign(BLACK, INIT_BLACK2X, INIT_BLACK2Y)
+	for i := range bd {
+		bd[i][0] = BORDER
+		bd[0][i] = BORDER
+		bd[realSize-1][i] = BORDER
+		bd[i][realSize-1] = BORDER
+	}
+
+	bd[realSize/2-1][realSize/2-1] = WHITE
+	bd[realSize/2][realSize/2] = WHITE
+	bd[realSize/2-1][realSize/2] = BLACK
+	bd[realSize/2][realSize/2-1] = BLACK
+
 	return bd
 }
 
+func (bd Board) Size() int {
+	return len(bd) - 2
+}
+
 func (bd Board) String() (res string) {
-	for i := 0; i < BOARD_LEN; i++ {
-		for j := 0; j < BOARD_LEN; j++ {
+	for i := 0; i < bd.Size(); i++ {
+		for j := 0; j < bd.Size(); j++ {
 			switch bd.AtXY(j, i) {
 			case NONE:
 				res += "+"
@@ -39,13 +47,13 @@ func (bd Board) String() (res string) {
 
 func (bd Board) Visualize() (res string) {
 	res = "  "
-	for i := 0; i < BOARD_LEN; i++ {
+	for i := 0; i < bd.Size(); i++ {
 		res += string(rune('a'+i)) + " "
 	}
 	res += "\n"
-	for i := 0; i < BOARD_LEN; i++ {
+	for i := 0; i < bd.Size(); i++ {
 		res += string(rune('A'+i)) + " "
-		for j := 0; j < BOARD_LEN; j++ {
+		for j := 0; j < bd.Size(); j++ {
 			switch bd.AtXY(j, i) {
 			case NONE:
 				res += "+ "
@@ -61,25 +69,25 @@ func (bd Board) Visualize() (res string) {
 }
 
 func (bd Board) AtPoint(p Point) Color {
-	return bd.Content[p.X+1][p.Y+1]
+	return bd[p.X+1][p.Y+1]
 }
 
 func (bd Board) AtXY(x, y int) Color {
-	return bd.Content[x+1][y+1]
+	return bd[x+1][y+1]
 }
 
-func (bd *Board) Assign(cl Color, x, y int) {
-	bd.Content[x+1][y+1] = cl
+func (bd Board) Assign(cl Color, x, y int) {
+	bd[x+1][y+1] = cl
 }
 
-func (bd *Board) Put(cl Color, p Point) bool {
-	if p.X < 0 || p.X >= BOARD_LEN || p.Y < 0 || p.Y >= BOARD_LEN {
+func (bd Board) Put(cl Color, p Point) bool {
+	if p.X < 0 || p.X >= bd.Size() || p.Y < 0 || p.Y >= bd.Size() {
 		return false
 	}
 	if bd.AtPoint(p) != NONE {
 		return false
 	}
-	if !bd.isValidPoint(cl, p) {
+	if !bd.IsValidPoint(cl, p) {
 		return false
 	}
 	bd.Assign(cl, p.X, p.Y)
@@ -89,7 +97,7 @@ func (bd *Board) Put(cl Color, p Point) bool {
 
 var direction = [8][2]int{{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
 
-func (bd Board) isValidPoint(cl Color, p Point) bool {
+func (bd Board) IsValidPoint(cl Color, p Point) bool {
 	if bd.AtPoint(p) != NONE {
 		return false
 	}
@@ -126,7 +134,7 @@ func (bd Board) countFlipPieces(cl Color, p Point, dir [2]int) int {
 	}
 }
 
-func (bd *Board) flip(cl Color, p Point) {
+func (bd Board) flip(cl Color, p Point) {
 	for i := 0; i < 8; i++ {
 		if count := bd.countFlipPieces(cl, p, direction[i]); count > 0 {
 			for j := 1; j <= count; j++ {
@@ -138,10 +146,10 @@ func (bd *Board) flip(cl Color, p Point) {
 
 func (bd Board) AllValidPoint(cl Color) []Point {
 	var all []Point
-	for i := 0; i < BOARD_LEN; i++ {
-		for j := 0; j < BOARD_LEN; j++ {
+	for i := 0; i < bd.Size(); i++ {
+		for j := 0; j < bd.Size(); j++ {
 			p := NewPoint(i, j)
-			if bd.isValidPoint(cl, p) {
+			if bd.IsValidPoint(cl, p) {
 				all = append(all, p)
 			}
 		}
@@ -151,8 +159,8 @@ func (bd Board) AllValidPoint(cl Color) []Point {
 
 func (bd Board) Winner() Color {
 	var bCount, wCount int
-	for i := 0; i < BOARD_LEN; i++ {
-		for j := 0; j < BOARD_LEN; j++ {
+	for i := 0; i < bd.Size(); i++ {
+		for j := 0; j < bd.Size(); j++ {
 			p := bd.AtXY(i, j)
 			if p == BLACK {
 				bCount++

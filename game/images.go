@@ -1,11 +1,13 @@
 package game
 
 import (
+	"bufio"
+	"bytes"
 	"embed"
-	"image"
-	"othello/board"
+	"image/png"
+	"io/ioutil"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"fyne.io/fyne/v2"
 	"golang.org/x/image/webp"
 )
 
@@ -13,90 +15,44 @@ import (
 var source embed.FS
 
 var (
-	icon       []image.Image
-	backGround *ebiten.Image
-	blackImg   *ebiten.Image
-	whiteImg   *ebiten.Image
-	possible   *ebiten.Image
-	current    *ebiten.Image
-	over       *ebiten.Image
-	blackWon   *ebiten.Image
-	whiteWon   *ebiten.Image
-	gameDraw   *ebiten.Image
+	blackImg *fyne.StaticResource
+	whiteImg *fyne.StaticResource
+	noneImg  *fyne.StaticResource
+	possible *fyne.StaticResource
+	current  *fyne.StaticResource
 )
 
 func init() {
-	var temp image.Image
-	_, backGround = imageFromFS(BOARDPIC)
-	temp, blackImg = imageFromFS("img/black.webp")
-	_, whiteImg = imageFromFS("img/white.webp")
-	_, possible = imageFromFS("img/possible.webp")
-	_, current = imageFromFS("img/current.webp")
-	_, over = imageFromFS(GAMEOVERPIC)
-	_, blackWon = imageFromFS(BLACKWONPIC)
-	_, whiteWon = imageFromFS(WHITEWONPIC)
-	_, gameDraw = imageFromFS(DRAWPIC)
-	icon = []image.Image{temp}
+	blackImg = resourceFromBytes("img/black.webp")
+	whiteImg = resourceFromBytes("img/white.webp")
+	noneImg = resourceFromBytes("img/none.webp")
+	possible = resourceFromBytes("img/possible.webp")
+	current = resourceFromBytes("img/current.webp")
 }
 
-func Icon() []image.Image {
-	return icon
+func resourceFromBytes(path string) *fyne.StaticResource {
+	cont := bytesFromFS(path)
+	return fyne.NewStaticResource(path, cont)
 }
 
-func imageFromFS(path string) (image.Image, *ebiten.Image) {
+// fyne didn't support webp so convert to png first
+func bytesFromFS(path string) (cont []byte) {
 	f, err := source.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	bytes, err := webp.Decode(f)
+	img, err := webp.Decode(f)
 	if err != nil {
 		panic(err)
 	}
-	img := ebiten.NewImageFromImage(bytes)
-	return bytes, img
-}
-
-func (g *game) drawBoard(screen *ebiten.Image) {
-	options := &ebiten.DrawImageOptions{}
-	screen.DrawImage(backGround, options)
-}
-
-func (g *game) drawEnd(screen *ebiten.Image) {
-	options := &ebiten.DrawImageOptions{}
-	screen.DrawImage(over, options)
-
-	if g.winner == board.BLACK {
-		screen.DrawImage(blackWon, options)
-	} else if g.winner == board.WHITE {
-		screen.DrawImage(whiteWon, options)
-	} else {
-		screen.DrawImage(gameDraw, options)
+	buffer := new(bytes.Buffer)
+	err = png.Encode(buffer, img)
+	if err != nil {
+		panic(err)
 	}
-}
-
-func (g *game) drawImageWithPos(screen *ebiten.Image, i, j int, draw *ebiten.Image) {
-	x := float64(i)*SPACE + MARGIN_X
-	y := float64(j)*SPACE + MARGIN_Y
-
-	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(x, y)
-
-	screen.DrawImage(draw, opts)
-}
-
-func (g *game) drawStones(screen *ebiten.Image) {
-	for i := 0; i < board.BOARD_LEN; i++ {
-		for j := 0; j < board.BOARD_LEN; j++ {
-			cl := g.bd.AtXY(i, j)
-			if cl == board.BLACK {
-				g.drawImageWithPos(screen, i, j, blackImg)
-			} else if cl == board.WHITE {
-				g.drawImageWithPos(screen, i, j, whiteImg)
-			}
-		}
+	cont, err = ioutil.ReadAll(bufio.NewReader(buffer))
+	if err != nil {
+		panic(err)
 	}
-	for _, v := range g.available {
-		g.drawImageWithPos(screen, v.X, v.Y, possible)
-	}
-	g.drawImageWithPos(screen, g.lastMove.X, g.lastMove.Y, current)
+	return
 }

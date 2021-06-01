@@ -29,10 +29,8 @@ https://github.com/lemon37564/othello-board/releases
 
 # 自行編譯
 require go 1.16+  
-先```go get github.com/hajimehoshi/ebiten/v2```
+先```fyne.io/fyne/v2```
 ### windows
 ```go build -ldflags="-H windowsgui"```  
 ### linux or macOS
 ```go build```  
-### 使用原始大小的棋盤(8x8)
-```go build -tags=8x8```

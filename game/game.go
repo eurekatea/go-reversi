@@ -1,13 +1,14 @@
 package game
 
 import (
-	"fmt"
 	"os"
-	"othello/board"
+	"othello/game/board"
 	"time"
 
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 )
 
 const (
@@ -15,28 +16,42 @@ const (
 )
 
 type game struct {
-	turn      bool
-	over      bool
-	bd        *board.Board
-	lastClick time.Time
+	window    fyne.Window
+	bd        board.Board
+	units     [][]*unit
 	player1   player
 	player2   player
 	lastMove  board.Point
 	winner    board.Color
 	available []board.Point
+	now       board.Color
 }
 
-func NewGame() *game {
-	bd := board.NewBoard()
+func New(a fyne.App, size int) {
+	window := a.NewWindow("othello")
+	g := &game{}
+	bd := board.NewBoard(size)
 
-	g := &game{
-		turn:      true,
-		over:      false,
-		bd:        bd,
-		lastMove:  board.NewPoint(-9, -9),
-		winner:    board.NONE,
-		available: bd.AllValidPoint(board.BLACK),
+	units := make([][]*unit, size)
+	for i := range units {
+		units[i] = make([]*unit, size)
 	}
+	grid := container.New(layout.NewGridLayout(size))
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			u := newUnit(g, board.NONE, i, j)
+			grid.Add(u)
+			units[i][j] = u
+		}
+	}
+
+	g.window = window
+	g.units = units
+	g.now = board.BLACK
+	g.bd = bd
+	g.lastMove = board.NewPoint(-9, -9)
+	g.winner = board.NONE
+	g.available = bd.AllValidPoint(board.BLACK)
 
 	if _, err := os.Stat(AI1); err == nil {
 		g.player1 = newCom(bd, board.BLACK, AI1)
@@ -50,78 +65,64 @@ func NewGame() *game {
 		g.player2 = newHuman(bd, board.WHITE)
 	}
 
-	return g
+	g.updateWindow()
+
+	window.SetContent(grid)
+	window.ShowAndRun()
 }
 
-func (g *game) Update() error {
-
-	if ebiten.IsKeyPressed(ebiten.KeyP) {
-		if time.Since(g.lastClick) > COOLDOWN {
-			fmt.Println(g.bd)
-			g.lastClick = time.Now()
-		}
-	} else if ebiten.IsKeyPressed(ebiten.KeyV) {
-		if time.Since(g.lastClick) > COOLDOWN {
-			fmt.Println(g.bd.Visualize())
-			g.lastClick = time.Now()
-		}
-	} else if ebiten.IsKeyPressed(ebiten.KeyR) {
-		if time.Since(g.lastClick) > COOLDOWN {
-			g.restart()
-			g.lastClick = time.Now()
+func (g *game) updateWindow() {
+	for i, line := range g.units {
+		for j, u := range line {
+			u.setColor(g.bd.AtXY(i, j))
+			if g.bd.IsValidPoint(g.now, board.NewPoint(i, j)) {
+				u.SetResource(possible)
+			}
 		}
 	}
-
-	if !g.over {
-		g.round()
-	}
-
-	return nil
 }
 
-func (g *game) Draw(screen *ebiten.Image) {
-	g.drawBoard(screen)
-	g.drawStones(screen)
-	if g.over {
-		g.drawEnd(screen)
-	}
-
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("fps: %.02f", ebiten.CurrentFPS()), WIN_WIDTH-65, 0)
+type unit struct {
+	g *game
+	widget.Icon
+	x, y  int
+	color board.Color
 }
 
-func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return outsideWidth, outsideHeight
-}
-
-func (g *game) round() {
-	if g.turn {
-		g.player1.move(g.available)
-		if p, ok := g.player1.isDone(); ok {
-			g.check(board.BLACK)
-			g.lastMove = p
-		}
+func (u *unit) setColor(cl board.Color) {
+	if cl == board.BLACK {
+		u.SetResource(blackImg)
+	} else if cl == board.WHITE {
+		u.SetResource(whiteImg)
 	} else {
-		g.player2.move(g.available)
-		if p, ok := g.player2.isDone(); ok {
-			g.check(board.WHITE)
-			g.lastMove = p
-		}
+		u.SetResource(noneImg)
 	}
 }
 
-func (g *game) check(cl board.Color) {
-	g.available = g.bd.AllValidPoint(cl.Opponent())
-	if len(g.available) != 0 { // if is 0 then skip opponent
-		g.turn = !g.turn
+func (u *unit) Tapped(ev *fyne.PointEvent) {
+	p := board.NewPoint(u.x, u.y)
+	if !u.g.bd.Put(u.g.now, p) {
+		return
+	}
+
+	if u.g.now == board.BLACK {
+		u.SetResource(blackImg)
 	} else {
-		g.available = g.bd.AllValidPoint(cl)
-		if len(g.available) == 0 {
-			g.over = true
-			g.winner = g.bd.Winner()
-		}
+		u.SetResource(whiteImg)
 	}
+
+	u.g.now = u.g.now.Opponent()
+
+	u.g.updateWindow()
 }
 
-func (g *game) restart() {
-	*g = *NewGame()
+func (u *unit) MinSize() fyne.Size {
+	return fyne.NewSize(64, 64)
+}
+
+func newUnit(g *game, cl board.Color, x, y int) *unit {
+	u := &unit{g: g, color: cl, x: x, y: y}
+	u.setColor(cl)
+	u.ExtendBaseWidget(u)
+	return u
 }

@@ -4,59 +4,29 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"othello/board"
+	"othello/game/board"
 	"strings"
 	"time"
-
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type player interface {
-	move([]board.Point)
+	move()
 	isDone() (board.Point, bool)
 }
 
 type human struct {
-	bd     *board.Board
+	bd     board.Board
 	color  board.Color
 	done   bool
 	result board.Point
 }
 
-func newHuman(bd *board.Board, cl board.Color) *human {
+func newHuman(bd board.Board, cl board.Color) *human {
 	return &human{bd: bd, color: cl, done: false}
 }
 
-func (h *human) move(available []board.Point) {
-	x, y := ebiten.CursorPosition()
+func (h *human) move() {
 
-	x = int(float64(x-MARGIN_X)/SPACE + FIX)
-	y = int(float64(y-MARGIN_Y)/SPACE + FIX)
-
-	h.hint(available, x, y)
-
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		p := board.NewPoint(x, y)
-		if h.bd.Put(h.color, p) {
-			h.done = true
-			h.result = p
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		}
-	}
-}
-
-func (h *human) hint(available []board.Point, x, y int) {
-	var need = false
-	for _, p := range available {
-		if p.X == x && p.Y == y {
-			need = true
-		}
-	}
-	if need {
-		ebiten.SetCursorShape(ebiten.CursorShapePointer)
-	} else {
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-	}
 }
 
 func (h *human) isDone() (board.Point, bool) {
@@ -69,7 +39,7 @@ func (h *human) isDone() (board.Point, bool) {
 }
 
 type com struct {
-	bd      *board.Board
+	bd      board.Board
 	color   board.Color
 	result  chan string
 	ran     bool
@@ -77,7 +47,7 @@ type com struct {
 	program string
 }
 
-func newCom(bd *board.Board, cl board.Color, name string) *com {
+func newCom(bd board.Board, cl board.Color, name string) *com {
 	c := &com{
 		bd:      bd,
 		color:   cl,
@@ -93,7 +63,7 @@ func newCom(bd *board.Board, cl board.Color, name string) *com {
 	return c
 }
 
-func (c *com) move(available []board.Point) {
+func (c *com) move() {
 	if !c.ran {
 		c.ran = true
 		go c.execute()
@@ -135,8 +105,8 @@ func (c com) execute() {
 
 func (c com) invalid(output string) bool {
 	l := len(output) < 2
-	first := output[0] < 'A' || output[0] > 'A'+board.BOARD_LEN
-	second := output[1] < 'a' || output[1] > 'a'+board.BOARD_LEN
+	first := output[0] < 'A' || output[0] > byte('A'+c.bd.Size())
+	second := output[1] < 'a' || output[1] > byte('a'+c.bd.Size())
 	return l || first || second
 }
 
