@@ -16,12 +16,13 @@ func main() {
 	ui := a.NewWindow("othello")
 
 	var (
-		count        int = 0
-		card1, card2 *widget.Card
-		sel1, sel2   *widget.Select
-		start        *widget.Button
-		left, right  *fyne.Container
-		pathes       [2]string
+		count               int = 0
+		size                int = 0
+		card1, card2        *widget.Card
+		sel1, sel2, selSize *widget.Select
+		start               *widget.Button
+		left, right         *fyne.Container
+		pathes              [2]string
 	)
 	sel1 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
 		if s == "computer" {
@@ -60,10 +61,19 @@ func main() {
 	right = container.NewVBox(card2, sel2)
 
 	start = widget.NewButton("start", func() {
-		c := game.New(a, ui, pathes, 6)
+		c := game.New(a, ui, pathes, size)
 		ui.SetContent(c)
 	})
 	start.Disable()
+
+	selSize = widget.NewSelect([]string{"6x6", "8x8"}, func(s string) {
+		if s == "8x8" {
+			size = 8
+		} else {
+			size = 6
+		}
+	})
+	selSize.SetSelected("6x6")
 
 	center := container.NewGridWithColumns(2, left, right)
 	all := container.NewVBox(
@@ -74,6 +84,8 @@ func main() {
 		container.NewPadded(center),
 		container.NewPadded(),
 		container.NewPadded(),
+
+		container.NewPadded(selSize),
 		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(start),
