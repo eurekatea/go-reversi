@@ -101,7 +101,7 @@ func main() {
 	table.Add(all)
 
 	ui.SetContent(table)
-	ui.Resize(fyne.NewSize(450, 460))
+	ui.Resize(fyne.NewSize(500, 500))
 	ui.SetFixedSize(true)
 	ui.CenterOnScreen()
 	ui.ShowAndRun()

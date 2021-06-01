@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"othello/game/board"
 	"time"
 
@@ -63,11 +62,15 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 	g.update()
 
 	restart := widget.NewButton("restart", func() {
-		g.bd = board.NewBoard(size)
-		g.now = board.BLACK
-		g.update()
+		dialog.NewConfirm("confirm", "restart?", func(b bool) {
+			if b {
+				g.over = true
+				window.SetContent(New(a, window, comPath, size))
+			}
+		}, window).Show()
 	})
 
+	// for 6x6, 8x8 will resize automatically
 	window.Resize(fyne.NewSize(315.8, 356.6))
 
 	return container.NewVBox(grid, restart)
@@ -83,7 +86,6 @@ func (g *game) isBot(cl board.Color) bool {
 
 func (g *game) round() {
 	for !g.over {
-		fmt.Println(g.window.Canvas().Size())
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
 				g.com1.move()
@@ -93,14 +95,17 @@ func (g *game) round() {
 			g.now = g.now.Opponent()
 			g.update()
 		}
-
 		time.Sleep(time.Millisecond * 30)
 	}
 }
 
 func (g *game) update() {
+	count := g.showValidAndCount()
+	if count == 0 {
+		g.now = g.now.Opponent()
+		g.showValidAndCount()
+	}
 	if g.over = g.bd.IsOver(); g.over {
-		fmt.Println("over")
 		winner := g.bd.Winner()
 		var text string
 		if winner == board.NONE {
@@ -109,8 +114,10 @@ func (g *game) update() {
 			text = winner.String() + " won"
 		}
 		dialog.NewInformation("Game Over", text, g.window).Show()
-		return
 	}
+}
+
+func (g *game) showValidAndCount() int {
 	count := 0
 	for i, line := range g.units {
 		for j, u := range line {
@@ -121,9 +128,7 @@ func (g *game) update() {
 			}
 		}
 	}
-	if count == 0 {
-		g.now = g.now.Opponent()
-	}
+	return count
 }
 
 type unit struct {
