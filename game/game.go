@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -16,15 +17,13 @@ const (
 )
 
 type game struct {
-	window    fyne.Window
-	bd        board.Board
-	units     [][]*unit
-	player1   player
-	player2   player
-	lastMove  board.Point
-	winner    board.Color
-	available []board.Point
-	now       board.Color
+	window fyne.Window
+	bd     board.Board
+	units  [][]*unit
+	com1   *com
+	com2   *com
+	now    board.Color
+	over   bool
 }
 
 func New(a fyne.App, size int) {
@@ -44,31 +43,58 @@ func New(a fyne.App, size int) {
 			units[i][j] = u
 		}
 	}
+	window.SetContent(grid)
 
 	g.window = window
 	g.units = units
 	g.now = board.BLACK
 	g.bd = bd
-	g.lastMove = board.NewPoint(-9, -9)
-	g.winner = board.NONE
-	g.available = bd.AllValidPoint(board.BLACK)
+	g.over = false
 
 	if _, err := os.Stat(AI1); err == nil {
-		g.player1 = newCom(bd, board.BLACK, AI1)
+		g.com1 = newCom(bd, board.BLACK, AI1)
 	} else {
-		g.player1 = newHuman(bd, board.BLACK)
+		g.com1 = nil
 	}
 
 	if _, err := os.Stat(AI2); err == nil {
-		g.player2 = newCom(bd, board.WHITE, AI2)
+		g.com2 = newCom(bd, board.WHITE, AI2)
 	} else {
-		g.player2 = newHuman(bd, board.WHITE)
+		g.com2 = nil
+	}
+
+	if g.com1 != nil || g.com2 != nil {
+		go g.round()
 	}
 
 	g.updateWindow()
 
-	window.SetContent(grid)
+	window.CenterOnScreen()
+	window.SetFixedSize(true)
 	window.ShowAndRun()
+}
+
+func (g *game) isBot(cl board.Color) bool {
+	if cl == board.BLACK {
+		return g.com1 != nil
+	} else {
+		return g.com2 != nil
+	}
+}
+
+func (g *game) round() {
+	for !g.over {
+		if g.isBot(g.now) {
+			if g.now == board.BLACK {
+				g.com1.move()
+			} else {
+				g.com2.move()
+			}
+			g.now = g.now.Opponent()
+			g.updateWindow()
+		}
+		time.Sleep(time.Millisecond * 30)
+	}
 }
 
 func (g *game) updateWindow() {
@@ -80,6 +106,16 @@ func (g *game) updateWindow() {
 			}
 		}
 	}
+	if g.over = g.bd.IsOver(); g.over {
+		winner := g.bd.Winner()
+		var text string
+		if winner == board.NONE {
+			text = "draw"
+		} else {
+			text = winner.String() + " won"
+		}
+		dialog.NewInformation("Game Over", text, g.window).Show()
+	}
 }
 
 type unit struct {
@@ -87,6 +123,36 @@ type unit struct {
 	widget.Icon
 	x, y  int
 	color board.Color
+}
+
+func newUnit(g *game, cl board.Color, x, y int) *unit {
+	u := &unit{g: g, color: cl, x: x, y: y}
+	u.setColor(cl)
+	u.ExtendBaseWidget(u)
+	return u
+}
+
+func (u *unit) Tapped(ev *fyne.PointEvent) {
+	if u.g.isBot(u.g.now) {
+		return
+	}
+	p := board.NewPoint(u.x, u.y)
+	if !u.g.bd.Put(u.g.now, p) {
+		return
+	}
+
+	temp := u.g.now
+	u.g.now = u.g.now.Opponent()
+	u.g.updateWindow()
+	if temp == board.BLACK {
+		u.SetResource(blackCurr)
+	} else {
+		u.SetResource(whiteCurr)
+	}
+}
+
+func (u *unit) MinSize() fyne.Size {
+	return fyne.NewSize(48, 48)
 }
 
 func (u *unit) setColor(cl board.Color) {
@@ -97,32 +163,4 @@ func (u *unit) setColor(cl board.Color) {
 	} else {
 		u.SetResource(noneImg)
 	}
-}
-
-func (u *unit) Tapped(ev *fyne.PointEvent) {
-	p := board.NewPoint(u.x, u.y)
-	if !u.g.bd.Put(u.g.now, p) {
-		return
-	}
-
-	if u.g.now == board.BLACK {
-		u.SetResource(blackImg)
-	} else {
-		u.SetResource(whiteImg)
-	}
-
-	u.g.now = u.g.now.Opponent()
-
-	u.g.updateWindow()
-}
-
-func (u *unit) MinSize() fyne.Size {
-	return fyne.NewSize(64, 64)
-}
-
-func newUnit(g *game, cl board.Color, x, y int) *unit {
-	u := &unit{g: g, color: cl, x: x, y: y}
-	u.setColor(cl)
-	u.ExtendBaseWidget(u)
-	return u
 }

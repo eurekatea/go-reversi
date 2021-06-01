@@ -9,40 +9,9 @@ import (
 	"time"
 )
 
-type player interface {
-	move()
-	isDone() (board.Point, bool)
-}
-
-type human struct {
-	bd     board.Board
-	color  board.Color
-	done   bool
-	result board.Point
-}
-
-func newHuman(bd board.Board, cl board.Color) *human {
-	return &human{bd: bd, color: cl, done: false}
-}
-
-func (h *human) move() {
-
-}
-
-func (h *human) isDone() (board.Point, bool) {
-	if h.done {
-		h.done = false
-		return h.result, true
-	} else {
-		return board.NewPoint(-1, -1), false
-	}
-}
-
 type com struct {
 	bd      board.Board
 	color   board.Color
-	result  chan string
-	ran     bool
 	id      string
 	program string
 }
@@ -51,8 +20,6 @@ func newCom(bd board.Board, cl board.Color, name string) *com {
 	c := &com{
 		bd:      bd,
 		color:   cl,
-		result:  make(chan string),
-		ran:     false,
 		program: name,
 	}
 	if cl == board.BLACK {
@@ -64,30 +31,17 @@ func newCom(bd board.Board, cl board.Color, name string) *com {
 }
 
 func (c *com) move() {
-	if !c.ran {
-		c.ran = true
-		go c.execute()
+	output := c.execute()
+	col, row := int(output[0]-'A'), int(output[1]-'a')
+	p := board.NewPoint(row, col)
+	if !c.bd.Put(c.color, p) {
+		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
+		r += c.bd.Visualize()
+		c.fatal(r)
 	}
 }
 
-func (c *com) isDone() (board.Point, bool) {
-	select {
-	case output := <-c.result:
-		col, row := int(output[0]-'A'), int(output[1]-'a')
-		p := board.NewPoint(row, col)
-		if !c.bd.Put(c.color, p) {
-			r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
-			r += c.bd.Visualize()
-			c.fatal(r)
-		}
-		c.ran = false
-		return p, true
-	default:
-		return board.NewPoint(-1, -1), false
-	}
-}
-
-func (c com) execute() {
+func (c com) execute() string {
 	cmd := exec.Command(execCmd+c.program, "")
 	cmd.Stdin = strings.NewReader(c.bd.String() + c.id)
 	out, err := cmd.Output()
@@ -100,7 +54,7 @@ func (c com) execute() {
 		c.fatal("unknown output: " + output)
 	}
 
-	c.result <- output
+	return output
 }
 
 func (c com) invalid(output string) bool {

@@ -27,6 +27,15 @@ func (bd Board) Size() int {
 	return len(bd) - 2
 }
 
+func (bd Board) Copy() Board {
+	nbd := make(Board, bd.Size()+2)
+	for i := range bd {
+		nbd[i] = make([]Color, bd.Size()+2)
+		copy(nbd[i], bd[i])
+	}
+	return nbd
+}
+
 func (bd Board) String() (res string) {
 	for i := 0; i < bd.Size(); i++ {
 		for j := 0; j < bd.Size(); j++ {
@@ -176,4 +185,8 @@ func (bd Board) Winner() Color {
 	} else {
 		return NONE
 	}
+}
+
+func (bd Board) IsOver() bool {
+	return len(bd.AllValidPoint(BLACK))+len(bd.AllValidPoint(WHITE)) == 0
 }

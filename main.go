@@ -8,5 +8,5 @@ import (
 
 func main() {
 	a := app.New()
-	game.New(a, 8)
+	game.New(a, 6)
 }
