@@ -39,7 +39,7 @@ func main() {
 			start.Enable()
 		}
 	})
-	card1 = widget.NewCard("        black", "", sel1)
+	card1 = widget.NewCard("         black", "", nil)
 	left = container.NewVBox(card1, sel1)
 
 	sel2 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
@@ -57,7 +57,7 @@ func main() {
 			start.Enable()
 		}
 	})
-	card2 = widget.NewCard("        white", "", sel2)
+	card2 = widget.NewCard("         white", "", nil)
 	right = container.NewVBox(card2, sel2)
 
 	start = widget.NewButton("start", func() {
@@ -75,17 +75,23 @@ func main() {
 	})
 	selSize.SetSelected("6x6")
 
+	tl := widget.NewCard("                             size", "", nil)
+
 	center := container.NewGridWithColumns(2, left, right)
 	all := container.NewVBox(
-		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(center),
 		container.NewPadded(),
 		container.NewPadded(),
-
+		container.NewPadded(),
+		container.NewPadded(),
+		tl,
 		container.NewPadded(selSize),
+		container.NewPadded(),
+		container.NewPadded(),
+		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(start),
