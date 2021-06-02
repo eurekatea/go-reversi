@@ -87,7 +87,9 @@ func main() {
 			agents.BlackAgent = game.AgentHuman
 		} else {
 			agents.BlackAgent = game.AgentBuiltIn
-			dialog.NewCustom("select AI level", "ok", aiLevelSelection1, ui).Show()
+			d := dialog.NewCustom("select AI level", "ok", aiLevelSelection1, ui)
+			d.Resize(fyne.NewSize(250, 1))
+			d.Show()
 		}
 		if agents.AllSelected() {
 			playButton.Enable()
@@ -111,8 +113,10 @@ func main() {
 		} else if s == "human" {
 			agents.WhiteAgent = game.AgentHuman
 		} else {
-			dialog.NewCustom("select AI level", "ok", aiLevelSelection2, ui).Show()
 			agents.WhiteAgent = game.AgentBuiltIn
+			d := dialog.NewCustom("select AI level", "ok", aiLevelSelection2, ui)
+			d.Resize(fyne.NewSize(250, 1))
+			d.Show()
 		}
 		if agents.AllSelected() {
 			playButton.Enable()

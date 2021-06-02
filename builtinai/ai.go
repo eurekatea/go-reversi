@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DEPTH      = 12
+	DEPTH      = 13
 	STEP2DEPTH = 18
 )
 
@@ -126,6 +126,9 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 		ai.depth = DEPTH - (ai.level * 3) // level (step 1)
 	} else {
 		ai.depth = step2Max // step 2
+	}
+	if ai.boardSize == 8 {
+		ai.depth -= 3
 	}
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
