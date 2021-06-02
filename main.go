@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -48,7 +49,7 @@ func main() {
 
 	selection1 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
-			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
+			d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
 					agents.BlackPath = uc.URI().Path()
 					agents.BlackAgent = game.AgentExternal
@@ -58,7 +59,9 @@ func main() {
 				} else {
 					selection1.ClearSelected()
 				}
-			}, ui).Show()
+			}, ui)
+			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ""}))
+			d.Show()
 		} else if s == "human" {
 			agents.BlackAgent = game.AgentHuman
 		} else {
@@ -72,7 +75,7 @@ func main() {
 
 	selection2 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
-			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
+			d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
 					agents.WhitePath = uc.URI().Path()
 					agents.WhiteAgent = game.AgentExternal
@@ -82,7 +85,9 @@ func main() {
 						selection1.ClearSelected()
 					}
 				}
-			}, ui).Show()
+			}, ui)
+			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ""}))
+			d.Show()
 		} else if s == "human" {
 			agents.WhiteAgent = game.AgentHuman
 		} else {
