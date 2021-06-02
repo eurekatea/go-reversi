@@ -1,11 +1,8 @@
-// +build orig
-
 package builtinai
 
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"othello/board"
 	"sort"
 )
@@ -82,9 +79,9 @@ func (ns nodes) Swap(i, j int) {
 
 // provide randomness
 func (ns nodes) shuffle() {
-	rand.Shuffle(len(ns), func(i, j int) {
-		ns[i], ns[j] = ns[j], ns[i]
-	})
+	// rand.Shuffle(len(ns), func(i, j int) {
+	// 	ns[i], ns[j] = ns[j], ns[i]
+	// })
 }
 
 func (ns nodes) sort() {
@@ -211,12 +208,13 @@ func (ai *AI) countAfterPut(bd board.Board, currentCount int, p board.Point, cl 
 
 func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 	all = make(nodes, 0, 16)
-	nowValue := ai.heuristic(bd, cl)
+	// nowValue := ai.heuristic(bd, cl)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
 			p := board.NewPoint(i, j)
 			if bd.IsValidPoint(cl, p) {
-				newValue := ai.heuristicAfterPut(bd, nowValue, p, cl)
+				newValue := ai.valueNetWork[i][j]
+				// newValue := ai.heuristicAfterPut(bd, nowValue, p, cl)
 				all = append(all, newNode(i, j, newValue))
 			}
 		}

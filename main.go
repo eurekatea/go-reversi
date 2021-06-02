@@ -13,15 +13,6 @@ import (
 	"github.com/pkg/profile"
 )
 
-const (
-	chinese int = iota
-	english
-)
-
-func setLanguage(lang int, allWidgets []fyne.CanvasObject) {
-
-}
-
 func main() {
 	defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
