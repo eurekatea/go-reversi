@@ -86,12 +86,16 @@ func (g *game) isBot(cl board.Color) bool {
 }
 
 func (g *game) round() {
+	var err error
 	for !g.over {
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
-				g.com1.move()
+				err = g.com1.move()
 			} else {
-				g.com2.move()
+				err = g.com2.move()
+			}
+			if err != nil {
+				g.aiError(err)
 			}
 			g.now = g.now.Opponent()
 			g.update()
@@ -139,6 +143,12 @@ func (g *game) showValidAndCount() int {
 		}
 	}
 	return count
+}
+
+func (g *game) aiError(err error) {
+	d := dialog.NewError(err, g.window)
+	d.SetOnClosed(func() { panic(err) })
+	d.Show()
 }
 
 type unit struct {

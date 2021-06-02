@@ -30,15 +30,16 @@ func newCom(bd board.Board, cl board.Color, name string) *com {
 	return c
 }
 
-func (c *com) move() {
+func (c *com) move() error {
 	output := c.execute()
 	col, row := int(output[0]-'A'), int(output[1]-'a')
 	p := board.NewPoint(row, col)
 	if !c.bd.Put(c.color, p) {
 		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
 		r += c.bd.Visualize()
-		c.fatal(r)
+		return c.fatal(r)
 	}
+	return nil
 }
 
 func (c com) execute() string {
@@ -64,10 +65,10 @@ func (c com) invalid(output string) bool {
 	return l || first || second
 }
 
-func (c com) fatal(text string) {
+func (c com) fatal(text string) error {
 	f, err := os.Create("error.log")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer f.Close()
 
@@ -80,8 +81,8 @@ func (c com) fatal(text string) {
 
 	_, err = f.Write([]byte(text))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	panic("error")
+	return fmt.Errorf("selected external AI has occured an error\nplease check the log file\nprogram will exit now")
 }

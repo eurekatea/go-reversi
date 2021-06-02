@@ -23,8 +23,8 @@ func main() {
 		pathes              [2]string
 	)
 
-	sel1 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
-		if s == "computer" {
+	sel1 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
 					pathes[0] = uc.URI().Path()
@@ -40,8 +40,8 @@ func main() {
 	})
 	card1 = widget.NewCard("            black", "", container.NewCenter(sel1))
 
-	sel2 = widget.NewSelect([]string{"human", "computer"}, func(s string) {
-		if s == "computer" {
+	sel2 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
 					pathes[1] = uc.URI().Path()
@@ -68,7 +68,7 @@ func main() {
 
 	top := container.NewGridWithColumns(2, card1, card2)
 	center := widget.NewCard("                                size", "", container.NewCenter(selSize))
-	start = widget.NewButton("         play         ", func() {
+	start = widget.NewButton("           play           ", func() {
 		c := game.New(a, ui, pathes, size)
 		ui.SetContent(c)
 	})
