@@ -107,6 +107,8 @@ func New(cl board.Color, boardSize int) *AI {
 
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	debug.SetGCPercent(10000)
+	defer debug.SetGCPercent(100)
+
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
 	if ai.emptyCount > 16 {
@@ -119,8 +121,7 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	}
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
-	fmt.Println("nodes:", ai.nodes)
-	debug.SetGCPercent(100)
+	fmt.Printf("built-in AI: {nodes: %v}\n", ai.nodes)
 
 	return board.NewPoint(best.x, best.y), nil
 }

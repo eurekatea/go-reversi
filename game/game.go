@@ -125,9 +125,13 @@ func (g *game) round() {
 	for !g.over {
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
+				start := time.Now()
 				p, err = g.com1.Move(g.bd.Copy())
+				fmt.Println("black side spent:", time.Since(start))
 			} else {
+				start := time.Now()
 				p, err = g.com2.Move(g.bd.Copy())
+				fmt.Println("white side spent:", time.Since(start))
 			}
 			g.bd.Put(g.now, p)
 			if err != nil {

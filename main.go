@@ -11,6 +11,15 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const (
+	chinese int = iota
+	english
+)
+
+func setLanguage(lang int, allWidgets []fyne.CanvasObject) {
+
+}
+
 func main() {
 	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
@@ -59,7 +68,7 @@ func main() {
 			playButton.Enable()
 		}
 	})
-	blackCard = widget.NewCard("           black", "", container.NewCenter(selection1))
+	blackCard = widget.NewCard("      black side", "", container.NewCenter(selection1))
 
 	selection2 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
@@ -83,7 +92,7 @@ func main() {
 			playButton.Enable()
 		}
 	})
-	whiteCard = widget.NewCard("           white", "", container.NewCenter(selection2))
+	whiteCard = widget.NewCard("      white side", "", container.NewCenter(selection2))
 
 	selection3 = widget.NewSelect([]string{"6x6", "8x8"}, func(s string) {
 		if s == "8x8" {
@@ -95,7 +104,7 @@ func main() {
 	selection3.SetSelected("6x6")
 
 	top = container.NewGridWithColumns(2, blackCard, whiteCard)
-	center = widget.NewCard("                       board  size", "", container.NewCenter(selection3))
+	center = widget.NewCard("                     board  size", "", container.NewCenter(selection3))
 	playButton = widget.NewButton("           play           ", func() {
 		c := game.New(a, ui, agents, boardSize)
 		ui.SetContent(c)
@@ -115,7 +124,7 @@ func main() {
 		container.NewCenter(playButton),
 	)
 
-	all = widget.NewCard("                             othello", "", body)
+	all = widget.NewCard("                          othello", "", body)
 
 	ui.SetContent(all)
 	ui.Resize(fyne.NewSize(500, 450))
