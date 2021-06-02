@@ -27,6 +27,7 @@ func main() {
 	a := app.New()
 	a.Settings().SetTheme(&othellotheme.Theme{})
 	ui := a.NewWindow("othello")
+	ui.SetIcon(game.WindowIcon)
 
 	var (
 		boardSize int         = 0

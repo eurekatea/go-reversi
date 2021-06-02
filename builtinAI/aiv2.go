@@ -1,5 +1,3 @@
-// +build orig
-
 package builtinai
 
 import (
@@ -122,12 +120,14 @@ func New(cl board.Color, boardSize int, level int) *AI {
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
-	if ai.emptyCount > STEP2DEPTH {
-		ai.depth = DEPTH
+
+	step2Max := (STEP2DEPTH - (ai.level * 4)) // level
+	if ai.emptyCount > step2Max {
+		ai.depth = DEPTH - (ai.level * 3) // level (step 1)
 	} else {
-		ai.depth = STEP2DEPTH + 1
+		ai.depth = step2Max // step 2
+		fmt.Println("step 2 max dpeth:", ai.depth)
 	}
-	ai.depth -= (ai.level * 3) // level
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
 	fmt.Printf("built-in AI: {depth: %v, nodes: %v}\n", ai.reachedDepth, ai.nodes)
@@ -136,9 +136,9 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 }
 
 func (ai *AI) heuristic(bd board.Board, color board.Color) int {
-	if ai.emptyCount > 16 {
+	if ai.emptyCount > ai.depth { // step 1
 		return ai.evalBoard(bd, color)
-	} else {
+	} else { // step 2
 		return bd.CountPieces(ai.color) - bd.CountPieces(ai.opponent)
 	}
 }
@@ -156,6 +156,44 @@ func (ai *AI) evalBoard(bd board.Board, color board.Color) int {
 		}
 	}
 	return point
+}
+
+func (ai *AI) changedValue(bd board.Board, cl board.Color, p board.Point, dir [2]int) int {
+	delta := 0
+	x, y := p.X, p.Y
+	opponent := cl.Opponent()
+
+	x, y = x+dir[0], y+dir[1]
+	if bd.AtXY(x, y) != opponent {
+		return 0
+	}
+	delta += ai.valueNetWork[x][y] * 2 // flip opponent to yours, so double
+
+	for {
+		x, y = x+dir[0], y+dir[1]
+		now := bd.AtXY(x, y)
+		if now != opponent {
+			if now == cl {
+				return delta
+			} else {
+				return 0
+			}
+		}
+		delta += ai.valueNetWork[x][y] * 2 // same as above
+	}
+}
+
+// don't need to copy
+func (ai *AI) evalAfterPut(bd board.Board, currentValue int, p board.Point, cl board.Color) int {
+	for i := 0; i < 8; i++ {
+		currentValue += ai.changedValue(bd, cl, p, direction[i])
+	}
+	currentValue += ai.valueNetWork[p.X][p.Y]
+	return currentValue
+}
+
+func (ai *AI) countAfterPut(bd board.Board, currentCount int, p board.Point, cl board.Color) int {
+	return 0
 }
 
 func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {

@@ -5,6 +5,55 @@ import (
 	"testing"
 )
 
+func TestPartialValueChange(t *testing.T) {
+	ai := New(board.BLACK, 6, 0)
+
+	bd := board.NewBoard(6)
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
+
+	currentV := ai.evalBoard(bd, board.BLACK)
+	c := bd.Copy()
+	c.Put(board.BLACK, board.NewPoint(3, 1))
+	newV := ai.evalBoard(c, board.BLACK)
+
+	aiV := ai.evalAfterPut(bd, currentV, board.NewPoint(3, 1), board.BLACK)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+	}
+
+	ai = New(board.WHITE, 6, 0)
+	bd = board.NewBoard(6)
+	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
+	t.Error(bd.Visualize())
+	currentV = ai.evalBoard(bd, board.WHITE)
+	c = bd.Copy()
+	c.Put(board.WHITE, board.NewPoint(4, 2))
+	newV = ai.evalBoard(c, board.WHITE)
+
+	aiV = ai.evalAfterPut(bd, currentV, board.NewPoint(4, 2), board.WHITE)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
+	}
+}
+
+func (ai AI) evalBoardNoPointer(bd board.Board, color board.Color) int {
+	point := 0
+	opponent := color.Opponent()
+	for i := 0; i < ai.boardSize; i++ {
+		for j := 0; j < ai.boardSize; j++ {
+			if bd.AtXY(i, j) == color {
+				point += ai.valueNetWork[i][j]
+			} else if bd.AtXY(i, j) == opponent {
+				point -= ai.valueNetWork[i][j]
+			}
+		}
+	}
+	return point
+}
+
 func BenchmarkEval(b *testing.B) {
 	ai := New(board.BLACK, 6, 0)
 
@@ -13,8 +62,23 @@ func BenchmarkEval(b *testing.B) {
 	// fmt.Println(bd.Visualize())
 
 	for i := 0; i < b.N; i++ {
-		ai.evalBoard(bd, ai.color)
+		ai.evalBoardNoPointer(bd, ai.color)
 	}
+}
+
+func (ai *AI) evalBoardPointer(bd board.Board, color board.Color) int {
+	point := 0
+	opponent := color.Opponent()
+	for i := 0; i < ai.boardSize; i++ {
+		for j := 0; j < ai.boardSize; j++ {
+			if bd.AtXY(i, j) == color {
+				point += ai.valueNetWork[i][j]
+			} else if bd.AtXY(i, j) == opponent {
+				point -= ai.valueNetWork[i][j]
+			}
+		}
+	}
+	return point
 }
 
 func BenchmarkEvalPointer(b *testing.B) {

@@ -15,12 +15,13 @@ import (
 var source embed.FS
 
 var (
-	blackImg  *fyne.StaticResource
-	whiteImg  *fyne.StaticResource
-	noneImg   *fyne.StaticResource
-	possible  *fyne.StaticResource
-	blackCurr *fyne.StaticResource
-	whiteCurr *fyne.StaticResource
+	blackImg   *fyne.StaticResource
+	whiteImg   *fyne.StaticResource
+	noneImg    *fyne.StaticResource
+	possible   *fyne.StaticResource
+	blackCurr  *fyne.StaticResource
+	whiteCurr  *fyne.StaticResource
+	WindowIcon *fyne.StaticResource
 )
 
 func init() {
@@ -30,6 +31,7 @@ func init() {
 	possible = resourceFromBytes("img/possible.webp")
 	blackCurr = resourceFromBytes("img/blackCurrent.webp")
 	whiteCurr = resourceFromBytes("img/whiteCurrent.webp")
+	WindowIcon = resourceFromBytes("img/icon.webp")
 }
 
 func resourceFromBytes(path string) *fyne.StaticResource {
