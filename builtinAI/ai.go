@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"othello/board"
+	"runtime/debug"
 	"sort"
 )
 
@@ -103,6 +104,7 @@ func New(cl board.Color, boardSize int) *AI {
 }
 
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
+	debug.SetGCPercent(10000)
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
 	if ai.emptyCount > 16 {
@@ -110,9 +112,14 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	} else {
 		ai.depth = DEPTH2
 	}
+	if ai.boardSize == 8 {
+		ai.depth -= 2
+	}
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
 	fmt.Println("nodes:", ai.nodes)
+	debug.SetGCPercent(100)
+
 	return board.NewPoint(best.x, best.y), nil
 }
 
@@ -140,13 +147,14 @@ func (ai AI) evalBoard(bd board.Board, color board.Color) int {
 }
 
 func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
+	all = make(nodes, 0, 16)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
 			p := board.NewPoint(i, j)
 			if bd.IsValidPoint(cl, p) {
 				temp := bd.Copy()
 				temp.Put(cl, p)
-				all = append(all, newNode(i, j, ai.evalBoard(temp, cl)))
+				all = append(all, newNode(i, j, ai.heuristic(temp, cl)))
 			}
 		}
 	}
@@ -155,6 +163,10 @@ func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 
 func (ai AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
 	all = ai.validPos(bd, cl)
+	// for randomness
+	// rand.Shuffle(len(all), func(i, j int) {
+	// 	all[i], all[j] = all[j], all[i]
+	// })
 	sort.Sort(all)
 	return
 }

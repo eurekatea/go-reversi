@@ -94,7 +94,7 @@ func New(a fyne.App, window fyne.Window, agents Agents, size int) *fyne.Containe
 		go g.round()
 	}
 
-	g.update()
+	g.update(board.NewPoint(-1, -1))
 
 	restart := widget.NewButton("restart", func() {
 		dialog.NewConfirm("confirm", "restart?", func(b bool) {
@@ -134,17 +134,17 @@ func (g *game) round() {
 				g.aiError(err)
 			}
 			g.now = g.now.Opponent()
-			g.update()
+			g.update(p)
 		}
 		time.Sleep(time.Millisecond * 30)
 	}
 }
 
-func (g *game) update() {
-	count := g.showValidAndCount()
+func (g *game) update(current board.Point) {
+	count := g.showValidAndCount(current)
 	if count == 0 {
 		g.now = g.now.Opponent()
-		g.showValidAndCount()
+		g.showValidAndCount(current)
 	}
 	if g.over = g.bd.IsOver(); g.over {
 		g.gameOver()
@@ -167,14 +167,18 @@ func (g *game) gameOver() {
 	d.Show()
 }
 
-func (g *game) showValidAndCount() int {
+func (g *game) showValidAndCount(current board.Point) int {
 	count := 0
 	for i, line := range g.units {
 		for j, u := range line {
-			u.setColor(g.bd.AtXY(i, j))
+			cl := g.bd.AtXY(i, j)
+			u.setColor(cl)
 			if g.bd.IsValidPoint(g.now, board.NewPoint(i, j)) {
 				u.SetResource(possible)
 				count++
+			}
+			if current.X == i && current.Y == j {
+				u.setColorCurrent(cl)
 			}
 		}
 	}
@@ -210,14 +214,8 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 		return
 	}
 
-	temp := u.g.now
 	u.g.now = u.g.now.Opponent()
-	u.g.update()
-	if temp == board.BLACK {
-		u.SetResource(blackCurr)
-	} else {
-		u.SetResource(whiteCurr)
-	}
+	u.g.update(p)
 }
 
 func (u *unit) MinSize() fyne.Size {
@@ -231,5 +229,13 @@ func (u *unit) setColor(cl board.Color) {
 		u.SetResource(whiteImg)
 	} else {
 		u.SetResource(noneImg)
+	}
+}
+
+func (u *unit) setColorCurrent(cl board.Color) {
+	if cl == board.BLACK {
+		u.SetResource(blackCurr)
+	} else {
+		u.SetResource(whiteCurr)
 	}
 }

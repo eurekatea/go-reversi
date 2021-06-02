@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
+
 	a := app.New()
 	ui := a.NewWindow("othello")
 
