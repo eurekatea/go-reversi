@@ -2,6 +2,7 @@ package main
 
 import (
 	"othello/game"
+	"othello/othellotheme"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -14,6 +15,7 @@ func main() {
 	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
 	a := app.New()
+	a.Settings().SetTheme(&othellotheme.Theme{})
 	ui := a.NewWindow("othello")
 
 	var (

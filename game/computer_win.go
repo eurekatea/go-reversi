@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"othello/board"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -45,15 +46,15 @@ func (c *com) Move(bd board.Board) (board.Point, error) {
 func (c com) execute(bd board.Board) string {
 	cmdPath := "C:\\Windows\\system32\\cmd.exe"
 	cmdInstance := exec.Command(cmdPath, c.program)
-	cmdInstance.SysProcAttr = &syscall.SysProcAttr{Foreground: false}
-	cmdInstance.Stdin = strings.NewReader(c.bd.String() + c.id)
+	cmdInstance.SysProcAttr = &syscall.SysProcAttr{HideWindow: false}
+	cmdInstance.Stdin = strings.NewReader(bd.String() + c.id)
 	out, err := cmdInstance.Output()
 	if err != nil {
 		c.fatal(err.Error())
 	}
 
 	output := string(out)
-	if c.invalid(output) {
+	if c.invalid(bd, output) {
 		c.fatal("unknown output: " + output)
 	}
 

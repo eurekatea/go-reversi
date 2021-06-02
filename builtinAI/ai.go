@@ -15,7 +15,8 @@ const (
 
 var (
 	DIRECTION = [8][2]int{{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}}
-	VALUE6x6  = [][]int{
+
+	VALUE6x6 = [][]int{
 		{0, 0, 0, 0, 0, 0, 0, 0},
 		{0, 320, 20, 80, 80, 20, 320, 0},
 		{0, 20, 0, 80, 80, 0, 20, 0},
@@ -25,6 +26,7 @@ var (
 		{0, 320, 20, 80, 80, 20, 320, 0},
 		{0, 0, 0, 0, 0, 0, 0, 0},
 	}
+
 	VALUE8x8 = [][]int{
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		{0, 101, -43, 38, 7, 0, 42, -20, 102, 0},
@@ -163,10 +165,6 @@ func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 
 func (ai AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
 	all = ai.validPos(bd, cl)
-	// for randomness
-	// rand.Shuffle(len(all), func(i, j int) {
-	// 	all[i], all[j] = all[j], all[i]
-	// })
 	sort.Sort(all)
 	return
 }
