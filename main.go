@@ -15,9 +15,8 @@ func main() {
 	ui := a.NewWindow("othello")
 
 	var (
-		count     int = 0
-		boardSize int = 0
-		pathes    [2]string
+		boardSize int         = 0
+		agents    game.Agents = game.NewAgents()
 
 		blackCard *widget.Card
 		whiteCard *widget.Card
@@ -34,35 +33,49 @@ func main() {
 		body *fyne.Container
 	)
 
-	selection1 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+	selection1 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
-					pathes[0] = uc.URI().Path()
+					agents.BlackPath = uc.URI().Path()
+					agents.BlackAgent = game.AgentExternal
+					if agents.Selected() {
+						playButton.Enable()
+					}
+				} else {
+					selection1.ClearSelected()
 				}
 			}, ui).Show()
+		} else if s == "human" {
+			agents.BlackAgent = game.AgentHuman
 		} else {
-			pathes[0] = "human"
+			agents.BlackAgent = game.AgentBuiltIn
 		}
-		count++
-		if count == 2 {
+		if agents.Selected() {
 			playButton.Enable()
 		}
 	})
 	blackCard = widget.NewCard("           black", "", container.NewCenter(selection1))
 
-	selection2 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+	selection2 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
-					pathes[1] = uc.URI().Path()
+					agents.WhitePath = uc.URI().Path()
+					agents.WhiteAgent = game.AgentExternal
+					if agents.Selected() {
+						playButton.Enable()
+					} else {
+						selection1.ClearSelected()
+					}
 				}
 			}, ui).Show()
+		} else if s == "human" {
+			agents.WhiteAgent = game.AgentHuman
 		} else {
-			pathes[1] = "human"
+			agents.WhiteAgent = game.AgentBuiltIn
 		}
-		count++
-		if count == 2 {
+		if agents.Selected() {
 			playButton.Enable()
 		}
 	})
@@ -80,7 +93,7 @@ func main() {
 	top = container.NewGridWithColumns(2, blackCard, whiteCard)
 	center = widget.NewCard("                       board  size", "", container.NewCenter(selection3))
 	playButton = widget.NewButton("           play           ", func() {
-		c := game.New(a, ui, pathes, boardSize)
+		c := game.New(a, ui, agents, boardSize)
 		ui.SetContent(c)
 	})
 	playButton.Disable()

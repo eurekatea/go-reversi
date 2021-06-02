@@ -6,21 +6,19 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"othello/game/board"
+	"othello/board"
 	"strings"
 	"time"
 )
 
 type com struct {
-	bd      board.Board
 	color   board.Color
 	id      string
 	program string
 }
 
-func newCom(bd board.Board, cl board.Color, name string) *com {
+func newCom(cl board.Color, name string) *com {
 	c := &com{
-		bd:      bd,
 		color:   cl,
 		program: name,
 	}
@@ -32,38 +30,38 @@ func newCom(bd board.Board, cl board.Color, name string) *com {
 	return c
 }
 
-func (c *com) move() error {
-	output := c.execute()
+func (c *com) Move(bd board.Board) (board.Point, error) {
+	output := c.execute(bd)
 	col, row := int(output[0]-'A'), int(output[1]-'a')
 	p := board.NewPoint(row, col)
-	if !c.bd.Put(c.color, p) {
+	if !bd.Put(c.color, p) {
 		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
-		r += c.bd.Visualize()
-		return c.fatal(r)
+		r += bd.Visualize()
+		return board.Point{}, c.fatal(r)
 	}
-	return nil
+	return p, nil
 }
 
-func (c com) execute() string {
+func (c com) execute(bd board.Board) string {
 	cmd := exec.Command(c.program, "")
-	cmd.Stdin = strings.NewReader(c.bd.String() + c.id)
+	cmd.Stdin = strings.NewReader(bd.String() + c.id)
 	out, err := cmd.Output()
 	if err != nil {
 		c.fatal(err.Error())
 	}
 
 	output := string(out)
-	if c.invalid(output) {
+	if c.invalid(bd, output) {
 		c.fatal("unknown output: " + output)
 	}
 
 	return output
 }
 
-func (c com) invalid(output string) bool {
+func (c com) invalid(bd board.Board, output string) bool {
 	l := len(output) < 2
-	first := output[0] < 'A' || output[0] > byte('A'+c.bd.Size())
-	second := output[1] < 'a' || output[1] > byte('a'+c.bd.Size())
+	first := output[0] < 'A' || output[0] > byte('A'+bd.Size())
+	second := output[1] < 'a' || output[1] > byte('a'+bd.Size())
 	return l || first || second
 }
 

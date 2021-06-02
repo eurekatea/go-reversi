@@ -2,7 +2,8 @@ package game
 
 import (
 	"fmt"
-	"othello/game/board"
+	"othello/board"
+	builtinai "othello/builtinAI"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -13,20 +14,49 @@ import (
 )
 
 const (
-	COOLDOWN = time.Millisecond * 500
+	AgentNone Agent = iota
+	AgentHuman
+	AgentBuiltIn
+	AgentExternal
 )
+
+type Agent int
+
+type Agents struct {
+	BlackAgent Agent
+	WhiteAgent Agent
+	BlackPath  string
+	WhitePath  string
+}
+
+func NewAgents() Agents {
+	return Agents{
+		BlackAgent: AgentNone,
+		BlackPath:  "",
+		WhiteAgent: AgentNone,
+		WhitePath:  "",
+	}
+}
+
+func (agents Agents) Selected() bool {
+	return agents.BlackAgent != AgentNone && agents.WhiteAgent != AgentNone
+}
+
+type computer interface {
+	Move(board.Board) (board.Point, error)
+}
 
 type game struct {
 	window fyne.Window
 	bd     board.Board
 	units  [][]*unit
-	com1   *com
-	com2   *com
+	com1   computer
+	com2   computer
 	now    board.Color
 	over   bool
 }
 
-func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Container {
+func New(a fyne.App, window fyne.Window, agents Agents, size int) *fyne.Container {
 	g := &game{}
 	bd := board.NewBoard(size)
 
@@ -49,11 +79,15 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 	g.bd = bd
 	g.over = false
 
-	if comPath[0] != "human" {
-		g.com1 = newCom(bd, board.BLACK, comPath[0])
+	if agents.BlackAgent == AgentBuiltIn {
+		g.com1 = builtinai.New(board.BLACK, size)
+	} else if agents.BlackAgent == AgentExternal {
+		g.com1 = newCom(board.BLACK, agents.BlackPath)
 	}
-	if comPath[1] != "human" {
-		g.com2 = newCom(bd, board.WHITE, comPath[1])
+	if agents.WhiteAgent == AgentBuiltIn {
+		g.com2 = builtinai.New(board.WHITE, size)
+	} else if agents.WhiteAgent == AgentExternal {
+		g.com2 = newCom(board.WHITE, agents.WhitePath)
 	}
 
 	if g.com1 != nil || g.com2 != nil {
@@ -66,7 +100,7 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 		dialog.NewConfirm("confirm", "restart?", func(b bool) {
 			if b {
 				g.over = true
-				window.SetContent(New(a, window, comPath, size))
+				window.SetContent(New(a, window, agents, size))
 			}
 		}, window).Show()
 	})
@@ -86,14 +120,16 @@ func (g *game) isBot(cl board.Color) bool {
 }
 
 func (g *game) round() {
+	var p board.Point
 	var err error
 	for !g.over {
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
-				err = g.com1.move()
+				p, err = g.com1.Move(g.bd.Copy())
 			} else {
-				err = g.com2.move()
+				p, err = g.com2.Move(g.bd.Copy())
 			}
+			g.bd.Put(g.now, p)
 			if err != nil {
 				g.aiError(err)
 			}

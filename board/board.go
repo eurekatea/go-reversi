@@ -179,6 +179,10 @@ func (bd Board) CountPieces(cl Color) int {
 	return count
 }
 
+func (bd Board) EmptyCount() int {
+	return bd.CountPieces(NONE)
+}
+
 func (bd Board) Winner() Color {
 	bCount := bd.CountPieces(BLACK)
 	wCount := bd.CountPieces(WHITE)
