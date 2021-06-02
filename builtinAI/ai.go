@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	DEPTH  = 12
-	DEPTH2 = 17
+	DEPTH      = 12
+	STEP2DEPTH = 16
 )
 
 var (
@@ -115,10 +115,10 @@ func New(cl board.Color, boardSize int) *AI {
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
-	if ai.emptyCount > 16 {
+	if ai.emptyCount > STEP2DEPTH {
 		ai.depth = DEPTH
 	} else {
-		ai.depth = DEPTH2
+		ai.depth = math.MaxInt32
 	}
 	if ai.boardSize == 8 {
 		ai.depth -= 2
