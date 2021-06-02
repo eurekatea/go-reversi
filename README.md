@@ -19,7 +19,7 @@ https://github.com/lemon37564/othello-board/releases
 
 # 自行編譯
 require go 1.16+  
-先```fyne.io/fyne/v2```
+先```go get fyne.io/fyne/v2```
 ### windows
 ```go build -ldflags="-H windowsgui"```  
 ### linux or macOS

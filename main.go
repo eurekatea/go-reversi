@@ -15,15 +15,26 @@ func main() {
 	ui := a.NewWindow("othello")
 
 	var (
-		count               int = 0
-		size                int = 0
-		card1, card2        *widget.Card
-		sel1, sel2, selSize *widget.Select
-		start               *widget.Button
-		pathes              [2]string
+		count     int = 0
+		boardSize int = 0
+		pathes    [2]string
+
+		blackCard *widget.Card
+		whiteCard *widget.Card
+		all       *widget.Card
+		center    *widget.Card
+
+		selection1 *widget.Select
+		selection2 *widget.Select
+		selection3 *widget.Select
+
+		playButton *widget.Button
+
+		top  *fyne.Container
+		body *fyne.Container
 	)
 
-	sel1 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+	selection1 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
 		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
@@ -35,12 +46,12 @@ func main() {
 		}
 		count++
 		if count == 2 {
-			start.Enable()
+			playButton.Enable()
 		}
 	})
-	card1 = widget.NewCard("            black", "", container.NewCenter(sel1))
+	blackCard = widget.NewCard("           black", "", container.NewCenter(selection1))
 
-	sel2 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
+	selection2 = widget.NewSelect([]string{"human", "external AI"}, func(s string) {
 		if s == "external AI" {
 			dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 				if e == nil && uc != nil {
@@ -52,29 +63,29 @@ func main() {
 		}
 		count++
 		if count == 2 {
-			start.Enable()
+			playButton.Enable()
 		}
 	})
-	card2 = widget.NewCard("           white", "", container.NewCenter(sel2))
+	whiteCard = widget.NewCard("           white", "", container.NewCenter(selection2))
 
-	selSize = widget.NewSelect([]string{"6x6", "8x8"}, func(s string) {
+	selection3 = widget.NewSelect([]string{"6x6", "8x8"}, func(s string) {
 		if s == "8x8" {
-			size = 8
+			boardSize = 8
 		} else {
-			size = 6
+			boardSize = 6
 		}
 	})
-	selSize.SetSelected("6x6")
+	selection3.SetSelected("6x6")
 
-	top := container.NewGridWithColumns(2, card1, card2)
-	center := widget.NewCard("                                size", "", container.NewCenter(selSize))
-	start = widget.NewButton("           play           ", func() {
-		c := game.New(a, ui, pathes, size)
+	top = container.NewGridWithColumns(2, blackCard, whiteCard)
+	center = widget.NewCard("                       board  size", "", container.NewCenter(selection3))
+	playButton = widget.NewButton("           play           ", func() {
+		c := game.New(a, ui, pathes, boardSize)
 		ui.SetContent(c)
 	})
-	start.Disable()
+	playButton.Disable()
 
-	body := container.NewVBox(
+	body = container.NewVBox(
 		container.NewPadded(),
 		container.NewPadded(top),
 		container.NewPadded(center),
@@ -84,12 +95,12 @@ func main() {
 		container.NewPadded(),
 		container.NewPadded(),
 		container.NewPadded(),
-		container.NewCenter(start),
+		container.NewCenter(playButton),
 	)
 
-	title := widget.NewCard("                             othello", "", body)
+	all = widget.NewCard("                             othello", "", body)
 
-	ui.SetContent(title)
+	ui.SetContent(all)
 	ui.Resize(fyne.NewSize(500, 450))
 	ui.SetFixedSize(true)
 	ui.CenterOnScreen()
