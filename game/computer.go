@@ -37,8 +37,7 @@ func (c *com) Move(bd board.Board) (board.Point, error) {
 	p := board.NewPoint(row, col)
 	if !bd.Put(c.color, p) {
 		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
-		r += bd.Visualize()
-		return board.Point{}, c.fatal(r)
+		return board.Point{}, c.fatal(bd, r)
 	}
 	return p, nil
 }
@@ -49,15 +48,15 @@ func (c com) execute(bd board.Board) (string, error) {
 	cmd.Stdin = strings.NewReader(bd.String() + c.id)
 	out, err := cmd.Output()
 	if err != nil {
-		return "", c.fatal(err.Error())
+		return "", c.fatal(bd, err.Error())
 	}
 
 	output := string(out)
 	if len(output) == 0 {
-		return "", c.fatal("unknown output: (no output)")
+		return "", c.fatal(bd, "unknown output: (no output)")
 	}
 	if c.invalid(bd, output) {
-		return "", c.fatal("unknown output: " + output)
+		return "", c.fatal(bd, "unknown output: "+output)
 	}
 
 	return output, nil
@@ -73,7 +72,7 @@ func (c com) invalid(bd board.Board, output string) bool {
 	return first || second
 }
 
-func (c com) fatal(text string) error {
+func (c com) fatal(bd board.Board, text string) error {
 	f, err := os.Create("error.log")
 	if err != nil {
 		return err
@@ -81,11 +80,16 @@ func (c com) fatal(text string) error {
 	defer f.Close()
 
 	text = time.Now().String() + "\n" + text
-	if len(text) > 500 {
-		text = text[:500]
+	if len(text) > 100 {
+		text = text[:100]
 		text += "\n...skipped"
 	}
-	text += "\n"
+	text += "\n\n"
+
+	text += "last state of board:\n"
+	text += bd.Visualize() + "\n\n"
+	text += "last stdin:\n"
+	text += bd.String() + c.id
 
 	_, err = f.Write([]byte(text))
 	if err != nil {

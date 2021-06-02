@@ -19,7 +19,7 @@ func (th Theme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color
 }
 
 func (th Theme) Icon(name fyne.ThemeIconName) fyne.Resource {
-	return theme.DefaultTheme().Icon(name)
+	return theme.DarkTheme().Icon(name)
 }
 
 func (th Theme) Size(name fyne.ThemeSizeName) float32 {
