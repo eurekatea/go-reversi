@@ -87,7 +87,7 @@ func (c com) fatal(bd board.Board, text string) error {
 	text += "\n\n"
 
 	text += "last state of board:\n"
-	text += bd.Visualize() + "\n\n"
+	text += bd.Visualize() + "\n"
 	text += "last stdin:\n"
 	text += bd.String() + c.id
 

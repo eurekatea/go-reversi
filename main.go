@@ -60,7 +60,7 @@ func main() {
 					selection1.ClearSelected()
 				}
 			}, ui)
-			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ""}))
+			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 			d.Show()
 		} else if s == "human" {
 			agents.BlackAgent = game.AgentHuman
@@ -86,7 +86,7 @@ func main() {
 					}
 				}
 			}, ui)
-			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ""}))
+			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 			d.Show()
 		} else if s == "human" {
 			agents.WhiteAgent = game.AgentHuman
