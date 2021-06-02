@@ -36,6 +36,25 @@ func (bd Board) Copy() Board {
 	return nbd
 }
 
+func (bd Board) AssignBoard(bd2 string) {
+	indx := 0
+	for i := 0; i < bd.Size(); i++ {
+		for j := 0; j < bd.Size(); j++ {
+			switch bd2[indx] {
+			case '+':
+				bd.Assign(NONE, i, j)
+			case 'X':
+				bd.Assign(BLACK, i, j)
+			case 'O':
+				bd.Assign(WHITE, i, j)
+			default:
+				panic("err: " + string(bd2[indx]))
+			}
+			indx++
+		}
+	}
+}
+
 func (bd Board) String() (res string) {
 	for i := 0; i < bd.Size(); i++ {
 		for j := 0; j < bd.Size(); j++ {

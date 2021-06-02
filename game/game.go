@@ -23,10 +23,12 @@ const (
 type Agent int
 
 type Agents struct {
-	BlackAgent Agent
-	WhiteAgent Agent
-	BlackPath  string
-	WhitePath  string
+	BlackAgent           Agent
+	WhiteAgent           Agent
+	BlackPath            string
+	WhitePath            string
+	BlackInternalAILevel int
+	WhiteInternalAILevel int
 }
 
 func NewAgents() Agents {
@@ -38,7 +40,7 @@ func NewAgents() Agents {
 	}
 }
 
-func (agents Agents) Selected() bool {
+func (agents Agents) AllSelected() bool {
 	return agents.BlackAgent != AgentNone && agents.WhiteAgent != AgentNone
 }
 
@@ -80,12 +82,12 @@ func New(a fyne.App, window fyne.Window, agents Agents, size int) *fyne.Containe
 	g.over = false
 
 	if agents.BlackAgent == AgentBuiltIn {
-		g.com1 = builtinai.New(board.BLACK, size)
+		g.com1 = builtinai.New(board.BLACK, size, agents.BlackInternalAILevel)
 	} else if agents.BlackAgent == AgentExternal {
 		g.com1 = newCom(board.BLACK, agents.BlackPath)
 	}
 	if agents.WhiteAgent == AgentBuiltIn {
-		g.com2 = builtinai.New(board.WHITE, size)
+		g.com2 = builtinai.New(board.WHITE, size, agents.WhiteInternalAILevel)
 	} else if agents.WhiteAgent == AgentExternal {
 		g.com2 = newCom(board.WHITE, agents.WhitePath)
 	}

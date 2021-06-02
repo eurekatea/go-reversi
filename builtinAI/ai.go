@@ -94,15 +94,18 @@ type AI struct {
 	boardSize    int
 	emptyCount   int
 	depth        int
+	reachedDepth int
 	nodes        int
+	level        int // the smaller the stronger
 }
 
-func New(cl board.Color, boardSize int) *AI {
+func New(cl board.Color, boardSize int, level int) *AI {
 	ai := AI{
 		color:     cl,
 		opponent:  cl.Opponent(),
 		boardSize: boardSize,
 		depth:     DEPTH,
+		level:     level,
 	}
 	if boardSize == 6 {
 		ai.valueNetWork = VALUE6x6
@@ -118,19 +121,17 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	if ai.emptyCount > STEP2DEPTH {
 		ai.depth = DEPTH
 	} else {
-		ai.depth = math.MaxInt32
+		ai.depth = STEP2DEPTH + 1
 	}
-	if ai.boardSize == 8 {
-		ai.depth -= 2
-	}
+	ai.depth -= (ai.level * 3) // level
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
-	fmt.Printf("built-in AI: {nodes: %v}\n", ai.nodes)
+	fmt.Printf("built-in AI: {depth: %v, nodes: %v}\n", ai.reachedDepth, ai.nodes)
 
 	return board.NewPoint(best.x, best.y), nil
 }
 
-func (ai AI) heuristic(bd board.Board, color board.Color) int {
+func (ai *AI) heuristic(bd board.Board, color board.Color) int {
 	if ai.emptyCount > 16 {
 		return ai.evalBoard(bd, color)
 	} else {
@@ -138,7 +139,7 @@ func (ai AI) heuristic(bd board.Board, color board.Color) int {
 	}
 }
 
-func (ai AI) evalBoard(bd board.Board, color board.Color) int {
+func (ai *AI) evalBoard(bd board.Board, color board.Color) int {
 	point := 0
 	opponent := color.Opponent()
 	for i := 0; i < ai.boardSize; i++ {
@@ -153,7 +154,22 @@ func (ai AI) evalBoard(bd board.Board, color board.Color) int {
 	return point
 }
 
-func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
+func (ai *AI) evalBoardPointer(bd board.Board, color board.Color) int {
+	point := 0
+	opponent := color.Opponent()
+	for i := 0; i < ai.boardSize; i++ {
+		for j := 0; j < ai.boardSize; j++ {
+			if bd.AtXY(i, j) == color {
+				point += ai.valueNetWork[i][j]
+			} else if bd.AtXY(i, j) == opponent {
+				point -= ai.valueNetWork[i][j]
+			}
+		}
+	}
+	return point
+}
+
+func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 	all = make(nodes, 0, 16)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
@@ -168,7 +184,7 @@ func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 	return
 }
 
-func (ai AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
+func (ai *AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
 	all = ai.validPos(bd, cl)
 	all.shuffle()
 	all.sort()
@@ -181,6 +197,7 @@ func (ai *AI) alphaBetaHelper(bd board.Board, depth int) node {
 
 func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer bool) node {
 	if depth == 0 {
+		ai.reachedDepth = ai.depth
 		ai.nodes++
 		return newNode(0, 0, ai.heuristic(bd, ai.color))
 	}
@@ -190,6 +207,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		maxValue := math.MinInt32
 		all := ai.sortedValidPos(bd, ai.color)
 		if len(all) == 0 {
+			ai.reachedDepth = ai.depth - depth
 			ai.nodes++
 			return newNode(0, 0, ai.heuristic(bd, ai.color))
 		}
@@ -213,6 +231,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		minValue := math.MaxInt32
 		all := ai.sortedValidPos(bd, ai.opponent)
 		if len(all) == 0 {
+			ai.reachedDepth = ai.depth - depth
 			ai.nodes++
 			return newNode(0, 0, ai.heuristic(bd, ai.color))
 		}

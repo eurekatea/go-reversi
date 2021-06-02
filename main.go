@@ -41,11 +41,42 @@ func main() {
 		selection2 *widget.Select
 		selection3 *widget.Select
 
+		aiLevelSelection1 *widget.Select
+		aiLevelSelection2 *widget.Select
+
 		playButton *widget.Button
 
 		top  *fyne.Container
 		body *fyne.Container
 	)
+
+	aiLevelSelection1 = widget.NewSelect([]string{"newbie", "amature", "professional", "expert"}, func(s string) {
+		switch s {
+		case "newbie":
+			agents.BlackInternalAILevel = 3
+		case "amature":
+			agents.BlackInternalAILevel = 2
+		case "professional":
+			agents.BlackInternalAILevel = 1
+		case "expert":
+			agents.BlackInternalAILevel = 0
+		default:
+		}
+	})
+
+	aiLevelSelection2 = widget.NewSelect([]string{"newbie", "amature", "professional", "expert"}, func(s string) {
+		switch s {
+		case "newbie":
+			agents.WhiteInternalAILevel = 3
+		case "amature":
+			agents.WhiteInternalAILevel = 2
+		case "professional":
+			agents.WhiteInternalAILevel = 1
+		case "expert":
+			agents.WhiteInternalAILevel = 0
+		default:
+		}
+	})
 
 	selection1 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
 		if s == "external AI" {
@@ -53,11 +84,9 @@ func main() {
 				if e == nil && uc != nil {
 					agents.BlackPath = uc.URI().Path()
 					agents.BlackAgent = game.AgentExternal
-					if agents.Selected() {
+					if agents.AllSelected() {
 						playButton.Enable()
 					}
-				} else {
-					selection1.ClearSelected()
 				}
 			}, ui)
 			d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
@@ -66,8 +95,9 @@ func main() {
 			agents.BlackAgent = game.AgentHuman
 		} else {
 			agents.BlackAgent = game.AgentBuiltIn
+			dialog.NewCustom("select AI level", "ok", aiLevelSelection1, ui).Show()
 		}
-		if agents.Selected() {
+		if agents.AllSelected() {
 			playButton.Enable()
 		}
 	})
@@ -79,10 +109,8 @@ func main() {
 				if e == nil && uc != nil {
 					agents.WhitePath = uc.URI().Path()
 					agents.WhiteAgent = game.AgentExternal
-					if agents.Selected() {
+					if agents.AllSelected() {
 						playButton.Enable()
-					} else {
-						selection1.ClearSelected()
 					}
 				}
 			}, ui)
@@ -91,9 +119,10 @@ func main() {
 		} else if s == "human" {
 			agents.WhiteAgent = game.AgentHuman
 		} else {
+			dialog.NewCustom("select AI level", "ok", aiLevelSelection2, ui).Show()
 			agents.WhiteAgent = game.AgentBuiltIn
 		}
-		if agents.Selected() {
+		if agents.AllSelected() {
 			playButton.Enable()
 		}
 	})
