@@ -45,7 +45,7 @@ func (c *com) Move(bd board.Board) (board.Point, error) {
 
 func (c com) execute(bd board.Board) (string, error) {
 	cmd := exec.Command(c.program, "")
-	modifyCmd(cmd)
+	cmd = modifyCmd(cmd)
 	cmd.Stdin = strings.NewReader(bd.String() + c.id)
 	out, err := cmd.Output()
 	if err != nil {

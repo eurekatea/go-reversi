@@ -7,6 +7,7 @@ import (
 	"syscall"
 )
 
-func modifyCmd(cmd *exec.Cmd) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: false}
+func modifyCmd(cmd *exec.Cmd) *exec.Cmd {
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	return cmd
 }
