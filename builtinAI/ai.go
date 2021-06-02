@@ -3,6 +3,7 @@ package builtinai
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"othello/board"
 	"sort"
 )
@@ -16,27 +17,23 @@ var (
 	DIRECTION = [8][2]int{{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}}
 
 	VALUE6x6 = [][]int{
-		{0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 320, 20, 80, 80, 20, 320, 0},
-		{0, 20, 0, 80, 80, 0, 20, 0},
-		{0, 80, 80, 80, 80, 80, 80, 0},
-		{0, 80, 80, 80, 80, 80, 80, 0},
-		{0, 20, 0, 80, 80, 0, 20, 0},
-		{0, 320, 20, 80, 80, 20, 320, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0},
+		{320, 20, 80, 80, 20, 320},
+		{20, 0, 80, 80, 0, 20},
+		{80, 80, 80, 80, 80, 80},
+		{80, 80, 80, 80, 80, 80},
+		{20, 0, 80, 80, 0, 20},
+		{320, 20, 80, 80, 20, 320},
 	}
 
 	VALUE8x8 = [][]int{
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 101, -43, 38, 7, 0, 42, -20, 102, 0},
-		{0, -27, -74, -16, -14, -13, -25, -65, -39, 0},
-		{0, 56, -30, 12, 5, -4, 7, -15, 48, 0},
-		{0, 1, -8, 1, -1, -4, -2, -12, 3, 0},
-		{0, -10, -8, 1, -1, -3, 2, -4, -20, 0},
-		{0, 59, -23, 6, 1, 4, 6, -19, 35, 0},
-		{0, -6, -55, -18, -8, -15, -31, -82, -58, 0},
-		{0, 96, -42, 67, -2, -3, 81, -51, 101, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		{800, -286, 426, -24, -24, 426, -286, 800},
+		{-286, -552, -177, -82, -82, -177, -552, -286},
+		{426, -177, 62, 8, 8, 62, -177, 426},
+		{-24, -82, 8, -18, -18, 8, -82, -24},
+		{-24, -82, 8, -18, -18, 8, -82, -24},
+		{426, -177, 62, 8, 8, 62, -177, 426},
+		{-286, -552, -177, -82, -82, -177, -552, -286},
+		{800, -286, 426, -24, -24, 426, -286, 800},
 	}
 )
 
@@ -77,6 +74,17 @@ func (ns nodes) Less(i, j int) bool {
 
 func (ns nodes) Swap(i, j int) {
 	ns[i], ns[j] = ns[j], ns[i]
+}
+
+// provide randomness
+func (ns nodes) shuffle() {
+	rand.Shuffle(len(ns), func(i, j int) {
+		ns[i], ns[j] = ns[j], ns[i]
+	})
+}
+
+func (ns nodes) sort() {
+	sort.Sort(ns)
 }
 
 type AI struct {
@@ -162,7 +170,8 @@ func (ai AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 
 func (ai AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
 	all = ai.validPos(bd, cl)
-	sort.Sort(all)
+	all.shuffle()
+	all.sort()
 	return
 }
 
@@ -171,8 +180,8 @@ func (ai *AI) alphaBetaHelper(bd board.Board, depth int) node {
 }
 
 func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer bool) node {
-	ai.nodes++
 	if depth == 0 {
+		ai.nodes++
 		return newNode(0, 0, ai.heuristic(bd, ai.color))
 	}
 
@@ -181,6 +190,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		maxValue := math.MinInt32
 		all := ai.sortedValidPos(bd, ai.color)
 		if len(all) == 0 {
+			ai.nodes++
 			return newNode(0, 0, ai.heuristic(bd, ai.color))
 		}
 		for _, n := range all {
@@ -203,6 +213,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		minValue := math.MaxInt32
 		all := ai.sortedValidPos(bd, ai.opponent)
 		if len(all) == 0 {
+			ai.nodes++
 			return newNode(0, 0, ai.heuristic(bd, ai.color))
 		}
 		for _, n := range all {
