@@ -42,11 +42,11 @@ func (bd Board) AssignBoard(bd2 string) {
 		for j := 0; j < bd.Size(); j++ {
 			switch bd2[indx] {
 			case '+':
-				bd.Assign(NONE, i, j)
+				bd.Assign(NONE, j, i)
 			case 'X':
-				bd.Assign(BLACK, i, j)
+				bd.Assign(BLACK, j, i)
 			case 'O':
-				bd.Assign(WHITE, i, j)
+				bd.Assign(WHITE, j, i)
 			default:
 				panic("err: " + string(bd2[indx]))
 			}
@@ -130,14 +130,14 @@ func (bd Board) IsValidPoint(cl Color, p Point) bool {
 		return false
 	}
 	for i := 0; i < 8; i++ {
-		if bd.countFlipPieces(cl, p, direction[i]) > 0 {
+		if bd.CountFlipPieces(cl, p, direction[i]) > 0 {
 			return true
 		}
 	}
 	return false
 }
 
-func (bd Board) countFlipPieces(cl Color, p Point, dir [2]int) int {
+func (bd Board) CountFlipPieces(cl Color, p Point, dir [2]int) int {
 	count := 0
 	x, y := p.X, p.Y
 	opponent := cl.Opponent()
@@ -164,7 +164,7 @@ func (bd Board) countFlipPieces(cl Color, p Point, dir [2]int) int {
 
 func (bd Board) flip(cl Color, p Point) {
 	for i := 0; i < 8; i++ {
-		if count := bd.countFlipPieces(cl, p, direction[i]); count > 0 {
+		if count := bd.CountFlipPieces(cl, p, direction[i]); count > 0 {
 			for j := 1; j <= count; j++ {
 				bd.Assign(cl, p.X+direction[i][0]*j, p.Y+direction[i][1]*j)
 			}

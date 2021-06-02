@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
+	"github.com/pkg/profile"
 )
 
 const (
@@ -22,7 +23,7 @@ func setLanguage(lang int, allWidgets []fyne.CanvasObject) {
 }
 
 func main() {
-	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
+	defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
 	a := app.New()
 	a.Settings().SetTheme(&othellotheme.Theme{})

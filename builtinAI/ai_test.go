@@ -11,27 +11,63 @@ func TestPartialValueChange(t *testing.T) {
 	bd := board.NewBoard(6)
 	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
+	p := board.NewPoint(5, 2)
+
 	currentV := ai.evalBoard(bd, board.BLACK)
 	c := bd.Copy()
-	c.Put(board.BLACK, board.NewPoint(3, 1))
+	if !c.Put(board.BLACK, p) {
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
 	newV := ai.evalBoard(c, board.BLACK)
 
-	aiV := ai.evalAfterPut(bd, currentV, board.NewPoint(3, 1), board.BLACK)
+	aiV := ai.evalAfterPut(bd, currentV, p, board.BLACK)
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
 	}
 
 	ai = New(board.WHITE, 6, 0)
 	bd = board.NewBoard(6)
 	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
-	t.Error(bd.Visualize())
+
+	p = board.NewPoint(1, 4)
+
 	currentV = ai.evalBoard(bd, board.WHITE)
 	c = bd.Copy()
-	c.Put(board.WHITE, board.NewPoint(4, 2))
+	if !c.Put(board.WHITE, p) {
+		t.Error(c.Visualize())
+		c.Assign(board.WHITE, p.X, p.Y)
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
 	newV = ai.evalBoard(c, board.WHITE)
 
-	aiV = ai.evalAfterPut(bd, currentV, board.NewPoint(4, 2), board.WHITE)
+	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
+	}
+
+	ai = New(board.WHITE, 6, 0)
+	bd = board.NewBoard(6)
+	bd.AssignBoard("++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+")
+
+	p = board.NewPoint(1, 4)
+
+	currentV = ai.evalBoard(bd, board.WHITE)
+	c = bd.Copy()
+	if !c.Put(board.WHITE, p) {
+		t.Error(c.Visualize())
+		c.Assign(board.WHITE, p.X, p.Y)
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
+	newV = ai.evalBoard(c, board.WHITE)
+
+	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
@@ -39,60 +75,77 @@ func TestPartialValueChange(t *testing.T) {
 	}
 }
 
-func (ai AI) evalBoardNoPointer(bd board.Board, color board.Color) int {
-	point := 0
-	opponent := color.Opponent()
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
-			if bd.AtXY(i, j) == color {
-				point += ai.valueNetWork[i][j]
-			} else if bd.AtXY(i, j) == opponent {
-				point -= ai.valueNetWork[i][j]
-			}
-		}
-	}
-	return point
-}
-
-func BenchmarkEval(b *testing.B) {
+func TestPartialCountChange(t *testing.T) {
 	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++OX+++++OX+++OXOX+++OXO++++O++")
-	// fmt.Println(bd.Visualize())
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
-	for i := 0; i < b.N; i++ {
-		ai.evalBoardNoPointer(bd, ai.color)
+	p := board.NewPoint(5, 2)
+
+	currentV := bd.CountPieces(board.BLACK)
+	c := bd.Copy()
+	if !c.Put(board.BLACK, p) {
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
+	newV := c.CountPieces(board.BLACK)
+
+	aiV := ai.countAfterPut(bd, currentV, p, board.BLACK)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
+	}
+
+	ai = New(board.WHITE, 6, 0)
+	bd = board.NewBoard(6)
+	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
+
+	p = board.NewPoint(1, 4)
+
+	currentV = bd.CountPieces(board.WHITE)
+	c = bd.Copy()
+	if !c.Put(board.WHITE, p) {
+		t.Error(c.Visualize())
+		c.Assign(board.WHITE, p.X, p.Y)
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
+	newV = c.CountPieces(board.WHITE)
+
+	aiV = ai.countAfterPut(bd, currentV, p, board.WHITE)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
+	}
+
+	ai = New(board.WHITE, 6, 0)
+	bd = board.NewBoard(6)
+	bd.AssignBoard("++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+")
+
+	p = board.NewPoint(1, 4)
+
+	currentV = bd.CountPieces(board.WHITE)
+	c = bd.Copy()
+	if !c.Put(board.WHITE, p) {
+		t.Error(c.Visualize())
+		c.Assign(board.WHITE, p.X, p.Y)
+		t.Error(c.Visualize())
+		t.Fatal("cannot put")
+	}
+	newV = c.CountPieces(board.WHITE)
+
+	aiV = ai.countAfterPut(bd, currentV, p, board.WHITE)
+
+	if newV != aiV {
+		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
+		t.Error(c.Visualize())
 	}
 }
 
-func (ai *AI) evalBoardPointer(bd board.Board, color board.Color) int {
-	point := 0
-	opponent := color.Opponent()
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
-			if bd.AtXY(i, j) == color {
-				point += ai.valueNetWork[i][j]
-			} else if bd.AtXY(i, j) == opponent {
-				point -= ai.valueNetWork[i][j]
-			}
-		}
-	}
-	return point
-}
-
-func BenchmarkEvalPointer(b *testing.B) {
-	ai := New(board.BLACK, 6, 0)
-
-	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++OX+++++OX+++OXOX+++OXO++++O++")
-
-	for i := 0; i < b.N; i++ {
-		ai.evalBoardPointer(bd, ai.color)
-	}
-}
-
-func (ai AI) validPosNotPointer(bd board.Board, cl board.Color) (all nodes) {
+func (ai *AI) oldvalidPos(bd board.Board, cl board.Color) (all nodes) {
 	all = make(nodes, 0, 16)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
@@ -107,39 +160,24 @@ func (ai AI) validPosNotPointer(bd board.Board, cl board.Color) (all nodes) {
 	return
 }
 
-func BenchmarkValid(b *testing.B) {
+func BenchmarkOrig(b *testing.B) {
 	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++OX+++++OX+++OXOX+++OXO++++O++")
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
 	for i := 0; i < b.N; i++ {
-		ai.validPosNotPointer(bd, ai.color)
+		ai.oldvalidPos(bd, ai.color)
 	}
 }
 
-func (ai *AI) validPosPointer(bd board.Board, cl board.Color) (all nodes) {
-	all = make(nodes, 0, 16)
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
-			p := board.NewPoint(i, j)
-			if bd.IsValidPoint(cl, p) {
-				temp := bd.Copy()
-				temp.Put(cl, p)
-				all = append(all, newNode(i, j, ai.heuristic(temp, cl)))
-			}
-		}
-	}
-	return
-}
-
-func BenchmarkValidPointer(b *testing.B) {
+func BenchmarkNewone(b *testing.B) {
 	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++OX+++++OX+++OXOX+++OXO++++O++")
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
 	for i := 0; i < b.N; i++ {
-		ai.validPosPointer(bd, ai.color)
+		ai.validPos(bd, ai.color)
 	}
 }

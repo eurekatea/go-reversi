@@ -126,7 +126,6 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 		ai.depth = DEPTH - (ai.level * 3) // level (step 1)
 	} else {
 		ai.depth = step2Max // step 2
-		fmt.Println("step 2 max dpeth:", ai.depth)
 	}
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
@@ -140,6 +139,14 @@ func (ai *AI) heuristic(bd board.Board, color board.Color) int {
 		return ai.evalBoard(bd, color)
 	} else { // step 2
 		return bd.CountPieces(ai.color) - bd.CountPieces(ai.opponent)
+	}
+}
+
+func (ai *AI) heuristicAfterPut(bd board.Board, currentValue int, p board.Point, color board.Color) int {
+	if ai.emptyCount > ai.depth { // step 1
+		return ai.evalAfterPut(bd, currentValue, p, color)
+	} else { // step 2
+		return ai.countAfterPut(bd, currentValue, p, ai.color)
 	}
 }
 
@@ -192,19 +199,23 @@ func (ai *AI) evalAfterPut(bd board.Board, currentValue int, p board.Point, cl b
 	return currentValue
 }
 
+// don't need to copy board
 func (ai *AI) countAfterPut(bd board.Board, currentCount int, p board.Point, cl board.Color) int {
-	return 0
+	for i := 0; i < 8; i++ {
+		currentCount += bd.CountFlipPieces(cl, p, direction[i])
+	}
+	return currentCount + 1 // include p itself
 }
 
 func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 	all = make(nodes, 0, 16)
+	nowValue := ai.heuristic(bd, cl)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
 			p := board.NewPoint(i, j)
 			if bd.IsValidPoint(cl, p) {
-				temp := bd.Copy()
-				temp.Put(cl, p)
-				all = append(all, newNode(i, j, ai.heuristic(temp, cl)))
+				newValue := ai.heuristicAfterPut(bd, nowValue, p, cl)
+				all = append(all, newNode(i, j, newValue))
 			}
 		}
 	}
