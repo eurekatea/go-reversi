@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 package game
 
@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"othello/game/board"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -45,9 +46,11 @@ func (c *com) move() error {
 }
 
 func (c com) execute() string {
-	cmd := exec.Command(c.program, "")
-	cmd.Stdin = strings.NewReader(c.bd.String() + c.id)
-	out, err := cmd.Output()
+	cmdPath := "C:\\Windows\\system32\\cmd.exe"
+	cmdInstance := exec.Command(cmdPath, c.program)
+	cmdInstance.SysProcAttr = &syscall.SysProcAttr{Foreground: false}
+	cmdInstance.Stdin = strings.NewReader(c.bd.String() + c.id)
+	out, err := cmdInstance.Output()
 	if err != nil {
 		c.fatal(err.Error())
 	}

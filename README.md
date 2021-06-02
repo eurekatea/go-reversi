@@ -1,5 +1,5 @@
 # othello-board
-海大1091 人工智慧 黑白棋前端界面
+othello(reversi) arena for humans and AIs
 
 # 遊戲截圖
 ![](https://user-images.githubusercontent.com/65079334/120412652-7ec97580-c389-11eb-99f6-c338a38208c0.png)
