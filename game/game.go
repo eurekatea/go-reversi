@@ -71,8 +71,8 @@ func New(a fyne.App, window fyne.Window, comPath [2]string, size int) *fyne.Cont
 		}, window).Show()
 	})
 
-	// for 6x6, 8x8 will resize automatically
-	window.Resize(fyne.NewSize(315.8, 356.6))
+	// resize to minimum size
+	window.Resize(fyne.NewSize(1, 1))
 
 	return container.NewVBox(grid, restart)
 }

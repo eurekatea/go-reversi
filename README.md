@@ -2,8 +2,8 @@
 海大1091 人工智慧 黑白棋前端界面
 
 # 遊戲截圖
-![](https://raw.githubusercontent.com/lemon37564/othello-board/main/screenshot/screenshot1.webp)
-![](https://raw.githubusercontent.com/lemon37564/othello-board/main/screenshot/screenshot2.webp)
+![](https://user-images.githubusercontent.com/65079334/120412652-7ec97580-c389-11eb-99f6-c338a38208c0.png)
+![](https://user-images.githubusercontent.com/65079334/120412656-80933900-c389-11eb-9735-70881212c586.png)
 
 # 規則
 規則與一般黑白棋相同，版面大小為6x6，若有一方無處可下會自動PASS，換另一方下  
