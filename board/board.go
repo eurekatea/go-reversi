@@ -123,6 +123,11 @@ func (bd Board) Put(cl Color, p Point) bool {
 	return true
 }
 
+func (bd Board) PutWithoutCheck(cl Color, p Point) {
+	bd.Assign(cl, p.X, p.Y)
+	bd.flip(cl, p)
+}
+
 var direction = [8][2]int{{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
 
 func (bd Board) IsValidPoint(cl Color, p Point) bool {

@@ -3,7 +3,7 @@ package game
 import (
 	"fmt"
 	"othello/board"
-	builtinai "othello/builtinAI"
+	"othello/builtinai"
 	"time"
 
 	"fyne.io/fyne/v2"

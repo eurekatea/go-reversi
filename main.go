@@ -10,11 +10,10 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
-	"github.com/pkg/profile"
 )
 
 func main() {
-	defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
+	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
 	a := app.New()
 	a.Settings().SetTheme(&othellotheme.Theme{})

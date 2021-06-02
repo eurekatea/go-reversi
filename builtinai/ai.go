@@ -3,25 +3,26 @@ package builtinai
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"othello/board"
 	"sort"
 )
 
 const (
 	DEPTH      = 12
-	STEP2DEPTH = 16
+	STEP2DEPTH = 18
 )
 
 var (
 	DIRECTION = [8][2]int{{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}}
 
 	VALUE6x6 = [][]int{
-		{320, 20, 80, 80, 20, 320},
-		{20, 0, 80, 80, 0, 20},
-		{80, 80, 80, 80, 80, 80},
-		{80, 80, 80, 80, 80, 80},
-		{20, 0, 80, 80, 0, 20},
-		{320, 20, 80, 80, 20, 320},
+		{100, -36, 53, 53, -36, 100},
+		{-36, -69, -10, -10, -69, -36},
+		{53, -10, -2, -2, -10, 53},
+		{53, -10, -2, -2, -10, 53},
+		{-36, -69, -10, -10, -69, -36},
+		{100, -36, 53, 53, -36, 100},
 	}
 
 	VALUE8x8 = [][]int{
@@ -79,9 +80,9 @@ func (ns nodes) Swap(i, j int) {
 
 // provide randomness
 func (ns nodes) shuffle() {
-	// rand.Shuffle(len(ns), func(i, j int) {
-	// 	ns[i], ns[j] = ns[j], ns[i]
-	// })
+	rand.Shuffle(len(ns), func(i, j int) {
+		ns[i], ns[j] = ns[j], ns[i]
+	})
 }
 
 func (ns nodes) sort() {
@@ -120,7 +121,7 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
 
-	step2Max := (STEP2DEPTH - (ai.level * 4)) // level
+	step2Max := (STEP2DEPTH - (ai.level * 5)) // level
 	if ai.emptyCount > step2Max {
 		ai.depth = DEPTH - (ai.level * 3) // level (step 1)
 	} else {
@@ -251,7 +252,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		}
 		for _, n := range all {
 			temp := bd.Copy()
-			temp.Put(ai.color, board.NewPoint(n.x, n.y))
+			temp.PutWithoutCheck(ai.color, board.NewPoint(n.x, n.y))
 			eval := ai.alphaBeta(temp, depth-1, alpha, beta, false).value
 
 			if eval > maxValue {
@@ -275,7 +276,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		}
 		for _, n := range all {
 			temp := bd.Copy()
-			temp.Put(ai.opponent, board.NewPoint(n.x, n.y))
+			temp.PutWithoutCheck(ai.opponent, board.NewPoint(n.x, n.y))
 			eval := ai.alphaBeta(temp, depth-1, alpha, beta, true).value
 
 			if eval < minValue {
