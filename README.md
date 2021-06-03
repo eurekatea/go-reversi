@@ -2,8 +2,8 @@
 othello(reversi) arena for humans and AIs
 
 # 遊戲截圖
-![](https://user-images.githubusercontent.com/65079334/120450523-1bf4d000-c3c3-11eb-8680-d83991d9081c.png)
-![](https://user-images.githubusercontent.com/65079334/120412656-80933900-c389-11eb-9735-70881212c586.png)
+![](https://user-images.githubusercontent.com/65079334/120668578-2d240680-c4c1-11eb-957f-25caebe218ec.png)
+![](https://user-images.githubusercontent.com/65079334/120668607-3319e780-c4c1-11eb-8096-c23c2e3a05dc.png)
 
 # 規則
 規則與一般黑白棋相同，版面大小為6x6，若有一方無處可下會自動PASS，換另一方下  

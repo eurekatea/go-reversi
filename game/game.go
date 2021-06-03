@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -18,6 +20,14 @@ const (
 	AgentHuman
 	AgentBuiltIn
 	AgentExternal
+
+	counterTextSize = 24
+)
+
+var (
+	nullPoint  = board.NewPoint(-1, -1)
+	winSize6x6 = fyne.NewSize(316, 426)
+	winSize8x8 = fyne.NewSize(420, 530)
 )
 
 type Agent int
@@ -49,16 +59,17 @@ type computer interface {
 }
 
 type game struct {
-	window fyne.Window
-	bd     board.Board
-	units  [][]*unit
-	com1   computer
-	com2   computer
-	now    board.Color
-	over   bool
+	window  fyne.Window
+	bd      board.Board
+	units   [][]*unit
+	counter *canvas.Text
+	com1    computer
+	com2    computer
+	now     board.Color
+	over    bool
 }
 
-func New(a fyne.App, window fyne.Window, agents Agents, size int) *fyne.Container {
+func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, size int) *fyne.Container {
 	g := &game{}
 	bd := board.NewBoard(size)
 
@@ -96,21 +107,49 @@ func New(a fyne.App, window fyne.Window, agents Agents, size int) *fyne.Containe
 		go g.round()
 	}
 
-	g.update(board.NewPoint(-1, -1))
+	g.counter = canvas.NewText("", theme.ForegroundColor())
+	g.counter.TextSize = counterTextSize
+	g.counter.Alignment = fyne.TextAlignCenter
 
-	restart := widget.NewButton("restart", func() {
-		dialog.NewConfirm("confirm", "restart?", func(b bool) {
-			if b {
-				g.over = true
-				window.SetContent(New(a, window, agents, size))
-			}
-		}, window).Show()
-	})
+	g.update(nullPoint)
+
+	restart := widget.NewButtonWithIcon(
+		"restart",
+		theme.MediaReplayIcon(),
+		func() {
+			dialog.NewConfirm("confirm", "restart?", func(b bool) {
+				if b {
+					g.over = true
+					newContent := New(a, window, menu, agents, size)
+					window.SetContent(newContent)
+				}
+			}, window).Show()
+		},
+	)
+
+	mainMenu := widget.NewButtonWithIcon(
+		"main menu",
+		theme.HomeIcon(),
+		func() {
+			dialog.NewConfirm("confirm", "return to menu?", func(b bool) {
+				if b {
+					g.over = true
+					menu.Show()
+					window.SetContent(menu)
+					window.Resize(fyne.NewSize(500, 450))
+				}
+			}, window).Show()
+		},
+	)
 
 	// resize to minimum size
-	window.Resize(fyne.NewSize(1, 1))
+	if size == 6 {
+		window.Resize(winSize6x6)
+	} else {
+		window.Resize(winSize8x8)
+	}
 
-	return container.NewVBox(grid, restart)
+	return container.NewVBox(g.counter, grid, restart, mainMenu)
 }
 
 func (g *game) isBot(cl board.Color) bool {
@@ -155,6 +194,10 @@ func (g *game) update(current board.Point) {
 	if g.over = g.bd.IsOver(); g.over {
 		g.gameOver()
 	}
+	blacks := g.bd.CountPieces(board.BLACK)
+	whites := g.bd.CountPieces(board.WHITE)
+	g.counter.Text = fmt.Sprintf("black: %2d      white: %2d", blacks, whites)
+	g.counter.Refresh()
 }
 
 func (g *game) gameOver() {
@@ -165,9 +208,6 @@ func (g *game) gameOver() {
 	} else {
 		text = winner.String() + " won"
 	}
-	text += "\n"
-	text += fmt.Sprintf("black pieces: %d\n", g.bd.CountPieces(board.BLACK))
-	text += fmt.Sprintf("white pieces: %d\n", g.bd.CountPieces(board.WHITE))
 	d := dialog.NewInformation("Game Over", text, g.window)
 	d.Resize(fyne.NewSize(250, 0))
 	d.Show()
