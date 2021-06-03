@@ -16,6 +16,15 @@ const (
 var (
 	DIRECTION = [8][2]int{{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}}
 
+	VALUE6x6WEAKER = [][]int{
+		{320, 20, 80, 80, 20, 320},
+		{20, 0, 80, 80, 0, 20},
+		{80, 80, 80, 80, 80, 80},
+		{80, 80, 80, 80, 80, 80},
+		{20, 0, 80, 80, 0, 20},
+		{320, 20, 80, 80, 20, 320},
+	}
+
 	VALUE6x6 = [][]int{
 		{100, -36, 53, 53, -36, 100},
 		{-36, -69, -10, -10, -69, -36},
@@ -71,7 +80,7 @@ func (ns nodes) Len() int {
 }
 
 func (ns nodes) Less(i, j int) bool {
-	return ns[i].value > ns[j].value
+	return ns[i].value > ns[j].value // descending order
 }
 
 func (ns nodes) Swap(i, j int) {
@@ -94,11 +103,20 @@ type AI struct {
 	opponent     board.Color
 	valueNetWork [][]int
 	boardSize    int
-	emptyCount   int
-	depth        int
+
+	// empty point of board
+	emptyCount int
+
+	// currently limit depth
+	depth int
+
+	// maximum reached depth
 	reachedDepth int
-	nodes        int
-	level        int // the smaller the stronger
+	// traversed nodes count
+	nodes int
+
+	// the larger the stronger, level is between 0~4
+	level int
 }
 
 func New(cl board.Color, boardSize int, level int) *AI {
@@ -110,7 +128,11 @@ func New(cl board.Color, boardSize int, level int) *AI {
 		level:     level,
 	}
 	if boardSize == 6 {
-		ai.valueNetWork = VALUE6x6
+		if ai.level < 3 {
+			ai.valueNetWork = VALUE6x6WEAKER
+		} else {
+			ai.valueNetWork = VALUE6x6
+		}
 	} else {
 		ai.valueNetWork = VALUE8x8
 	}
@@ -121,20 +143,26 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.nodes = 0
 	ai.emptyCount = bd.EmptyCount()
 
-	step2Max := (STEP2DEPTH - (ai.level * 5)) // level
-	if ai.emptyCount > step2Max {
-		ai.depth = DEPTH - (ai.level * 3) // level (step 1)
-	} else {
-		ai.depth = step2Max // step 2
-	}
-	if ai.boardSize == 8 {
-		ai.depth -= 3
-	}
+	ai.setDepthByLevel()
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
 	fmt.Printf("built-in AI: {depth: %v, nodes: %v}\n", ai.reachedDepth, ai.nodes)
 
 	return board.NewPoint(best.x, best.y), nil
+}
+
+func (ai *AI) setDepthByLevel() {
+	offset := ai.level - 4 // -4~0
+
+	step2Max := STEP2DEPTH + (offset * 5)
+	if ai.emptyCount > step2Max {
+		ai.depth = DEPTH + (offset * 3) // step 1
+	} else {
+		ai.depth = step2Max // step 2
+	}
+	if ai.boardSize == 8 { // 8x8 need to reduce depth
+		ai.depth -= 3
+	}
 }
 
 func (ai *AI) heuristic(bd board.Board, color board.Color) int {
@@ -217,8 +245,8 @@ func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 		for j := 0; j < ai.boardSize; j++ {
 			p := board.NewPoint(i, j)
 			if bd.IsValidPoint(cl, p) {
-				newValue := ai.valueNetWork[i][j]
-				// newValue := ai.heuristicAfterPut(bd, nowValue, p, cl)
+				newValue := ai.valueNetWork[i][j] // better one
+				// newValue := ai.heuristicAfterPut(bd, nowValue, p, cl) // old one, performed not good as this one
 				all = append(all, newNode(i, j, newValue))
 			}
 		}

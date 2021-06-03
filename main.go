@@ -42,32 +42,12 @@ func main() {
 		body *fyne.Container
 	)
 
-	aiLevelSelection1 = widget.NewSelect([]string{"newbie", "amature", "professional", "expert"}, func(s string) {
-		switch s {
-		case "newbie":
-			agents.BlackInternalAILevel = 3
-		case "amature":
-			agents.BlackInternalAILevel = 2
-		case "professional":
-			agents.BlackInternalAILevel = 1
-		case "expert":
-			agents.BlackInternalAILevel = 0
-		default:
-		}
+	aiLevelSelection1 = widget.NewSelect([]string{"beginner", "amateur", "professional", "expert", "master"}, func(s string) {
+		agents.BlackInternalAILevel = aiLevelSelection1.SelectedIndex()
 	})
 
-	aiLevelSelection2 = widget.NewSelect([]string{"newbie", "amature", "professional", "expert"}, func(s string) {
-		switch s {
-		case "newbie":
-			agents.WhiteInternalAILevel = 3
-		case "amature":
-			agents.WhiteInternalAILevel = 2
-		case "professional":
-			agents.WhiteInternalAILevel = 1
-		case "expert":
-			agents.WhiteInternalAILevel = 0
-		default:
-		}
+	aiLevelSelection2 = widget.NewSelect([]string{"beginner", "amateur", "professional", "expert", "master"}, func(s string) {
+		agents.WhiteInternalAILevel = aiLevelSelection2.SelectedIndex()
 	})
 
 	selection1 = widget.NewSelect([]string{"human", "built-in AI", "external AI"}, func(s string) {
