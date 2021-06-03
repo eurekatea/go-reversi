@@ -85,7 +85,7 @@ func newNameText(agents Parameter) *fyne.Container {
 	} else {
 		path := strings.Split(agents.BlackPath, "/")
 		if len(path) != 0 {
-			name = path[len(path)-1]
+			name = "AI: " + path[len(path)-1]
 			if len(name) > maxNameLen {
 				name = name[:maxNameLen] + "..."
 			}
@@ -102,7 +102,7 @@ func newNameText(agents Parameter) *fyne.Container {
 	} else {
 		path := strings.Split(agents.WhitePath, "/")
 		if len(path) != 0 {
-			name = path[len(path)-1]
+			name = "AI: " + path[len(path)-1]
 			if len(name) > maxNameLen {
 				name = name[:maxNameLen] + "..."
 			}
