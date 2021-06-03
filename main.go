@@ -1,6 +1,7 @@
 package main
 
 import (
+	"othello/board"
 	"othello/game"
 	"othello/othellotheme"
 
@@ -34,13 +35,14 @@ func main() {
 	ui.SetIcon(game.WindowIcon)
 
 	var (
-		boardSize int         = 0
-		agents    game.Agents = game.NewAgents()
+		boardSize int            = 0
+		params    game.Parameter = game.NewAgents()
 
 		blackCard *widget.Card
 		whiteCard *widget.Card
 		all       *widget.Card
 		center    *widget.Card
+		goesFirst *widget.Card
 
 		selection1 *widget.Select
 		selection2 *widget.Select
@@ -59,7 +61,7 @@ func main() {
 		[]string{"beginner", "amateur", "professional", "expert", "master"},
 
 		func(s string) {
-			agents.BlackInternalAILevel = aiLevelSelection1.SelectedIndex()
+			params.BlackInternalAILevel = aiLevelSelection1.SelectedIndex()
 		},
 	)
 
@@ -67,7 +69,7 @@ func main() {
 		[]string{"beginner", "amateur", "professional", "expert", "master"},
 
 		func(s string) {
-			agents.WhiteInternalAILevel = aiLevelSelection2.SelectedIndex()
+			params.WhiteInternalAILevel = aiLevelSelection2.SelectedIndex()
 		},
 	)
 
@@ -78,9 +80,9 @@ func main() {
 			if s == "external AI" {
 				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 					if e == nil && uc != nil {
-						agents.BlackPath = uc.URI().Path()
-						agents.BlackAgent = game.AgentExternal
-						if agents.AllSelected() {
+						params.BlackPath = uc.URI().Path()
+						params.BlackAgent = game.AgentExternal
+						if params.AllSelected() {
 							playButton.Enable()
 						}
 					}
@@ -88,14 +90,14 @@ func main() {
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 				d.Show()
 			} else if s == "human" {
-				agents.BlackAgent = game.AgentHuman
+				params.BlackAgent = game.AgentHuman
 			} else {
-				agents.BlackAgent = game.AgentBuiltIn
+				params.BlackAgent = game.AgentBuiltIn
 				d := dialog.NewCustom("select AI level", "  ok  ", aiLevelSelection1, ui)
 				d.Resize(selectDialogSize)
 				d.Show()
 			}
-			if agents.AllSelected() {
+			if params.AllSelected() {
 				playButton.Enable()
 			}
 		},
@@ -113,9 +115,9 @@ func main() {
 			if s == "external AI" {
 				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
 					if e == nil && uc != nil {
-						agents.WhitePath = uc.URI().Path()
-						agents.WhiteAgent = game.AgentExternal
-						if agents.AllSelected() {
+						params.WhitePath = uc.URI().Path()
+						params.WhiteAgent = game.AgentExternal
+						if params.AllSelected() {
 							playButton.Enable()
 						}
 					}
@@ -123,14 +125,14 @@ func main() {
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 				d.Show()
 			} else if s == "human" {
-				agents.WhiteAgent = game.AgentHuman
+				params.WhiteAgent = game.AgentHuman
 			} else {
-				agents.WhiteAgent = game.AgentBuiltIn
+				params.WhiteAgent = game.AgentBuiltIn
 				d := dialog.NewCustom("select AI level", "  ok  ", aiLevelSelection2, ui)
 				d.Resize(selectDialogSize)
 				d.Show()
 			}
-			if agents.AllSelected() {
+			if params.AllSelected() {
 				playButton.Enable()
 			}
 		},
@@ -161,11 +163,29 @@ func main() {
 	subtitle3.Alignment = fyne.TextAlignCenter
 	center = widget.NewCard("", "", container.NewVBox(subtitle3, container.NewCenter(selection3)))
 
+	cont := widget.NewRadioGroup(
+		[]string{"black first", "white first"},
+		func(s string) {
+			if s == "black first" {
+				params.GoesFirst = board.BLACK
+			} else {
+				params.GoesFirst = board.WHITE
+			}
+		},
+	)
+	cont.SetSelected("black first")
+	cont.Required = true
+	goesFirst = widget.NewCard(
+		"",
+		"",
+		container.NewCenter(cont),
+	)
+
 	playButton = widget.NewButtonWithIcon(
 		"start play",
 		theme.MediaPlayIcon(),
 		func() {
-			c := game.New(a, ui, menu, agents, boardSize)
+			c := game.New(a, ui, menu, params, boardSize)
 			menu.Hide()
 			ui.SetContent(c)
 		},
@@ -183,10 +203,8 @@ func main() {
 			title,
 			container.NewPadded(),
 			container.NewMax(top),
-			container.NewPadded(),
 			container.NewMax(center),
-			container.NewPadded(),
-			container.NewPadded(),
+			container.NewPadded(goesFirst),
 			container.NewPadded(),
 			container.NewPadded(),
 			container.NewPadded(),

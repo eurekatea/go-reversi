@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"othello/board"
 	"othello/builtinai"
-	"runtime"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -15,6 +14,18 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
+
+type Agent int
+
+type Parameter struct {
+	BlackAgent           Agent
+	WhiteAgent           Agent
+	BlackPath            string
+	WhitePath            string
+	BlackInternalAILevel int
+	WhiteInternalAILevel int
+	GoesFirst            board.Color
+}
 
 const (
 	AgentNone Agent = iota
@@ -31,19 +42,8 @@ var (
 	winSize8x8 = fyne.NewSize(420, 530)
 )
 
-type Agent int
-
-type Agents struct {
-	BlackAgent           Agent
-	WhiteAgent           Agent
-	BlackPath            string
-	WhitePath            string
-	BlackInternalAILevel int
-	WhiteInternalAILevel int
-}
-
-func NewAgents() Agents {
-	return Agents{
+func NewAgents() Parameter {
+	return Parameter{
 		BlackAgent: AgentNone,
 		BlackPath:  "",
 		WhiteAgent: AgentNone,
@@ -51,7 +51,7 @@ func NewAgents() Agents {
 	}
 }
 
-func (agents Agents) AllSelected() bool {
+func (agents Parameter) AllSelected() bool {
 	return agents.BlackAgent != AgentNone && agents.WhiteAgent != AgentNone
 }
 
@@ -71,7 +71,7 @@ type game struct {
 	closeRoutine bool
 }
 
-func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, size int) *fyne.Container {
+func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter, size int) *fyne.Container {
 	g := &game{}
 	bd := board.NewBoard(size)
 
@@ -90,7 +90,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, si
 
 	g.window = window
 	g.units = units
-	g.now = board.BLACK
+	g.now = agents.GoesFirst
 	g.bd = bd
 	g.over = false
 	g.closeRoutine = false
@@ -189,7 +189,6 @@ func (g *game) round() {
 }
 
 func (g *game) update(current board.Point) {
-	fmt.Println(runtime.NumGoroutine())
 	count := g.showValidAndCount(current)
 	if count == 0 {
 		g.now = g.now.Opponent()

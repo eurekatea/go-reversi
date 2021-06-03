@@ -26,6 +26,8 @@ func (th Theme) Size(name fyne.ThemeSizeName) float32 {
 	switch name {
 	case "text":
 		return 16
+	case "iconInline":
+		return 16
 	default:
 		return theme.DarkTheme().Size(name)
 	}
