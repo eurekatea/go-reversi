@@ -146,7 +146,6 @@ func New(cl board.Color, boardSize int, level string) *AI {
 			break
 		}
 	}
-	fmt.Println(ai.level)
 
 	if boardSize == 6 {
 		if ai.level < 3 {
@@ -180,9 +179,9 @@ func (ai *AI) setDepthByLevel() {
 	offset := ai.level - 4 // -4~0
 
 	if ai.boardSize == 8 {
-		step2Max := STEP2DEPTH + (offset * 4) - 3 // 8x8 need to reduce depth (3)
+		step2Max := STEP2DEPTH + (offset * 4) - 1 // 8x8 reduce depth (1)
 		if ai.emptyCount > step2Max {
-			ai.depth = DEPTH + (offset * 2) - 3 // step 1
+			ai.depth = DEPTH + (offset * 2) - 3 // step 1, 8x8 reduce depth (3)
 		} else {
 			ai.depth = step2Max // step 2
 		}
@@ -308,7 +307,7 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 
 	// game over
 	if len(aiValid) == 0 && len(opValid) == 0 {
-		ai.reachedDepth = ai.depth
+		ai.reachedDepth = ai.depth - depth
 		return newNode(0, 0, ai.heuristic(bd))
 	}
 

@@ -6,7 +6,7 @@ import (
 )
 
 func TestPartialValueChange(t *testing.T) {
-	ai := New(board.WHITE, 6, 0)
+	ai := New(board.WHITE, 6, "")
 
 	bd := board.NewBoard(6)
 	bd.AssignBoard("+++++++++++++XXX++++OXX+++O+++++++++")
@@ -30,7 +30,7 @@ func TestPartialValueChange(t *testing.T) {
 		t.Error(c.Visualize())
 	}
 
-	ai = New(board.WHITE, 6, 0)
+	ai = New(board.WHITE, 6, "")
 	bd = board.NewBoard(6)
 	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
 
@@ -53,7 +53,7 @@ func TestPartialValueChange(t *testing.T) {
 		t.Error(c.Visualize())
 	}
 
-	ai = New(board.WHITE, 6, 0)
+	ai = New(board.WHITE, 6, "")
 	bd = board.NewBoard(6)
 	bd.AssignBoard("++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+")
 
