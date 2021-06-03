@@ -34,6 +34,17 @@ var (
 		{100, -36, 53, 53, -36, 100},
 	}
 
+	VALUE8x8WEAKER = [][]int{
+		{320, 40, 150, 20, 20, 150, 40, 320},
+		{40, 0, 20, 50, 50, 20, 0, 40},
+		{150, 20, 110, 70, 70, 110, 20, 150},
+		{20, 50, 70, 40, 40, 70, 50, 20},
+		{20, 50, 70, 40, 40, 70, 50, 20},
+		{150, 20, 110, 70, 70, 110, 20, 150},
+		{40, 0, 20, 50, 50, 20, 0, 40},
+		{320, 40, 150, 20, 20, 150, 40, 320},
+	}
+
 	VALUE8x8 = [][]int{
 		{800, -286, 426, -24, -24, 426, -286, 800},
 		{-286, -552, -177, -82, -82, -177, -552, -286},
@@ -134,7 +145,11 @@ func New(cl board.Color, boardSize int, level int) *AI {
 			ai.valueNetWork = VALUE6x6
 		}
 	} else {
-		ai.valueNetWork = VALUE8x8
+		if ai.level < 3 {
+			ai.valueNetWork = VALUE8x8WEAKER
+		} else {
+			ai.valueNetWork = VALUE8x8
+		}
 	}
 	return &ai
 }
@@ -154,14 +169,20 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 func (ai *AI) setDepthByLevel() {
 	offset := ai.level - 4 // -4~0
 
-	step2Max := STEP2DEPTH + (offset * 5)
-	if ai.emptyCount > step2Max {
-		ai.depth = DEPTH + (offset * 3) // step 1
+	if ai.boardSize == 8 {
+		step2Max := STEP2DEPTH + (offset * 4) - 3 // 8x8 need to reduce depth (3)
+		if ai.emptyCount > step2Max {
+			ai.depth = DEPTH + (offset * 2) - 3 // step 1
+		} else {
+			ai.depth = step2Max // step 2
+		}
 	} else {
-		ai.depth = step2Max // step 2
-	}
-	if ai.boardSize == 8 { // 8x8 need to reduce depth
-		ai.depth -= 3
+		step2Max := STEP2DEPTH + (offset * 5)
+		if ai.emptyCount > step2Max {
+			ai.depth = DEPTH + (offset * 3) // step 1
+		} else {
+			ai.depth = step2Max // step 2
+		}
 	}
 }
 

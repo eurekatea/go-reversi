@@ -241,7 +241,7 @@ func (u *unit) setColor(cl board.Color) {
 func (u *unit) setColorCurrent(cl board.Color) {
 	if cl == board.BLACK {
 		u.SetResource(blackCurr)
-	} else {
+	} else if cl == board.WHITE {
 		u.SetResource(whiteCurr)
 	}
 }
