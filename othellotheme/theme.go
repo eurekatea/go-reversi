@@ -15,6 +15,9 @@ func (th Theme) Font(s fyne.TextStyle) fyne.Resource {
 }
 
 func (th Theme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == "background" {
+		return color.RGBA{48, 48, 48, 255}
+	}
 	return theme.DarkTheme().Color(name, variant)
 }
 
