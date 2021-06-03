@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"othello/board"
 	"othello/builtinai"
+	"runtime"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -59,14 +60,15 @@ type computer interface {
 }
 
 type game struct {
-	window  fyne.Window
-	bd      board.Board
-	units   [][]*unit
-	counter *canvas.Text
-	com1    computer
-	com2    computer
-	now     board.Color
-	over    bool
+	window       fyne.Window
+	bd           board.Board
+	units        [][]*unit
+	counter      *canvas.Text
+	com1         computer
+	com2         computer
+	now          board.Color
+	over         bool
+	closeRoutine bool
 }
 
 func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, size int) *fyne.Container {
@@ -91,6 +93,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, si
 	g.now = board.BLACK
 	g.bd = bd
 	g.over = false
+	g.closeRoutine = false
 
 	if agents.BlackAgent == AgentBuiltIn {
 		g.com1 = builtinai.New(board.BLACK, size, agents.BlackInternalAILevel)
@@ -119,7 +122,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, si
 		func() {
 			dialog.NewConfirm("confirm", "restart?", func(b bool) {
 				if b {
-					g.over = true
+					g.closeRoutine = true
 					newContent := New(a, window, menu, agents, size)
 					window.SetContent(newContent)
 				}
@@ -133,7 +136,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Agents, si
 		func() {
 			dialog.NewConfirm("confirm", "return to menu?", func(b bool) {
 				if b {
-					g.over = true
+					g.closeRoutine = true
 					menu.Show()
 					window.SetContent(menu)
 					window.Resize(fyne.NewSize(500, 450))
@@ -163,7 +166,7 @@ func (g *game) isBot(cl board.Color) bool {
 func (g *game) round() {
 	var p board.Point
 	var err error
-	for !g.over {
+	for !g.closeRoutine && !g.over {
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
 				start := time.Now()
@@ -186,6 +189,7 @@ func (g *game) round() {
 }
 
 func (g *game) update(current board.Point) {
+	fmt.Println(runtime.NumGoroutine())
 	count := g.showValidAndCount(current)
 	if count == 0 {
 		g.now = g.now.Opponent()
