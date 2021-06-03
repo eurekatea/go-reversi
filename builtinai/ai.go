@@ -11,6 +11,8 @@ import (
 const (
 	DEPTH      = 13
 	STEP2DEPTH = 18
+	MININT     = math.MinInt32
+	MAXINT     = math.MaxInt32
 )
 
 var (
@@ -283,7 +285,7 @@ func (ai *AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
 }
 
 func (ai *AI) alphaBetaHelper(bd board.Board, depth int) node {
-	return ai.alphaBeta(bd, depth, math.MinInt32, math.MaxInt32, true)
+	return ai.alphaBeta(bd, depth, MININT, MAXINT, true)
 }
 
 func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer bool) node {
@@ -295,12 +297,12 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 
 	if maxLayer {
 		bestNode := node{}
-		maxValue := math.MinInt32
+		maxValue := MININT
 		all := ai.sortedValidPos(bd, ai.color)
 		if len(all) == 0 {
 			ai.reachedDepth = ai.depth - depth
 			ai.nodes++
-			return newNode(0, 0, ai.heuristic(bd, ai.color))
+			return newNode(0, 0, MININT) // 沒地方下，很慘
 		}
 		for _, n := range all {
 			temp := bd.Copy()
@@ -319,12 +321,12 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		return newNode(bestNode.x, bestNode.y, maxValue)
 	} else {
 		bestNode := node{}
-		minValue := math.MaxInt32
+		minValue := MAXINT
 		all := ai.sortedValidPos(bd, ai.opponent)
 		if len(all) == 0 {
 			ai.reachedDepth = ai.depth - depth
 			ai.nodes++
-			return newNode(0, 0, ai.heuristic(bd, ai.color))
+			return newNode(0, 0, MAXINT) // 對手沒地方下，很讚
 		}
 		for _, n := range all {
 			temp := bd.Copy()
