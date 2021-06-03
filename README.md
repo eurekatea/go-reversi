@@ -10,9 +10,10 @@ othello(reversi) arena for humans and AIs
 雙方皆無處可下時遊戲結束，依棋子數目決定輸贏或平手  
 
 # 說明
-此程式會將版面以"++++++++++++++OX++++XO++++++++++++++ 1"形式傳送給AI之stdin  
-(X表示黑方，O表示白方；1表示現在為黑方行動，2反之)  
-程式在AI之stdout接收回傳值，若回傳值不合法，則在log file內印出錯誤訊息並退出  
+外部的AI程式須接收input，並輸出結果  
+如：輸入```++++++++++++++OX++++XO++++++++++++++ 1```，輸出```Bc```  
+(X表示黑方，O表示白方；1表示為黑方，2為白方)  
+程式接收回傳值時，若回傳值不合法，GUI會顯示外部AI出錯，並將錯誤內容輸出至log file內  
 
 # 下載
 https://github.com/lemon37564/othello-board/releases
