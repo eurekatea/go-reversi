@@ -204,7 +204,7 @@ func main() {
 			container.NewPadded(),
 			container.NewMax(top),
 			container.NewMax(center),
-			container.NewPadded(goesFirst),
+			container.NewMax(goesFirst),
 			container.NewPadded(),
 			container.NewPadded(),
 			container.NewPadded(),
