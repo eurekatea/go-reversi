@@ -80,8 +80,8 @@ func (c com) fatal(bd board.Board, text string) error {
 	defer f.Close()
 
 	text = time.Now().String() + "\n" + text
-	if len(text) > 100 {
-		text = text[:100]
+	if len(text) > 500 {
+		text = text[:500]
 		text += "\n...skipped"
 	}
 	text += "\n\n"

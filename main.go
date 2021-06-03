@@ -61,7 +61,7 @@ func main() {
 		[]string{"beginner", "amateur", "professional", "expert", "master"},
 
 		func(s string) {
-			params.BlackInternalAILevel = aiLevelSelection1.SelectedIndex()
+			params.BlackInternalAILevel = s
 		},
 	)
 
@@ -69,7 +69,7 @@ func main() {
 		[]string{"beginner", "amateur", "professional", "expert", "master"},
 
 		func(s string) {
-			params.WhiteInternalAILevel = aiLevelSelection2.SelectedIndex()
+			params.WhiteInternalAILevel = s
 		},
 	)
 

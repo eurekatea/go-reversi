@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"othello/board"
 	"othello/builtinai"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -22,8 +23,8 @@ type Parameter struct {
 	WhiteAgent           Agent
 	BlackPath            string
 	WhitePath            string
-	BlackInternalAILevel int
-	WhiteInternalAILevel int
+	BlackInternalAILevel string
+	WhiteInternalAILevel string
 	GoesFirst            board.Color
 }
 
@@ -34,6 +35,8 @@ const (
 	AgentExternal
 
 	counterTextSize = 24
+	nameTextSize    = 13
+	maxNameLen      = 12
 )
 
 var (
@@ -63,12 +66,66 @@ type game struct {
 	window       fyne.Window
 	bd           board.Board
 	units        [][]*unit
-	counter      *canvas.Text
+	counterBlack *canvas.Text
+	counterWhite *canvas.Text
 	com1         computer
 	com2         computer
 	now          board.Color
 	over         bool
 	closeRoutine bool
+}
+
+func newNameText(agents Parameter) *fyne.Container {
+	var name string
+
+	if agents.BlackAgent == AgentHuman {
+		name = "human"
+	} else if agents.BlackAgent == AgentBuiltIn {
+		name = "AI: " + agents.BlackInternalAILevel
+	} else {
+		path := strings.Split(agents.BlackPath, "/")
+		if len(path) != 0 {
+			name = path[len(path)-1]
+			if len(name) > maxNameLen {
+				name = name[:maxNameLen] + "..."
+			}
+		}
+	}
+	left := canvas.NewText(name, theme.ForegroundColor())
+	left.TextSize = nameTextSize
+	left.Alignment = fyne.TextAlignLeading
+
+	if agents.WhiteAgent == AgentHuman {
+		name = "human"
+	} else if agents.WhiteAgent == AgentBuiltIn {
+		name = "AI: " + agents.WhiteInternalAILevel
+	} else {
+		path := strings.Split(agents.WhitePath, "/")
+		if len(path) != 0 {
+			name = path[len(path)-1]
+			if len(name) > maxNameLen {
+				name = name[:maxNameLen] + "..."
+			}
+		}
+	}
+
+	right := canvas.NewText(name, theme.ForegroundColor())
+	right.TextSize = nameTextSize
+	right.Alignment = fyne.TextAlignTrailing
+
+	return container.NewGridWithColumns(2, left, right)
+}
+
+func newCounterText() (*canvas.Text, *canvas.Text) {
+	counter1 := canvas.NewText("", theme.ForegroundColor())
+	counter1.TextSize = counterTextSize
+	counter1.Alignment = fyne.TextAlignLeading
+
+	counter2 := canvas.NewText("", theme.ForegroundColor())
+	counter2.TextSize = counterTextSize
+	counter2.Alignment = fyne.TextAlignTrailing
+
+	return counter1, counter2
 }
 
 func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter, size int) *fyne.Container {
@@ -110,11 +167,9 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 		go g.round()
 	}
 
-	g.counter = canvas.NewText("", theme.ForegroundColor())
-	g.counter.TextSize = counterTextSize
-	g.counter.Alignment = fyne.TextAlignCenter
-
-	g.update(nullPoint)
+	g.counterBlack, g.counterWhite = newCounterText()
+	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
+	nameText := newNameText(agents)
 
 	restart := widget.NewButtonWithIcon(
 		"restart",
@@ -152,7 +207,9 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 		window.Resize(winSize8x8)
 	}
 
-	return container.NewVBox(g.counter, grid, restart, mainMenu)
+	g.update(nullPoint)
+
+	return container.NewVBox(counterTile, nameText, grid, restart, mainMenu)
 }
 
 func (g *game) isBot(cl board.Color) bool {
@@ -197,10 +254,16 @@ func (g *game) update(current board.Point) {
 	if g.over = g.bd.IsOver(); g.over {
 		g.gameOver()
 	}
+	g.refreshCounter()
+}
+
+func (g *game) refreshCounter() {
 	blacks := g.bd.CountPieces(board.BLACK)
 	whites := g.bd.CountPieces(board.WHITE)
-	g.counter.Text = fmt.Sprintf("black: %2d      white: %2d", blacks, whites)
-	g.counter.Refresh()
+	g.counterBlack.Text = fmt.Sprintf("black: %2d", blacks)
+	g.counterBlack.Refresh()
+	g.counterWhite.Text = fmt.Sprintf("white: %2d", whites)
+	g.counterWhite.Refresh()
 }
 
 func (g *game) gameOver() {

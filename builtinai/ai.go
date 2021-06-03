@@ -132,14 +132,22 @@ type AI struct {
 	level int
 }
 
-func New(cl board.Color, boardSize int, level int) *AI {
+func New(cl board.Color, boardSize int, level string) *AI {
 	ai := AI{
 		color:     cl,
 		opponent:  cl.Opponent(),
 		boardSize: boardSize,
 		depth:     DEPTH,
-		level:     level,
 	}
+	levelNames := []string{"beginner", "amateur", "professional", "expert", "master"}
+	for i, name := range levelNames {
+		if level == name {
+			ai.level = i
+			break
+		}
+	}
+	fmt.Println(ai.level)
+
 	if boardSize == 6 {
 		if ai.level < 3 {
 			ai.valueNetWork = VALUE6x6WEAKER
