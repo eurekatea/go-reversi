@@ -310,9 +310,6 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 
 		if len(aiValid) == 0 { // 沒地方下，換邊
 			return ai.alphaBeta(bd, depth-1, alpha, beta, false)
-		} else if len(aiValid) == 1 { // 只有一點：直接放
-			n := aiValid[0]
-			return newNode(n.x, n.y, ai.heuristic(bd))
 		}
 		aiValid.sort()
 
@@ -337,9 +334,6 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 
 		if len(opValid) == 0 { // 對手沒地方下，換邊
 			return ai.alphaBeta(bd, depth-1, alpha, beta, true)
-		} else if len(opValid) == 1 { // 只有一點：直接放
-			n := opValid[0]
-			return newNode(n.x, n.y, ai.heuristic(bd))
 		}
 		opValid.sort()
 
