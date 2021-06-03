@@ -36,6 +36,14 @@ func (bd Board) Copy() Board {
 	return nbd
 }
 
+func (bd Board) CopyFromBoard(another Board) {
+	for i := range bd {
+		for j := range bd[i] {
+			bd[i][j] = another[i][j]
+		}
+	}
+}
+
 func (bd Board) AssignBoard(bd2 string) {
 	indx := 0
 	for i := 0; i < bd.Size(); i++ {

@@ -13,7 +13,7 @@ func TestPartialValueChange(t *testing.T) {
 
 	p := board.NewPoint(5, 3)
 
-	currentV := ai.evalBoard(bd, board.WHITE)
+	currentV := ai.evalBoard(bd)
 	c := bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Error(c.Visualize())
@@ -21,7 +21,7 @@ func TestPartialValueChange(t *testing.T) {
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
-	newV := ai.evalBoard(c, board.WHITE)
+	newV := ai.evalBoard(c)
 
 	aiV := ai.evalAfterPut(bd, currentV, p, board.WHITE)
 
@@ -36,7 +36,7 @@ func TestPartialValueChange(t *testing.T) {
 
 	p = board.NewPoint(1, 4)
 
-	currentV = ai.evalBoard(bd, board.WHITE)
+	currentV = ai.evalBoard(bd)
 	c = bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Error(c.Visualize())
@@ -44,7 +44,7 @@ func TestPartialValueChange(t *testing.T) {
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
-	newV = ai.evalBoard(c, board.WHITE)
+	newV = ai.evalBoard(c)
 
 	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
 
@@ -59,7 +59,7 @@ func TestPartialValueChange(t *testing.T) {
 
 	p = board.NewPoint(1, 4)
 
-	currentV = ai.evalBoard(bd, board.WHITE)
+	currentV = ai.evalBoard(bd)
 	c = bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Error(c.Visualize())
@@ -67,7 +67,7 @@ func TestPartialValueChange(t *testing.T) {
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
-	newV = ai.evalBoard(c, board.WHITE)
+	newV = ai.evalBoard(c)
 
 	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
 

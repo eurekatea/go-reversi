@@ -13,12 +13,12 @@ func TestPartialHeuristicChange(t *testing.T) {
 
 	p := board.NewPoint(5, 3)
 
-	currentV := ai.heuristic(bd, board.WHITE)
+	currentV := ai.heuristic(bd)
 	c := bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Fatal("cannot put")
 	}
-	newV := ai.heuristic(c, board.WHITE)
+	newV := ai.heuristic(c)
 
 	aiV := ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
 
@@ -34,7 +34,7 @@ func TestPartialHeuristicChange(t *testing.T) {
 
 	p = board.NewPoint(1, 4)
 
-	currentV = ai.heuristic(bd, board.WHITE)
+	currentV = ai.heuristic(bd)
 	c = bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Error(c.Visualize())
@@ -42,7 +42,7 @@ func TestPartialHeuristicChange(t *testing.T) {
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
-	newV = ai.heuristic(c, board.WHITE)
+	newV = ai.heuristic(c)
 
 	aiV = ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
 
@@ -58,7 +58,7 @@ func TestPartialHeuristicChange(t *testing.T) {
 
 	p = board.NewPoint(1, 4)
 
-	currentV = ai.heuristic(bd, board.WHITE)
+	currentV = ai.heuristic(bd)
 	c = bd.Copy()
 	if !c.Put(board.WHITE, p) {
 		t.Error(c.Visualize())
@@ -66,7 +66,7 @@ func TestPartialHeuristicChange(t *testing.T) {
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
-	newV = ai.heuristic(c, board.WHITE)
+	newV = ai.heuristic(c)
 
 	aiV = ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
 

@@ -13,7 +13,7 @@ func (ai *AI) oldvalidPos(bd board.Board, cl board.Color) (all nodes) {
 			if bd.IsValidPoint(cl, p) {
 				temp := bd.Copy()
 				temp.Put(cl, p)
-				all = append(all, newNode(i, j, ai.heuristic(temp, cl)))
+				all = append(all, newNode(i, j, ai.heuristic(temp)))
 			}
 		}
 	}
@@ -39,5 +39,25 @@ func BenchmarkNewone(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		ai.validPos(bd, ai.color)
+	}
+}
+
+func BenchmarkHeuristic(b *testing.B) {
+	ai := New(board.BLACK, 6, 0)
+
+	bd := board.NewBoard(6)
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
+
+	for i := 0; i < b.N; i++ {
+		ai.heuristic(bd)
+	}
+}
+
+func BenchmarkGameOver(b *testing.B) {
+	bd := board.NewBoard(6)
+	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
+
+	for i := 0; i < b.N; i++ {
+		bd.IsOver()
 	}
 }
