@@ -36,7 +36,9 @@ const (
 
 	counterTextSize = 24
 	nameTextSize    = 13
-	maxNameLen      = 12
+	maxNameLen      = 20
+
+	unitSize = 48
 )
 
 var (
@@ -54,8 +56,8 @@ func NewAgents() Parameter {
 	}
 }
 
-func (agents Parameter) AllSelected() bool {
-	return agents.BlackAgent != AgentNone && agents.WhiteAgent != AgentNone
+func (params Parameter) AllSelected() bool {
+	return params.BlackAgent != AgentNone && params.WhiteAgent != AgentNone
 }
 
 type computer interface {
@@ -75,43 +77,44 @@ type game struct {
 	closeRoutine bool
 }
 
-func newNameText(agents Parameter) *fyne.Container {
+func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	var name string
 
-	if agents.BlackAgent == AgentHuman {
-		name = "human"
-	} else if agents.BlackAgent == AgentBuiltIn {
-		name = "AI: " + agents.BlackInternalAILevel
-	} else {
-		path := strings.Split(agents.BlackPath, "/")
-		if len(path) != 0 {
-			name = "AI: " + path[len(path)-1]
-			if len(name) > maxNameLen {
-				name = name[:maxNameLen] + "..."
-			}
-		}
-	}
-	left := canvas.NewText(name, theme.ForegroundColor())
+	left := canvas.NewText("", theme.ForegroundColor())
 	left.TextSize = nameTextSize
 	left.Alignment = fyne.TextAlignLeading
-
-	if agents.WhiteAgent == AgentHuman {
+	if params.BlackAgent == AgentHuman {
 		name = "human"
-	} else if agents.WhiteAgent == AgentBuiltIn {
-		name = "AI: " + agents.WhiteInternalAILevel
+	} else if params.BlackAgent == AgentBuiltIn {
+		name = "AI: " + params.BlackInternalAILevel
 	} else {
-		path := strings.Split(agents.WhitePath, "/")
+		path := strings.Split(params.BlackPath, "/")
 		if len(path) != 0 {
 			name = "AI: " + path[len(path)-1]
-			if len(name) > maxNameLen {
-				name = name[:maxNameLen] + "..."
-			}
 		}
 	}
+	left.Text = name
+	for left.MinSize().Width > winSize.Width/2 {
+		left.Text = left.Text[:len(left.Text)-1]
+	}
 
-	right := canvas.NewText(name, theme.ForegroundColor())
+	right := canvas.NewText("", theme.ForegroundColor())
 	right.TextSize = nameTextSize
 	right.Alignment = fyne.TextAlignTrailing
+	if params.WhiteAgent == AgentHuman {
+		name = "human"
+	} else if params.WhiteAgent == AgentBuiltIn {
+		name = "AI: " + params.WhiteInternalAILevel
+	} else {
+		path := strings.Split(params.WhitePath, "/")
+		if len(path) != 0 {
+			name = "AI: " + path[len(path)-1]
+		}
+	}
+	right.Text = name
+	for right.MinSize().Width > winSize.Width/2 {
+		right.Text = right.Text[:len(right.Text)-1]
+	}
 
 	return container.NewGridWithColumns(2, left, right)
 }
@@ -128,7 +131,13 @@ func newCounterText() (*canvas.Text, *canvas.Text) {
 	return counter1, counter2
 }
 
-func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter, size int) *fyne.Container {
+func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter, size int) *fyne.Container {
+	if size == 6 {
+		window.Resize(winSize6x6)
+	} else {
+		window.Resize(winSize8x8)
+	}
+
 	g := &game{}
 	bd := board.NewBoard(size)
 
@@ -147,20 +156,20 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 
 	g.window = window
 	g.units = units
-	g.now = agents.GoesFirst
+	g.now = params.GoesFirst
 	g.bd = bd
 	g.over = false
 	g.closeRoutine = false
 
-	if agents.BlackAgent == AgentBuiltIn {
-		g.com1 = builtinai.New(board.BLACK, size, agents.BlackInternalAILevel)
-	} else if agents.BlackAgent == AgentExternal {
-		g.com1 = newCom(board.BLACK, agents.BlackPath)
+	if params.BlackAgent == AgentBuiltIn {
+		g.com1 = builtinai.New(board.BLACK, size, params.BlackInternalAILevel)
+	} else if params.BlackAgent == AgentExternal {
+		g.com1 = newCom(board.BLACK, params.BlackPath)
 	}
-	if agents.WhiteAgent == AgentBuiltIn {
-		g.com2 = builtinai.New(board.WHITE, size, agents.WhiteInternalAILevel)
-	} else if agents.WhiteAgent == AgentExternal {
-		g.com2 = newCom(board.WHITE, agents.WhitePath)
+	if params.WhiteAgent == AgentBuiltIn {
+		g.com2 = builtinai.New(board.WHITE, size, params.WhiteInternalAILevel)
+	} else if params.WhiteAgent == AgentExternal {
+		g.com2 = newCom(board.WHITE, params.WhitePath)
 	}
 
 	if g.com1 != nil || g.com2 != nil {
@@ -169,7 +178,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 
 	g.counterBlack, g.counterWhite = newCounterText()
 	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
-	nameText := newNameText(agents)
+	nameText := newNameText(window.Canvas().Size(), params)
 
 	restart := widget.NewButtonWithIcon(
 		"restart",
@@ -178,7 +187,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 			dialog.NewConfirm("confirm", "restart?", func(b bool) {
 				if b {
 					g.closeRoutine = true
-					newContent := New(a, window, menu, agents, size)
+					newContent := New(a, window, menu, params, size)
 					window.SetContent(newContent)
 				}
 			}, window).Show()
@@ -199,13 +208,6 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, agents Parameter,
 			}, window).Show()
 		},
 	)
-
-	// resize to minimum size
-	if size == 6 {
-		window.Resize(winSize6x6)
-	} else {
-		window.Resize(winSize8x8)
-	}
 
 	g.update(nullPoint)
 
@@ -331,7 +333,7 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 }
 
 func (u *unit) MinSize() fyne.Size {
-	return fyne.NewSize(48, 48)
+	return fyne.NewSize(unitSize, unitSize)
 }
 
 func (u *unit) setColor(cl board.Color) {

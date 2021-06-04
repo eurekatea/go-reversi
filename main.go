@@ -46,7 +46,7 @@ func main() {
 
 		selection1 *widget.Select
 		selection2 *widget.Select
-		selection3 *widget.Select
+		selection3 *widget.RadioGroup
 
 		aiLevelSelection1 *widget.Select
 		aiLevelSelection2 *widget.Select
@@ -87,6 +87,7 @@ func main() {
 						}
 					}
 				}, ui)
+				d.Resize(initWinSize)
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 				d.Show()
 			} else if s == "human" {
@@ -122,6 +123,7 @@ func main() {
 						}
 					}
 				}, ui)
+				d.Resize(initWinSize)
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
 				d.Show()
 			} else if s == "human" {
@@ -143,7 +145,7 @@ func main() {
 	subtitle2.Alignment = fyne.TextAlignCenter
 	whiteCard = widget.NewCard("", "", container.NewVBox(subtitle2, container.NewCenter(selection2)))
 
-	selection3 = widget.NewSelect(
+	selection3 = widget.NewRadioGroup(
 		[]string{"6x6", "8x8"},
 
 		func(s string) {
@@ -155,6 +157,7 @@ func main() {
 		},
 	)
 	selection3.SetSelected("6x6")
+	selection3.Required = true
 
 	top = container.NewGridWithColumns(2, blackCard, whiteCard)
 
