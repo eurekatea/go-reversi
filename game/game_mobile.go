@@ -1,4 +1,4 @@
-// +build !android
+// +build android
 
 package game
 
@@ -40,7 +40,8 @@ const (
 	nameTextSize    = 13
 	maxNameLen      = 20
 
-	unitSize = 48
+	unitSize6x6 = 54
+	unitSize8x8 = 40
 )
 
 var (
@@ -335,7 +336,11 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 }
 
 func (u *unit) MinSize() fyne.Size {
-	return fyne.NewSize(unitSize, unitSize)
+	if u.g.bd.Size() == 6 {
+		return fyne.NewSize(unitSize6x6, unitSize6x6)
+	} else {
+		return fyne.NewSize(unitSize8x8, unitSize8x8)
+	}
 }
 
 func (u *unit) setColor(cl board.Color) {
