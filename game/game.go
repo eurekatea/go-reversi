@@ -1,4 +1,4 @@
-// +build !android
+// +build !debug
 
 package game
 
@@ -25,8 +25,8 @@ type Parameter struct {
 	WhiteAgent           Agent
 	BlackPath            string
 	WhitePath            string
-	BlackInternalAILevel string
-	WhiteInternalAILevel string
+	BlackInternalAILevel builtinai.Level
+	WhiteInternalAILevel builtinai.Level
 	GoesFirst            board.Color
 }
 
@@ -88,7 +88,7 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	if params.BlackAgent == AgentHuman {
 		name = "human"
 	} else if params.BlackAgent == AgentBuiltIn {
-		name = "AI: " + params.BlackInternalAILevel
+		name = "AI: " + params.BlackInternalAILevel.String()
 	} else {
 		path := strings.Split(params.BlackPath, "/")
 		if len(path) != 0 {
@@ -106,7 +106,7 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	if params.WhiteAgent == AgentHuman {
 		name = "human"
 	} else if params.WhiteAgent == AgentBuiltIn {
-		name = "AI: " + params.WhiteInternalAILevel
+		name = "AI: " + params.WhiteInternalAILevel.String()
 	} else {
 		path := strings.Split(params.WhitePath, "/")
 		if len(path) != 0 {
@@ -238,14 +238,15 @@ func (g *game) round() {
 				p, err = g.com2.Move(g.bd.Copy())
 				fmt.Println("white side spent:", time.Since(start))
 			}
-			g.bd.Put(g.now, p)
 			if err != nil {
 				g.aiError(err)
 			}
+			g.bd.Put(g.now, p)
 			g.now = g.now.Opponent()
 			g.update(p)
+		} else {
+			time.Sleep(time.Millisecond * 30)
 		}
-		time.Sleep(time.Millisecond * 30)
 	}
 }
 
@@ -302,6 +303,7 @@ func (g *game) showValidAndCount(current board.Point) int {
 }
 
 func (g *game) aiError(err error) {
+	g.closeRoutine = true
 	d := dialog.NewError(err, g.window)
 	d.SetOnClosed(func() { panic(err) })
 	d.Show()

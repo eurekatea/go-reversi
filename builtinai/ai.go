@@ -8,8 +8,33 @@ import (
 	"sort"
 )
 
+type Level int
+
+func (l Level) String() string {
+	switch l {
+	case 0:
+		return "beginner"
+	case 1:
+		return "amateur"
+	case 2:
+		return "professional"
+	case 3:
+		return "expert"
+	case 4:
+		return "master"
+	default:
+		return "unknown"
+	}
+}
+
 const (
-	DEPTH      = 13
+	BEGINNER Level = iota
+	AMATEUR
+	PROFESSIONAL
+	EXPERT
+	MASTER
+
+	DEPTH      = 12
 	STEP2DEPTH = 18
 	MININT     = math.MinInt32
 	MAXINT     = math.MaxInt32
@@ -57,8 +82,6 @@ var (
 		{-286, -552, -177, -82, -82, -177, -552, -286},
 		{800, -286, 426, -24, -24, 426, -286, 800},
 	}
-
-	direction = [8][2]int{{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
 )
 
 func max(a int, b int) int {
@@ -132,20 +155,15 @@ type AI struct {
 	level int
 }
 
-func New(cl board.Color, boardSize int, level string) *AI {
+func New(cl board.Color, boardSize int, lv Level) *AI {
 	ai := AI{
 		color:     cl,
 		opponent:  cl.Opponent(),
 		boardSize: boardSize,
 		depth:     DEPTH,
 	}
-	levelNames := []string{"beginner", "amateur", "professional", "expert", "master"}
-	for i, name := range levelNames {
-		if level == name {
-			ai.level = i
-			break
-		}
-	}
+
+	ai.level = int(lv)
 
 	if boardSize == 6 {
 		if ai.level < 3 {
@@ -170,25 +188,29 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.setDepthByLevel()
 
 	best := ai.alphaBetaHelper(bd, ai.depth)
-	fmt.Printf("built-in AI: {depth: %v, nodes: %v}\n", ai.reachedDepth, ai.nodes)
+	fmt.Printf("built-in AI: {depth: %v, nodes: %v, value: %v}\n", ai.reachedDepth, ai.nodes, best.value)
 
-	return board.NewPoint(best.x, best.y), nil
+	bestPoint := board.NewPoint(best.x, best.y)
+	if !bd.Put(ai.color, bestPoint) {
+		return bestPoint, fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
+	}
+	return bestPoint, nil
 }
 
 func (ai *AI) setDepthByLevel() {
 	offset := ai.level - 4 // -4~0
 
 	if ai.boardSize == 8 {
-		step2Max := STEP2DEPTH + (offset * 4) - 1 // 8x8 reduce depth (1)
+		step2Max := STEP2DEPTH + (offset * 4) - 2 // 8x8 reduce depth (2)
 		if ai.emptyCount > step2Max {
-			ai.depth = DEPTH + (offset * 2) - 3 // step 1, 8x8 reduce depth (3)
+			ai.depth = DEPTH + (offset * 2) - 2 // step 1, 8x8 reduce depth (2)
 		} else {
 			ai.depth = step2Max // step 2
 		}
 	} else {
 		step2Max := STEP2DEPTH + (offset * 5)
 		if ai.emptyCount > step2Max {
-			ai.depth = DEPTH + (offset * 3) // step 1
+			ai.depth = DEPTH + (offset * 2) // step 1
 		} else {
 			ai.depth = step2Max // step 2
 		}
@@ -253,7 +275,7 @@ func (ai *AI) changedValue(bd board.Board, cl board.Color, p board.Point, dir [2
 // don't need to copy
 func (ai *AI) evalAfterPut(bd board.Board, currentValue int, p board.Point, cl board.Color) int {
 	for i := 0; i < 8; i++ {
-		currentValue += ai.changedValue(bd, cl, p, direction[i])
+		currentValue += ai.changedValue(bd, cl, p, DIRECTION[i])
 	}
 	currentValue += ai.valueNetWork[p.X][p.Y]
 	return currentValue
@@ -262,7 +284,7 @@ func (ai *AI) evalAfterPut(bd board.Board, currentValue int, p board.Point, cl b
 // don't need to copy board
 func (ai *AI) countAfterPut(bd board.Board, currentCount int, p board.Point, cl board.Color) int {
 	for i := 0; i < 8; i++ {
-		currentCount += bd.CountFlipPieces(cl, p, direction[i])
+		currentCount += bd.CountFlipPieces(cl, p, DIRECTION[i])
 	}
 	return currentCount + 1 // include p itself
 }
@@ -275,6 +297,8 @@ func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 			p := board.NewPoint(i, j)
 			if bd.IsValidPoint(cl, p) {
 				newValue := ai.valueNetWork[i][j] // better one
+				// 下面這個？ 之前慢的原因？ 因為heuristic只該計算出一種值？（不該分兩種顏色）
+				// 這也是為什麼 min layer 之前 sort by asc 失效的原因？待研究
 				// newValue := ai.heuristicAfterPut(bd, nowValue, p, cl) // old one, performed not good as this one
 				all = append(all, newNode(i, j, newValue))
 			}
@@ -299,24 +323,24 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 
 	if depth == 0 {
 		ai.reachedDepth = ai.depth
-		return newNode(0, 0, ai.heuristic(bd))
+		return newNode(-1, -1, ai.heuristic(bd))
 	}
 
 	aiValid := ai.validPos(bd, ai.color)
 	opValid := ai.validPos(bd, ai.opponent)
 
-	// game over
+	// game over, AI heuristic 無法判斷勝負，因此回傳極大極小值
 	if len(aiValid) == 0 && len(opValid) == 0 {
 		ai.reachedDepth = ai.depth - depth
-		return newNode(0, 0, ai.heuristic(bd))
+		return newNode(-1, -1, ai.heuristic(bd))
 	}
 
 	if maxLayer {
-		bestNode := node{}
 		maxValue := MININT
+		bestNode := newNode(-1, -1, maxValue)
 
 		if len(aiValid) == 0 { // 沒地方下，換邊
-			return ai.alphaBeta(bd, depth-1, alpha, beta, false)
+			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
 		aiValid.sort()
 
@@ -334,13 +358,14 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 				break
 			}
 		}
+
 		return newNode(bestNode.x, bestNode.y, maxValue)
 	} else {
-		bestNode := node{}
 		minValue := MAXINT
+		bestNode := newNode(-1, -1, minValue)
 
 		if len(opValid) == 0 { // 對手沒地方下，換邊
-			return ai.alphaBeta(bd, depth-1, alpha, beta, true)
+			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
 		opValid.sort()
 
@@ -363,52 +388,3 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		return newNode(bestNode.x, bestNode.y, minValue)
 	}
 }
-
-// func (ai *AI) validPoint(bd board.Board, cl board.Color) (all []board.Point) {
-// 	all = make([]board.Point, 0, 16)
-// 	for i := 0; i < ai.boardSize; i++ {
-// 		for j := 0; j < ai.boardSize; j++ {
-// 			p := board.NewPoint(i, j)
-// 			if bd.IsValidPoint(cl, p) {
-// 				all = append(all, p)
-// 			}
-// 		}
-// 	}
-// 	return
-// }
-
-// func (ai *AI) randPoint(all []board.Point) board.Point {
-// 	return all[rand.Intn(len(all))]
-// }
-
-// func (ai *AI) monteCarlo(bd board.Board, cl board.Color, opponent board.Color) int {
-// 	wons := 0
-// 	temp := bd.Copy()
-
-// 	for j := 0; j < 100; j++ {
-// 		temp.CopyFromBoard(bd)
-
-// 		turn := false
-// 		var currColor board.Color
-// 		for !temp.IsOver() {
-// 			if turn {
-// 				currColor = cl
-// 			} else {
-// 				currColor = opponent
-// 			}
-// 			tempValid := ai.validPoint(temp, currColor)
-
-// 			if len(tempValid) != 0 {
-// 				toPut := ai.randPoint(tempValid)
-// 				temp.PutWithoutCheck(currColor, toPut)
-// 			}
-// 			turn = !turn
-// 		}
-
-// 		if temp.Winner() == ai.color {
-// 			wons++
-// 		}
-// 	}
-
-// 	return wons
-// }

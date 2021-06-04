@@ -79,7 +79,11 @@ func (c com) fatal(bd board.Board, text string) error {
 	}
 	defer f.Close()
 
-	text = time.Now().String() + "\n" + text
+	now := time.Now()
+	year, month, day := now.Date()
+	hour, minute, second := now.Clock()
+	t := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d", year, month, day, hour, minute, second)
+	text = t + "\n" + c.program + "\n\n" + text
 	if len(text) > 500 {
 		text = text[:500]
 		text += "\n...skipped"
@@ -96,5 +100,5 @@ func (c com) fatal(bd board.Board, text string) error {
 		return err
 	}
 
-	return fmt.Errorf("selected external AI has occured an error\nplease check the log file\nprogram will exit now")
+	return fmt.Errorf("external AI has occured an error\nplease check the log file\nprogram exit now")
 }

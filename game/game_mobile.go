@@ -89,7 +89,7 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	if params.BlackAgent == AgentHuman {
 		name = "human"
 	} else if params.BlackAgent == AgentBuiltIn {
-		name = "AI: " + params.BlackInternalAILevel
+		name = "AI: " + params.BlackInternalAILevel.String()
 	} else {
 		path := strings.Split(params.BlackPath, "/")
 		if len(path) != 0 {
@@ -107,7 +107,7 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	if params.WhiteAgent == AgentHuman {
 		name = "human"
 	} else if params.WhiteAgent == AgentBuiltIn {
-		name = "AI: " + params.WhiteInternalAILevel
+		name = "AI: " + params.WhiteInternalAILevel.String()
 	} else {
 		path := strings.Split(params.WhitePath, "/")
 		if len(path) != 0 {
@@ -245,8 +245,9 @@ func (g *game) round() {
 			}
 			g.now = g.now.Opponent()
 			g.update(p)
+		} else {
+			time.Sleep(time.Millisecond * 30)
 		}
-		time.Sleep(time.Millisecond * 30)
 	}
 }
 

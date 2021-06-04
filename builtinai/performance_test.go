@@ -22,7 +22,7 @@ func (ai *AI) oldvalidPos(bd board.Board, cl board.Color) (all nodes) {
 }
 
 func BenchmarkOrig(b *testing.B) {
-	ai := New(board.BLACK, 6, "")
+	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
 	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
@@ -33,7 +33,7 @@ func BenchmarkOrig(b *testing.B) {
 }
 
 func BenchmarkNewone(b *testing.B) {
-	ai := New(board.BLACK, 6, "")
+	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
 	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
@@ -44,7 +44,7 @@ func BenchmarkNewone(b *testing.B) {
 }
 
 func BenchmarkHeuristic(b *testing.B) {
-	ai := New(board.BLACK, 6, "")
+	ai := New(board.BLACK, 6, 0)
 
 	bd := board.NewBoard(6)
 	bd.AssignBoard("+++X++++X++++XOOO+++OOX+++O+++++++++")
