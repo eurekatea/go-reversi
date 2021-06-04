@@ -2,7 +2,7 @@
 othello(reversi) arena for humans and AIs
 
 # 遊戲截圖
-![](https://user-images.githubusercontent.com/65079334/120681694-38316380-c4ce-11eb-9dde-80cf060f9e6e.png)
+![](https://user-images.githubusercontent.com/65079334/120734562-a9e3ce80-c51b-11eb-8590-6033cb762637.png)
 ![](https://user-images.githubusercontent.com/65079334/120681698-39629080-c4ce-11eb-8064-37293704bf51.png)
 
 # 規則
