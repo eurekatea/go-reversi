@@ -41,17 +41,6 @@ const (
 )
 
 var (
-	DIRECTION = [8][2]int{{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}}
-
-	VALUE6x6WEAKER = [][]int{
-		{320, 20, 80, 80, 20, 320},
-		{20, 0, 80, 80, 0, 20},
-		{80, 80, 80, 80, 80, 80},
-		{80, 80, 80, 80, 80, 80},
-		{20, 0, 80, 80, 0, 20},
-		{320, 20, 80, 80, 20, 320},
-	}
-
 	VALUE6x6 = [][]int{
 		{100, -36, 53, 53, -36, 100},
 		{-36, -69, -10, -10, -69, -36},
@@ -59,17 +48,6 @@ var (
 		{53, -10, -2, -2, -10, 53},
 		{-36, -69, -10, -10, -69, -36},
 		{100, -36, 53, 53, -36, 100},
-	}
-
-	VALUE8x8WEAKER = [][]int{
-		{320, 40, 150, 20, 20, 150, 40, 320},
-		{40, 0, 20, 50, 50, 20, 0, 40},
-		{150, 20, 110, 70, 70, 110, 20, 150},
-		{20, 50, 70, 40, 40, 70, 50, 20},
-		{20, 50, 70, 40, 40, 70, 50, 20},
-		{150, 20, 110, 70, 70, 110, 20, 150},
-		{40, 0, 20, 50, 50, 20, 0, 40},
-		{320, 40, 150, 20, 20, 150, 40, 320},
 	}
 
 	VALUE8x8 = [][]int{
@@ -82,7 +60,31 @@ var (
 		{-286, -552, -177, -82, -82, -177, -552, -286},
 		{800, -286, 426, -24, -24, 426, -286, 800},
 	}
+
+	TOTAL6x6 int
+	TOTAL8x8 int
 )
+
+func init() {
+	for i := 0; i < len(VALUE6x6); i++ {
+		for j := 0; j < len(VALUE6x6); j++ {
+			TOTAL6x6 += abs(VALUE6x6[i][j])
+		}
+	}
+	for i := 0; i < len(VALUE8x8); i++ {
+		for j := 0; j < len(VALUE8x8); j++ {
+			TOTAL8x8 += abs(VALUE8x8[i][j])
+		}
+	}
+}
+
+func abs(v int) int {
+	if v > 0 {
+		return v
+	} else {
+		return -v
+	}
+}
 
 func max(a int, b int) int {
 	if a > b {
@@ -135,13 +137,15 @@ func (ns nodes) sort() {
 }
 
 type AI struct {
-	color        board.Color
-	opponent     board.Color
-	valueNetWork [][]int
-	boardSize    int
+	color    color
+	opponent color
 
-	// empty point of board
-	emptyCount int
+	valueNetWork [][]int
+	totalValue   int
+
+	step int
+
+	boardSize int
 
 	// currently limit depth
 	depth int
@@ -155,10 +159,10 @@ type AI struct {
 	level int
 }
 
-func New(cl board.Color, boardSize int, lv Level) *AI {
+func New(cl color, boardSize int, lv Level) *AI {
 	ai := AI{
 		color:     cl,
-		opponent:  cl.Opponent(),
+		opponent:  cl.reverse(),
 		boardSize: boardSize,
 		depth:     DEPTH,
 	}
@@ -166,101 +170,99 @@ func New(cl board.Color, boardSize int, lv Level) *AI {
 	ai.level = int(lv)
 
 	if boardSize == 6 {
-		if ai.level < 3 {
-			ai.valueNetWork = VALUE6x6WEAKER
-		} else {
-			ai.valueNetWork = VALUE6x6
-		}
+		ai.valueNetWork = VALUE6x6
+		ai.totalValue = TOTAL6x6
+		ai.depth = 4 + ai.level*2
 	} else {
-		if ai.level < 3 {
-			ai.valueNetWork = VALUE8x8WEAKER
-		} else {
-			ai.valueNetWork = VALUE8x8
-		}
+		ai.valueNetWork = VALUE8x8
+		ai.totalValue = TOTAL8x8
+		ai.depth = 2 + ai.level*2
 	}
 	return &ai
 }
 
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
+	aibd := newBoardFromStr(bd.String())
 	ai.nodes = 0
-	ai.emptyCount = bd.EmptyCount()
 
-	ai.setDepthByLevel()
+	ai.setStepDepth(aibd)
 
-	best := ai.alphaBetaHelper(bd, ai.depth)
-	fmt.Printf("built-in AI: {depth: %v, nodes: %v, value: %v}\n", ai.reachedDepth, ai.nodes, best.value)
+	best := ai.alphaBetaHelper(aibd, ai.depth)
+	ai.printValue(best)
 
-	bestPoint := board.NewPoint(best.x, best.y)
-	if !bd.Put(ai.color, bestPoint) {
-		return bestPoint, fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
+	bestPoint := point{x: best.x, y: best.y}
+	if _, ok := aibd.putAndCheck(ai.color, bestPoint); !ok {
+		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
 	}
-	return bestPoint, nil
+	return bestPoint.toBoardPoint(), nil
 }
 
-func (ai *AI) setDepthByLevel() {
-	offset := ai.level - 4 // -4~0
-
-	if ai.boardSize == 8 {
-		step2Max := STEP2DEPTH + (offset * 4) - 2 // 8x8 reduce depth (2)
-		if ai.emptyCount > step2Max {
-			ai.depth = DEPTH + (offset * 2) - 2 // step 1, 8x8 reduce depth (2)
-		} else {
-			ai.depth = step2Max // step 2
-		}
+func (ai *AI) printValue(best node) {
+	if ai.step == 1 {
+		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.boardSize*ai.boardSize)
+		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
-		step2Max := STEP2DEPTH + (offset * 5)
-		if ai.emptyCount > step2Max {
-			ai.depth = DEPTH + (offset * 2) // step 1
-		} else {
-			ai.depth = step2Max // step 2
-		}
+		finValue := best.value
+		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %d}\n", ai.reachedDepth, ai.nodes, finValue)
 	}
 }
 
-func (ai *AI) heuristic(bd board.Board) int {
-	if ai.emptyCount > ai.depth { // step 1
+func (ai *AI) setStepDepth(bd aiboard) {
+	emptyCount := bd.emptyCount()
+
+	if emptyCount > STEP2DEPTH {
+		ai.step = 1
+	} else {
+		ai.step = 2
+		ai.depth += 6
+	}
+}
+
+func (ai *AI) heuristic(bd aiboard) int {
+	if ai.step == 1 { // step 1
 		return ai.evalBoard(bd)
 	} else { // step 2
-		return bd.CountPieces(ai.color) - bd.CountPieces(ai.opponent)
+		return bd.countPieces(ai.color) - bd.countPieces(ai.opponent)
 	}
 }
 
-func (ai *AI) heuristicAfterPut(bd board.Board, currentValue int, p board.Point, color board.Color) int {
-	if ai.emptyCount > ai.depth { // step 1
-		return ai.evalAfterPut(bd, currentValue, p, color)
+func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
+	if ai.step == 1 { // step 1
+		return ai.evalAfterPut(bd, currentValue, p, cl)
 	} else { // step 2
 		return ai.countAfterPut(bd, currentValue, p, ai.color)
 	}
 }
 
-func (ai *AI) evalBoard(bd board.Board) int {
-	point := 0
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
-			if bd.AtXY(i, j) == ai.color {
-				point += ai.valueNetWork[i][j]
-			} else if bd.AtXY(i, j) == ai.opponent {
-				point -= ai.valueNetWork[i][j]
+func (ai *AI) evalBoard(bd aiboard) int {
+	value := 0
+	for i := 0; i < bd.size(); i++ {
+		for j := 0; j < bd.size(); j++ {
+			p := point{x: i, y: j}
+			if bd.at(p) == ai.color {
+				value += ai.valueNetWork[i][j]
+			} else if bd.at(p) == ai.opponent {
+				value -= ai.valueNetWork[i][j]
 			}
 		}
 	}
-	return point
+	return value
 }
 
-func (ai *AI) changedValue(bd board.Board, cl board.Color, p board.Point, dir [2]int) int {
+func (ai *AI) changedValue(bd aiboard, cl color, p point, dir [2]int) int {
 	delta := 0
-	x, y := p.X, p.Y
-	opponent := cl.Opponent()
+	x, y := p.x, p.y
+	opponent := cl.reverse()
 
 	x, y = x+dir[0], y+dir[1]
-	if bd.AtXY(x, y) != opponent {
+	if bd.at(point{x: x, y: y}) != opponent {
 		return 0
 	}
 	delta += ai.valueNetWork[x][y] * 2 // flip opponent to yours, so double
 
 	for {
 		x, y = x+dir[0], y+dir[1]
-		now := bd.AtXY(x, y)
+		now := bd.at(point{x: x, y: y})
 		if now != opponent {
 			if now == cl {
 				return delta
@@ -273,29 +275,29 @@ func (ai *AI) changedValue(bd board.Board, cl board.Color, p board.Point, dir [2
 }
 
 // don't need to copy
-func (ai *AI) evalAfterPut(bd board.Board, currentValue int, p board.Point, cl board.Color) int {
+func (ai *AI) evalAfterPut(bd aiboard, currentValue int, p point, cl color) int {
 	for i := 0; i < 8; i++ {
 		currentValue += ai.changedValue(bd, cl, p, DIRECTION[i])
 	}
-	currentValue += ai.valueNetWork[p.X][p.Y]
+	currentValue += ai.valueNetWork[p.x][p.y]
 	return currentValue
 }
 
 // don't need to copy board
-func (ai *AI) countAfterPut(bd board.Board, currentCount int, p board.Point, cl board.Color) int {
+func (ai *AI) countAfterPut(bd aiboard, currentCount int, p point, cl color) int {
 	for i := 0; i < 8; i++ {
-		currentCount += bd.CountFlipPieces(cl, p, DIRECTION[i])
+		currentCount += bd.countFlipPieces(cl, p, DIRECTION[i])
 	}
 	return currentCount + 1 // include p itself
 }
 
-func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
+func (ai *AI) validPos(bd aiboard, cl color) (all nodes) {
 	all = make(nodes, 0, 16)
 	// nowValue := ai.heuristic(bd, cl)
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
-			p := board.NewPoint(i, j)
-			if bd.IsValidPoint(cl, p) {
+	for i := 0; i < bd.size(); i++ {
+		for j := 0; j < bd.size(); j++ {
+			p := point{x: i, y: j}
+			if bd.isValidPoint(cl, p) {
 				newValue := ai.valueNetWork[i][j] // better one
 				// 下面這個？ 之前慢的原因？ 因為heuristic只該計算出一種值？（不該分兩種顏色）
 				// 這也是為什麼 min layer 之前 sort by asc 失效的原因？待研究
@@ -307,18 +309,18 @@ func (ai *AI) validPos(bd board.Board, cl board.Color) (all nodes) {
 	return
 }
 
-func (ai *AI) sortedValidPos(bd board.Board, cl board.Color) (all nodes) {
+func (ai *AI) sortedValidPos(bd aiboard, cl color) (all nodes) {
 	all = ai.validPos(bd, cl)
 	all.shuffle()
 	all.sort()
 	return
 }
 
-func (ai *AI) alphaBetaHelper(bd board.Board, depth int) node {
+func (ai *AI) alphaBetaHelper(bd aiboard, depth int) node {
 	return ai.alphaBeta(bd, depth, MININT, MAXINT, true)
 }
 
-func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer bool) node {
+func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer bool) node {
 	ai.nodes++
 
 	if depth == 0 {
@@ -329,7 +331,6 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 	aiValid := ai.validPos(bd, ai.color)
 	opValid := ai.validPos(bd, ai.opponent)
 
-	// game over, AI heuristic 無法判斷勝負，因此回傳極大極小值
 	if len(aiValid) == 0 && len(opValid) == 0 {
 		ai.reachedDepth = ai.depth - depth
 		return newNode(-1, -1, ai.heuristic(bd))
@@ -345,9 +346,9 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		aiValid.sort()
 
 		for _, n := range aiValid {
-			temp := bd.Copy()
-			temp.PutWithoutCheck(ai.color, board.NewPoint(n.x, n.y))
-			eval := ai.alphaBeta(temp, depth-1, alpha, beta, false).value
+			hs := bd.put(ai.color, point{x: n.x, y: n.y})
+			eval := ai.alphaBeta(bd, depth-1, alpha, beta, false).value
+			bd.revert(hs)
 
 			if eval > maxValue {
 				maxValue = eval
@@ -370,9 +371,9 @@ func (ai *AI) alphaBeta(bd board.Board, depth int, alpha int, beta int, maxLayer
 		opValid.sort()
 
 		for _, n := range opValid {
-			temp := bd.Copy()
-			temp.PutWithoutCheck(ai.opponent, board.NewPoint(n.x, n.y))
-			eval := ai.alphaBeta(temp, depth-1, alpha, beta, true).value
+			hs := bd.put(ai.opponent, point{x: n.x, y: n.y})
+			eval := ai.alphaBeta(bd, depth-1, alpha, beta, true).value
+			bd.revert(hs)
 
 			if eval < minValue {
 				minValue = eval

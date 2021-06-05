@@ -1,26 +1,22 @@
 package builtinai
 
 import (
-	"othello/board"
 	"testing"
 )
 
-func TestPartialHeuristicChange(t *testing.T) {
-	ai := New(board.WHITE, 6, 0)
+func heuristicTest(t *testing.T, input string, cl color, p point) {
+	ai := New(cl, 6, 0)
 
-	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++++++++XXX++++OXX+++O+++++++++")
-
-	p := board.NewPoint(5, 3)
+	bd := newBoardFromStr(input)
 
 	currentV := ai.heuristic(bd)
 	c := bd.Copy()
-	if !c.Put(board.WHITE, p) {
+	if _, b := c.putAndCheck(cl, p); !b {
 		t.Fatal("cannot put")
 	}
 	newV := ai.heuristic(c)
 
-	aiV := ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
+	aiV := ai.heuristicAfterPut(bd, currentV, p, cl)
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
@@ -28,51 +24,12 @@ func TestPartialHeuristicChange(t *testing.T) {
 		t.Error(c.Visualize())
 	}
 
-	ai = New(board.WHITE, 6, 0)
-	bd = board.NewBoard(6)
-	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
+}
 
-	p = board.NewPoint(1, 4)
+func TestPartialHeuristicChange(t *testing.T) {
 
-	currentV = ai.heuristic(bd)
-	c = bd.Copy()
-	if !c.Put(board.WHITE, p) {
-		t.Error(c.Visualize())
-		c.Assign(board.WHITE, p.X, p.Y)
-		t.Error(c.Visualize())
-		t.Fatal("cannot put")
-	}
-	newV = ai.heuristic(c)
+	heuristicTest(t, "+++++++++++++XXX++++OXX+++O+++++++++", WHITE, point{x: 5, y: 3})
+	heuristicTest(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", WHITE, point{x: 1, y: 4})
+	heuristicTest(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", WHITE, point{x: 1, y: 4})
 
-	aiV = ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
-
-	if newV != aiV {
-		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(bd.Visualize())
-		t.Error(c.Visualize())
-	}
-
-	ai = New(board.WHITE, 6, 0)
-	bd = board.NewBoard(6)
-	bd.AssignBoard("++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+")
-
-	p = board.NewPoint(1, 4)
-
-	currentV = ai.heuristic(bd)
-	c = bd.Copy()
-	if !c.Put(board.WHITE, p) {
-		t.Error(c.Visualize())
-		c.Assign(board.WHITE, p.X, p.Y)
-		t.Error(c.Visualize())
-		t.Fatal("cannot put")
-	}
-	newV = ai.heuristic(c)
-
-	aiV = ai.heuristicAfterPut(bd, currentV, p, board.WHITE)
-
-	if newV != aiV {
-		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(bd.Visualize())
-		t.Error(c.Visualize())
-	}
 }

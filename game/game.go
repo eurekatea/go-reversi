@@ -164,12 +164,12 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	g.closeRoutine = false
 
 	if params.BlackAgent == AgentBuiltIn {
-		g.com1 = builtinai.New(board.BLACK, size, params.BlackInternalAILevel)
+		g.com1 = builtinai.New(builtinai.BLACK, size, params.BlackInternalAILevel)
 	} else if params.BlackAgent == AgentExternal {
 		g.com1 = newCom(board.BLACK, params.BlackPath)
 	}
 	if params.WhiteAgent == AgentBuiltIn {
-		g.com2 = builtinai.New(board.WHITE, size, params.WhiteInternalAILevel)
+		g.com2 = builtinai.New(builtinai.WHITE, size, params.WhiteInternalAILevel)
 	} else if params.WhiteAgent == AgentExternal {
 		g.com2 = newCom(board.WHITE, params.WhitePath)
 	}

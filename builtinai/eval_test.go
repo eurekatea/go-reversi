@@ -1,78 +1,36 @@
 package builtinai
 
 import (
-	"othello/board"
 	"testing"
 )
 
-func TestPartialValueChange(t *testing.T) {
-	ai := New(board.WHITE, 6, 0)
+func unit(t *testing.T, input string, p point, cl color) {
+	ai := New(cl, 6, 0)
 
-	bd := board.NewBoard(6)
-	bd.AssignBoard("+++++++++++++XXX++++OXX+++O+++++++++")
-
-	p := board.NewPoint(5, 3)
+	bd := newBoardFromStr(input)
 
 	currentV := ai.evalBoard(bd)
 	c := bd.Copy()
-	if !c.Put(board.WHITE, p) {
+	if _, b := c.putAndCheck(cl, p); !b {
 		t.Error(c.Visualize())
-		c.Assign(board.WHITE, p.X, p.Y)
+		c[p.x][p.y] = cl
 		t.Error(c.Visualize())
 		t.Fatal("cannot put")
 	}
 	newV := ai.evalBoard(c)
 
-	aiV := ai.evalAfterPut(bd, currentV, p, board.WHITE)
+	aiV := ai.evalAfterPut(bd, currentV, p, cl)
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
 		t.Error(c.Visualize())
 	}
+}
 
-	ai = New(board.WHITE, 6, 0)
-	bd = board.NewBoard(6)
-	bd.AssignBoard("++++++++++++XXOOO++XXOO+O+XXO++XXXO+")
+func TestPartialValueChange(t *testing.T) {
 
-	p = board.NewPoint(1, 4)
+	unit(t, "+++++++++++++XXX++++OXX+++O+++++++++", point{x: 5, y: 3}, WHITE)
+	unit(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", point{x: 1, y: 4}, WHITE)
+	unit(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", point{x: 1, y: 4}, WHITE)
 
-	currentV = ai.evalBoard(bd)
-	c = bd.Copy()
-	if !c.Put(board.WHITE, p) {
-		t.Error(c.Visualize())
-		c.Assign(board.WHITE, p.X, p.Y)
-		t.Error(c.Visualize())
-		t.Fatal("cannot put")
-	}
-	newV = ai.evalBoard(c)
-
-	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
-
-	if newV != aiV {
-		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(c.Visualize())
-	}
-
-	ai = New(board.WHITE, 6, 0)
-	bd = board.NewBoard(6)
-	bd.AssignBoard("++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+")
-
-	p = board.NewPoint(1, 4)
-
-	currentV = ai.evalBoard(bd)
-	c = bd.Copy()
-	if !c.Put(board.WHITE, p) {
-		t.Error(c.Visualize())
-		c.Assign(board.WHITE, p.X, p.Y)
-		t.Error(c.Visualize())
-		t.Fatal("cannot put")
-	}
-	newV = ai.evalBoard(c)
-
-	aiV = ai.evalAfterPut(bd, currentV, p, board.WHITE)
-
-	if newV != aiV {
-		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(c.Visualize())
-	}
 }
