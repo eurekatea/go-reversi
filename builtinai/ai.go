@@ -181,7 +181,7 @@ func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 				}
 			}
 		}
-		// the smaller the mobility opponent is, better.
+		// the smaller the opponent mobility is, the better.
 		all.sortAsc()
 	}
 	return
