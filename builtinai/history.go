@@ -7,8 +7,8 @@ type history struct {
 	flips     []int
 }
 
-func newHistory(place point, origColor color) *history {
-	return &history{
+func newHistory(place point, origColor color) history {
+	return history{
 		origColor: origColor,
 		place:     place,
 		dirs:      make([][2]int, 0, 4),

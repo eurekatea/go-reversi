@@ -36,7 +36,7 @@ func BenchmarkNewone(b *testing.B) {
 	bd := newBoardFromStr("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
 	for i := 0; i < b.N; i++ {
-		ai.validPos(bd, ai.color)
+		ai.validNodes(bd, ai.color)
 	}
 }
 
@@ -68,8 +68,65 @@ func BenchmarkCopy(b *testing.B) {
 	}
 }
 
-// vs copy, avg: 235 ns/op, around 3 times faster
+// vs copy, avg: 235 ns/op, around 3 times faster (history pass by pointer)
+// after history pass by value: 170 ns/op
 func BenchmarkRevert(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	for i := 0; i < b.N; i++ {
+		hs := bd.put(WHITE, point{x: 4, y: 0})
+		bd.revert(hs)
+	}
+}
+
+// compiler will inline aiboard.at() so it is no problem
+func BenchmarkAtP(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	p := point{x: 4, y: 0}
+	for i := 0; i < b.N; i++ {
+		_ = bd.at(p)
+	}
+}
+
+func BenchmarkDirect(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	p := point{x: 4, y: 0}
+	for i := 0; i < b.N; i++ {
+		_ = bd[p.x+1][p.y+1]
+	}
+}
+
+func BenchmarkAccessTwoDimSlice(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	x, y := 5, 3
+	for i := 0; i < b.N; i++ {
+		_ = bd[x][y]
+	}
+}
+
+func BenchmarkAccessOneDimSlice(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+	oneDim := make([]color, 36)
+	cnt := 0
+	for i := 0; i < bd.size(); i++ {
+		for j := 0; j < bd.size(); j++ {
+			oneDim[cnt] = bd[i][j]
+			cnt++
+		}
+	}
+
+	x := 33
+	for i := 0; i < b.N; i++ {
+		_ = oneDim[x]
+	}
+}
+
+// if history pass by pointer: avg 255 ns/op
+// but pass by value: avg 160 ns/op
+func BenchmarkHs(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
 	for i := 0; i < b.N; i++ {

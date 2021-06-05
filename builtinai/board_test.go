@@ -8,10 +8,10 @@ func testValidPoint(t *testing.T, input string, p point, target int) {
 
 	count := 0
 	for i := 0; i < 8; i++ {
-		count += bd.countFlipPieces(WHITE, point{x: 4, y: 3}, DIRECTION[i])
+		count += bd.countFlipPieces(WHITE, BLACK, point{x: 4, y: 3}, DIRECTION[i])
 	}
 	if count != 1 {
-		t.Error(count, "\n", bd.Visualize())
+		t.Error(count, "\n", bd.visualize())
 	}
 }
 
@@ -26,11 +26,11 @@ func TestValidPoint(t *testing.T) {
 func testFlip(t *testing.T, input string, cl color, p point, targetState string) {
 	bd := newBoardFromStr(input)
 
-	if _, b := bd.putAndCheck(cl, p); !b {
+	if !bd.putAndCheck(cl, p) {
 		t.Error("cannot put")
-		t.Error("\n", bd.Visualize())
+		t.Error("\n", bd.visualize())
 		bd.assign(cl, p)
-		t.Error("\n", bd.Visualize())
+		t.Error("\n", bd.visualize())
 		return
 	}
 
@@ -39,7 +39,7 @@ func testFlip(t *testing.T, input string, cl color, p point, targetState string)
 	for i := range out {
 		if out[i] != targetState[i] {
 			t.Error("failed\n", out, "\n", targetState)
-			t.Error("\n", bd.Visualize())
+			t.Error("\n", bd.visualize())
 			return
 		}
 	}
@@ -59,22 +59,14 @@ func testRevert(t *testing.T, input string, cl color, p point) {
 	orig := bd.String()
 	origBoard := bd.Copy()
 
-	var hs *history
-	var b bool
-	if hs, b = bd.putAndCheck(cl, p); !b {
-		t.Error("cannot put")
-		t.Error("\n", bd.Visualize())
-		bd.assign(cl, p)
-		t.Error("\n", bd.Visualize())
-		return
-	}
+	hs := bd.put(cl, p)
 
 	bd.revert(hs)
 	afterRevert := bd.String()
 
 	for i := 0; i < len(orig); i++ {
 		if orig[i] != afterRevert[i] {
-			t.Error("\n", origBoard.Visualize(), "\n", bd.Visualize())
+			t.Error("\n", origBoard.visualize(), "\n", bd.visualize())
 		}
 	}
 }

@@ -11,10 +11,10 @@ func unit(t *testing.T, input string, p point, cl color) {
 
 	currentV := ai.evalBoard(bd)
 	c := bd.Copy()
-	if _, b := c.putAndCheck(cl, p); !b {
-		t.Error(c.Visualize())
+	if !c.putAndCheck(cl, p) {
+		t.Error(c.visualize())
 		c[p.x][p.y] = cl
-		t.Error(c.Visualize())
+		t.Error(c.visualize())
 		t.Fatal("cannot put")
 	}
 	newV := ai.evalBoard(c)
@@ -23,7 +23,7 @@ func unit(t *testing.T, input string, p point, cl color) {
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(c.Visualize())
+		t.Error(c.visualize())
 	}
 }
 

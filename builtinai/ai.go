@@ -191,7 +191,7 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	ai.printValue(best)
 
 	bestPoint := point{x: best.x, y: best.y}
-	if _, ok := aibd.putAndCheck(ai.color, bestPoint); !ok {
+	if !aibd.putAndCheck(ai.color, bestPoint) {
 		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
 	}
 	return bestPoint.toBoardPoint(), nil
@@ -207,14 +207,17 @@ func (ai *AI) printValue(best node) {
 	}
 }
 
+// step 2 may use mobility order (number of moves possible),
+// maximizing self, minimizing opponent
 func (ai *AI) setStepDepth(bd aiboard) {
 	emptyCount := bd.emptyCount()
 
-	if emptyCount > STEP2DEPTH {
+	step2Depth := STEP2DEPTH + (ai.level-4)*4
+	if emptyCount > step2Depth {
 		ai.step = 1
 	} else {
 		ai.step = 2
-		ai.depth += 6
+		ai.depth = MAXINT // until end of game
 	}
 }
 
@@ -227,9 +230,9 @@ func (ai *AI) heuristic(bd aiboard) int {
 }
 
 func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
-	if ai.step == 1 { // step 1
+	if ai.step == 1 {
 		return ai.evalAfterPut(bd, currentValue, p, cl)
-	} else { // step 2
+	} else {
 		return ai.countAfterPut(bd, currentValue, p, ai.color)
 	}
 }
@@ -286,13 +289,13 @@ func (ai *AI) evalAfterPut(bd aiboard, currentValue int, p point, cl color) int 
 // don't need to copy board
 func (ai *AI) countAfterPut(bd aiboard, currentCount int, p point, cl color) int {
 	for i := 0; i < 8; i++ {
-		currentCount += bd.countFlipPieces(cl, p, DIRECTION[i])
+		currentCount += bd.countFlipPieces(cl, cl.reverse(), p, DIRECTION[i])
 	}
 	return currentCount + 1 // include p itself
 }
 
-func (ai *AI) validPos(bd aiboard, cl color) (all nodes) {
-	all = make(nodes, 0, 16)
+func (ai *AI) validNodes(bd aiboard, cl color) (all nodes) {
+	all = make(nodes, 0, 16) // usually possible point wont surpass 16
 	// nowValue := ai.heuristic(bd, cl)
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
@@ -309,13 +312,6 @@ func (ai *AI) validPos(bd aiboard, cl color) (all nodes) {
 	return
 }
 
-func (ai *AI) sortedValidPos(bd aiboard, cl color) (all nodes) {
-	all = ai.validPos(bd, cl)
-	all.shuffle()
-	all.sort()
-	return
-}
-
 func (ai *AI) alphaBetaHelper(bd aiboard, depth int) node {
 	return ai.alphaBeta(bd, depth, MININT, MAXINT, true)
 }
@@ -328,8 +324,8 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		return newNode(-1, -1, ai.heuristic(bd))
 	}
 
-	aiValid := ai.validPos(bd, ai.color)
-	opValid := ai.validPos(bd, ai.opponent)
+	aiValid := ai.validNodes(bd, ai.color)
+	opValid := ai.validNodes(bd, ai.opponent)
 
 	if len(aiValid) == 0 && len(opValid) == 0 {
 		ai.reachedDepth = ai.depth - depth

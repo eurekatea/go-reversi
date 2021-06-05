@@ -11,7 +11,7 @@ func heuristicTest(t *testing.T, input string, cl color, p point) {
 
 	currentV := ai.heuristic(bd)
 	c := bd.Copy()
-	if _, b := c.putAndCheck(cl, p); !b {
+	if !c.putAndCheck(cl, p) {
 		t.Fatal("cannot put")
 	}
 	newV := ai.heuristic(c)
@@ -20,8 +20,8 @@ func heuristicTest(t *testing.T, input string, cl color, p point) {
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(bd.Visualize())
-		t.Error(c.Visualize())
+		t.Error(bd.visualize())
+		t.Error(c.visualize())
 	}
 
 }

@@ -11,8 +11,8 @@ func particleChange(t *testing.T, input string, cl color, p point) {
 
 	currentV := bd.countPieces(cl)
 	c := bd.Copy()
-	if _, b := c.putAndCheck(cl, p); !b {
-		t.Error(c.Visualize())
+	if !c.putAndCheck(cl, p) {
+		t.Error(c.visualize())
 		t.Fatal("cannot put")
 	}
 	newV := c.countPieces(cl)
@@ -21,7 +21,7 @@ func particleChange(t *testing.T, input string, cl color, p point) {
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
-		t.Error(c.Visualize())
+		t.Error(c.visualize())
 	}
 }
 

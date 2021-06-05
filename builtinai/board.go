@@ -78,7 +78,7 @@ func (bd aiboard) String() (res string) {
 	return
 }
 
-func (bd aiboard) Visualize() (res string) {
+func (bd aiboard) visualize() (res string) {
 	res = "  "
 	for i := 0; i < bd.size(); i++ {
 		res += string(rune('a'+i)) + " "
@@ -101,23 +101,24 @@ func (bd aiboard) Visualize() (res string) {
 	return
 }
 
-func (bd aiboard) put(cl color, p point) *history {
+func (bd aiboard) put(cl color, p point) history {
 	bd.assign(cl, p)
 	return bd.flip(cl, p)
 }
 
-func (bd aiboard) putAndCheck(cl color, p point) (*history, bool) {
+func (bd aiboard) putAndCheck(cl color, p point) bool {
 	if p.x < 0 || p.x >= bd.size() || p.y < 0 || p.y >= bd.size() {
-		return nil, false
+		return false
 	}
 	if bd.at(p) != NONE {
-		return nil, false
+		return false
 	}
 	if !bd.isValidPoint(cl, p) {
-		return nil, false
+		return false
 	}
 	bd.assign(cl, p)
-	return bd.flip(cl, p), true
+	bd.flip(cl, p)
+	return true
 }
 
 func (bd aiboard) assign(cl color, p point) {
@@ -129,7 +130,7 @@ func (bd aiboard) at(p point) color {
 }
 
 // undo step
-func (bd aiboard) revert(hs *history) {
+func (bd aiboard) revert(hs history) {
 	for i := range hs.dirs {
 		x, y := hs.place.x+hs.dirs[i][0], hs.place.y+hs.dirs[i][1]
 		for j := 0; j < hs.flips[i]; j++ {
@@ -140,25 +141,25 @@ func (bd aiboard) revert(hs *history) {
 	bd.assign(NONE, hs.place)
 }
 
-// 可能有問題
+// self loop unrolling lol
 func (bd aiboard) isValidPoint(cl color, p point) bool {
 	if bd.at(p) != NONE {
 		return false
 	}
-	for i := 0; i < 8; i++ {
-		if bd.countFlipPieces(cl, p, DIRECTION[i]) > 0 {
-			return true
-		}
-	}
-	return false
+	op := cl.reverse()
+	return bd.countFlipPieces(cl, op, p, DIRECTION[0]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[1]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[2]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[3]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[4]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[5]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[6]) > 0 ||
+		bd.countFlipPieces(cl, op, p, DIRECTION[7]) > 0
 }
 
-func (bd aiboard) countFlipPieces(cl color, p point, dir [2]int) int {
+func (bd aiboard) countFlipPieces(cl color, opponent color, p point, dir [2]int) int {
 	count := 0
-	x, y := p.x, p.y
-	opponent := cl.reverse()
-
-	x, y = x+dir[0], y+dir[1]
+	x, y := p.x+dir[0], p.y+dir[1]
 	if bd.at(point{x: x, y: y}) != opponent {
 		return 0
 	}
@@ -167,21 +168,23 @@ func (bd aiboard) countFlipPieces(cl color, p point, dir [2]int) int {
 	for {
 		x, y = x+dir[0], y+dir[1]
 		now := bd.at(point{x: x, y: y})
-		if now != opponent {
+		if now == opponent {
+			count++
+		} else {
 			if now == cl {
 				return count
 			} else {
 				return 0
 			}
 		}
-		count++
 	}
 }
 
-func (bd aiboard) flip(cl color, p point) *history {
+func (bd aiboard) flip(cl color, p point) history {
 	hs := newHistory(p, cl.reverse())
+	op := cl.reverse()
 	for i := 0; i < 8; i++ {
-		if count := bd.countFlipPieces(cl, p, DIRECTION[i]); count > 0 {
+		if count := bd.countFlipPieces(cl, op, p, DIRECTION[i]); count > 0 {
 			x, y := p.x+DIRECTION[i][0], p.y+DIRECTION[i][1]
 			for j := 0; j < count; j++ {
 				bd.assign(cl, point{x: x, y: y})
