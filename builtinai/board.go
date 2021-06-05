@@ -197,18 +197,18 @@ func (bd aiboard) flip(cl color, p point) history {
 	return hs
 }
 
-func (bd aiboard) countPieces(cl color) int {
-	count := 0
+func (bd aiboard) emptyCount() int {
+	return bd.countPieces(NONE)
+}
+
+func (bd aiboard) isOver() bool {
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			if bd.at(point{x: i, y: j}) == cl {
-				count++
+			p := point{x: i, y: j}
+			if bd.isValidPoint(BLACK, p) || bd.isValidPoint(WHITE, p) {
+				return false
 			}
 		}
 	}
-	return count
-}
-
-func (bd aiboard) emptyCount() int {
-	return bd.countPieces(NONE)
+	return true
 }

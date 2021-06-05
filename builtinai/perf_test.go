@@ -36,7 +36,7 @@ func BenchmarkNewone(b *testing.B) {
 	bd := newBoardFromStr("+++X++++X++++XOOO+++OOX+++O+++++++++")
 
 	for i := 0; i < b.N; i++ {
-		ai.validNodes(bd, ai.color)
+		ai.sortedValidNodes(bd, ai.color)
 	}
 }
 
@@ -58,7 +58,7 @@ func BenchmarkPlus(b *testing.B) {
 	fmt.Println(k)
 }
 
-// vs revert, avg: 670 ns/op
+// vs revert, avg: 500 ns/op, 352 B/op, 11 allocs/op
 func BenchmarkCopy(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
@@ -68,8 +68,8 @@ func BenchmarkCopy(b *testing.B) {
 	}
 }
 
-// vs copy, avg: 235 ns/op, around 3 times faster (history pass by pointer)
-// after history pass by value: 170 ns/op
+// vs copy, avg: 235 ns/op (history pass by pointer)
+// after history pass by value: 170 ns/op, 96 B/op, 2 allocs/op
 func BenchmarkRevert(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 

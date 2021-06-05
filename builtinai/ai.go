@@ -3,9 +3,7 @@ package builtinai
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"othello/board"
-	"sort"
 )
 
 type Level int
@@ -40,44 +38,6 @@ const (
 	MAXINT     = math.MaxInt32
 )
 
-var (
-	VALUE6x6 = [][]int{
-		{100, -36, 53, 53, -36, 100},
-		{-36, -69, -10, -10, -69, -36},
-		{53, -10, -2, -2, -10, 53},
-		{53, -10, -2, -2, -10, 53},
-		{-36, -69, -10, -10, -69, -36},
-		{100, -36, 53, 53, -36, 100},
-	}
-
-	VALUE8x8 = [][]int{
-		{800, -286, 426, -24, -24, 426, -286, 800},
-		{-286, -552, -177, -82, -82, -177, -552, -286},
-		{426, -177, 62, 8, 8, 62, -177, 426},
-		{-24, -82, 8, -18, -18, 8, -82, -24},
-		{-24, -82, 8, -18, -18, 8, -82, -24},
-		{426, -177, 62, 8, 8, 62, -177, 426},
-		{-286, -552, -177, -82, -82, -177, -552, -286},
-		{800, -286, 426, -24, -24, 426, -286, 800},
-	}
-
-	TOTAL6x6 int
-	TOTAL8x8 int
-)
-
-func init() {
-	for i := 0; i < len(VALUE6x6); i++ {
-		for j := 0; j < len(VALUE6x6); j++ {
-			TOTAL6x6 += abs(VALUE6x6[i][j])
-		}
-	}
-	for i := 0; i < len(VALUE8x8); i++ {
-		for j := 0; j < len(VALUE8x8); j++ {
-			TOTAL8x8 += abs(VALUE8x8[i][j])
-		}
-	}
-}
-
 func abs(v int) int {
 	if v > 0 {
 		return v
@@ -102,46 +62,12 @@ func min(a int, b int) int {
 	}
 }
 
-type node struct {
-	x, y  int
-	value int
-}
-
-func newNode(x, y, value int) node {
-	return node{x: x, y: y, value: value}
-}
-
-type nodes []node
-
-func (ns nodes) Len() int {
-	return len(ns)
-}
-
-func (ns nodes) Less(i, j int) bool {
-	return ns[i].value > ns[j].value // descending order
-}
-
-func (ns nodes) Swap(i, j int) {
-	ns[i], ns[j] = ns[j], ns[i]
-}
-
-// provide randomness
-func (ns nodes) shuffle() {
-	rand.Shuffle(len(ns), func(i, j int) {
-		ns[i], ns[j] = ns[j], ns[i]
-	})
-}
-
-func (ns nodes) sort() {
-	sort.Sort(ns)
-}
-
 type AI struct {
 	color    color
 	opponent color
 
-	valueNetWork [][]int
-	totalValue   int
+	valueDisk  [][]int
+	totalValue int
 
 	step int
 
@@ -170,11 +96,11 @@ func New(cl color, boardSize int, lv Level) *AI {
 	ai.level = int(lv)
 
 	if boardSize == 6 {
-		ai.valueNetWork = VALUE6x6
+		ai.valueDisk = VALUE6x6
 		ai.totalValue = TOTAL6x6
 		ai.depth = 4 + ai.level*2
 	} else {
-		ai.valueNetWork = VALUE8x8
+		ai.valueDisk = VALUE8x8
 		ai.totalValue = TOTAL8x8
 		ai.depth = 2 + ai.level*2
 	}
@@ -223,91 +149,40 @@ func (ai *AI) setStepDepth(bd aiboard) {
 
 func (ai *AI) heuristic(bd aiboard) int {
 	if ai.step == 1 { // step 1
-		return ai.evalBoard(bd)
+		return bd.eval(ai.color, ai.opponent, ai.valueDisk)
 	} else { // step 2
 		return bd.countPieces(ai.color) - bd.countPieces(ai.opponent)
 	}
 }
 
-func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
-	if ai.step == 1 {
-		return ai.evalAfterPut(bd, currentValue, p, cl)
-	} else {
-		return ai.countAfterPut(bd, currentValue, p, ai.color)
-	}
-}
-
-func (ai *AI) evalBoard(bd aiboard) int {
-	value := 0
-	for i := 0; i < bd.size(); i++ {
-		for j := 0; j < bd.size(); j++ {
-			p := point{x: i, y: j}
-			if bd.at(p) == ai.color {
-				value += ai.valueNetWork[i][j]
-			} else if bd.at(p) == ai.opponent {
-				value -= ai.valueNetWork[i][j]
-			}
-		}
-	}
-	return value
-}
-
-func (ai *AI) changedValue(bd aiboard, cl color, p point, dir [2]int) int {
-	delta := 0
-	x, y := p.x, p.y
-	opponent := cl.reverse()
-
-	x, y = x+dir[0], y+dir[1]
-	if bd.at(point{x: x, y: y}) != opponent {
-		return 0
-	}
-	delta += ai.valueNetWork[x][y] * 2 // flip opponent to yours, so double
-
-	for {
-		x, y = x+dir[0], y+dir[1]
-		now := bd.at(point{x: x, y: y})
-		if now != opponent {
-			if now == cl {
-				return delta
-			} else {
-				return 0
-			}
-		}
-		delta += ai.valueNetWork[x][y] * 2 // same as above
-	}
-}
-
-// don't need to copy
-func (ai *AI) evalAfterPut(bd aiboard, currentValue int, p point, cl color) int {
-	for i := 0; i < 8; i++ {
-		currentValue += ai.changedValue(bd, cl, p, DIRECTION[i])
-	}
-	currentValue += ai.valueNetWork[p.x][p.y]
-	return currentValue
-}
-
-// don't need to copy board
-func (ai *AI) countAfterPut(bd aiboard, currentCount int, p point, cl color) int {
-	for i := 0; i < 8; i++ {
-		currentCount += bd.countFlipPieces(cl, cl.reverse(), p, DIRECTION[i])
-	}
-	return currentCount + 1 // include p itself
-}
-
-func (ai *AI) validNodes(bd aiboard, cl color) (all nodes) {
+func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 	all = make(nodes, 0, 16) // usually possible point wont surpass 16
-	// nowValue := ai.heuristic(bd, cl)
-	for i := 0; i < bd.size(); i++ {
-		for j := 0; j < bd.size(); j++ {
-			p := point{x: i, y: j}
-			if bd.isValidPoint(cl, p) {
-				newValue := ai.valueNetWork[i][j] // better one
-				// 下面這個？ 之前慢的原因？ 因為heuristic只該計算出一種值？（不該分兩種顏色）
-				// 這也是為什麼 min layer 之前 sort by asc 失效的原因？待研究
-				// newValue := ai.heuristicAfterPut(bd, nowValue, p, cl) // old one, performed not good as this one
-				all = append(all, newNode(i, j, newValue))
+	if ai.step == 1 {
+		for i := 0; i < bd.size(); i++ {
+			for j := 0; j < bd.size(); j++ {
+				p := point{x: i, y: j}
+				if bd.isValidPoint(cl, p) {
+					newValue := ai.valueDisk[i][j] // better one
+					all = append(all, newNode(i, j, newValue))
+				}
 			}
 		}
+		all.sortDesc()
+	} else {
+		opponent := cl.reverse()
+		for i := 0; i < bd.size(); i++ {
+			for j := 0; j < bd.size(); j++ {
+				p := point{x: i, y: j}
+				if bd.isValidPoint(cl, p) {
+					hs := bd.put(cl, p)
+					v := bd.mobility(opponent)
+					all = append(all, newNode(i, j, v))
+					bd.revert(hs)
+				}
+			}
+		}
+		// the smaller the mobility opponent is, better.
+		all.sortAsc()
 	}
 	return
 }
@@ -323,11 +198,7 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		ai.reachedDepth = ai.depth
 		return newNode(-1, -1, ai.heuristic(bd))
 	}
-
-	aiValid := ai.validNodes(bd, ai.color)
-	opValid := ai.validNodes(bd, ai.opponent)
-
-	if len(aiValid) == 0 && len(opValid) == 0 {
+	if bd.isOver() {
 		ai.reachedDepth = ai.depth - depth
 		return newNode(-1, -1, ai.heuristic(bd))
 	}
@@ -336,10 +207,10 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		maxValue := MININT
 		bestNode := newNode(-1, -1, maxValue)
 
+		aiValid := ai.sortedValidNodes(bd, ai.color)
 		if len(aiValid) == 0 { // 沒地方下，換邊
 			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
-		aiValid.sort()
 
 		for _, n := range aiValid {
 			hs := bd.put(ai.color, point{x: n.x, y: n.y})
@@ -361,10 +232,10 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		minValue := MAXINT
 		bestNode := newNode(-1, -1, minValue)
 
+		opValid := ai.sortedValidNodes(bd, ai.opponent)
 		if len(opValid) == 0 { // 對手沒地方下，換邊
 			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
-		opValid.sort()
 
 		for _, n := range opValid {
 			hs := bd.put(ai.opponent, point{x: n.x, y: n.y})

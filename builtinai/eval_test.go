@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func unit(t *testing.T, input string, p point, cl color) {
+func testPartialValueChange(t *testing.T, input string, p point, cl color) {
 	ai := New(cl, 6, 0)
 
 	bd := newBoardFromStr(input)
 
-	currentV := ai.evalBoard(bd)
+	currentV := bd.eval(ai.color, ai.opponent, ai.valueDisk)
 	c := bd.Copy()
 	if !c.putAndCheck(cl, p) {
 		t.Error(c.visualize())
@@ -17,7 +17,7 @@ func unit(t *testing.T, input string, p point, cl color) {
 		t.Error(c.visualize())
 		t.Fatal("cannot put")
 	}
-	newV := ai.evalBoard(c)
+	newV := c.eval(ai.color, ai.opponent, ai.valueDisk)
 
 	aiV := ai.evalAfterPut(bd, currentV, p, cl)
 
@@ -29,8 +29,8 @@ func unit(t *testing.T, input string, p point, cl color) {
 
 func TestPartialValueChange(t *testing.T) {
 
-	unit(t, "+++++++++++++XXX++++OXX+++O+++++++++", point{x: 5, y: 3}, WHITE)
-	unit(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", point{x: 1, y: 4}, WHITE)
-	unit(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", point{x: 1, y: 4}, WHITE)
+	testPartialValueChange(t, "+++++++++++++XXX++++OXX+++O+++++++++", point{x: 5, y: 3}, WHITE)
+	testPartialValueChange(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", point{x: 1, y: 4}, WHITE)
+	testPartialValueChange(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", point{x: 1, y: 4}, WHITE)
 
 }
