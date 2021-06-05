@@ -190,6 +190,8 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		theme.ContentRedoIcon(),
 		func() {
 			g.passBtn.Disable()
+			g.now = g.now.Opponent()
+			g.update(nullPoint)
 		},
 	)
 	g.passBtn.Disable()
@@ -273,9 +275,9 @@ func (g *game) update(current board.Point) {
 				g.passBtn.Enable()
 			} else { // current is computer
 				dialog.NewInformation("info", "computer have to pass\n it's your turn", g.window).Show()
+				g.now = g.now.Opponent()
+				g.update(nullPoint)
 			}
-			g.now = g.now.Opponent()
-			g.update(nullPoint)
 		} else {
 			g.now = g.now.Opponent()
 			g.showValidAndCount(current)
