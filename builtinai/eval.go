@@ -65,7 +65,7 @@ func (bd aiboard) countPieces(cl color) int {
 	return count
 }
 
-// return the mobility
+// return the mobility (how many possible moves)
 func (bd aiboard) mobility(cl color) int {
 	count := 0
 	for i := 0; i < bd.size(); i++ {

@@ -32,7 +32,6 @@ const (
 	EXPERT
 	MASTER
 
-	DEPTH      = 12
 	STEP2DEPTH = 18
 	MININT     = math.MinInt32
 	MAXINT     = math.MaxInt32
@@ -90,7 +89,6 @@ func New(cl color, boardSize int, lv Level) *AI {
 		color:     cl,
 		opponent:  cl.reverse(),
 		boardSize: boardSize,
-		depth:     DEPTH,
 	}
 
 	ai.level = int(lv)
@@ -98,7 +96,7 @@ func New(cl color, boardSize int, lv Level) *AI {
 	if boardSize == 6 {
 		ai.valueDisk = VALUE6x6
 		ai.totalValue = TOTAL6x6
-		ai.depth = 6 + ai.level*2 // highest: 14
+		ai.depth = 8 + ai.level*2 // highest: 16
 	} else {
 		ai.valueDisk = VALUE8x8
 		ai.totalValue = TOTAL8x8
@@ -137,6 +135,9 @@ func (ai *AI) setStepDepth(bd aiboard) {
 	emptyCount := bd.emptyCount()
 
 	step2Depth := STEP2DEPTH + (ai.level-4)*4 // level
+	if ai.boardSize == 6 {
+		step2Depth += 2
+	}
 	if emptyCount > step2Depth {
 		ai.step = 1
 	} else {
@@ -156,11 +157,12 @@ func (ai *AI) heuristic(bd aiboard) int {
 func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 	all = make(nodes, 0, 16) // usually possible point wont surpass 16
 	if ai.step == 1 {
+		origValue := bd.eval(cl, cl.reverse(), ai.valueDisk)
 		for i := 0; i < bd.size(); i++ {
 			for j := 0; j < bd.size(); j++ {
 				p := point{x: i, y: j}
 				if bd.isValidPoint(cl, p) {
-					newValue := ai.valueDisk[i][j] // better one
+					newValue := ai.evalAfterPut(bd, origValue, p, cl)
 					all = append(all, newNode(i, j, newValue))
 				}
 			}
@@ -179,7 +181,7 @@ func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 				}
 			}
 		}
-		// the smaller the opponent mobility is, the better.
+		// the smaller the opponent's mobility is, the better.
 		all.sortAsc()
 	}
 	return

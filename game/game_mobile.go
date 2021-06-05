@@ -183,7 +183,6 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		go g.round()
 	}
 	g.haveHuman = g.com1 == nil || g.com2 == nil
-	fmt.Println(g.haveHuman)
 
 	g.counterBlack, g.counterWhite = newCounterText()
 	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
