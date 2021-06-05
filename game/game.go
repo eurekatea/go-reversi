@@ -1,4 +1,4 @@
-// +build !debug
+// +build !android
 
 package game
 
@@ -179,7 +179,8 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	if g.com1 != nil || g.com2 != nil {
 		go g.round()
 	}
-	g.haveHuman = (g.com1 == nil && g.com2 != nil) || (g.com1 != nil && g.com2 == nil)
+	g.haveHuman = g.com1 == nil || g.com2 == nil
+	fmt.Println(g.haveHuman)
 
 	g.counterBlack, g.counterWhite = newCounterText()
 	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
@@ -270,7 +271,7 @@ func (g *game) update(current board.Point) {
 	if count == 0 && !g.over {
 		if g.haveHuman {
 			// current side is human
-			if g.now == board.BLACK && g.com1 == nil || g.now == board.WHITE && g.com2 == nil {
+			if (g.now == board.BLACK && g.com1 == nil) || (g.now == board.WHITE && g.com2 == nil) {
 				dialog.NewInformation("info", "you have to pass", g.window).Show()
 				g.passBtn.Enable()
 			} else { // current is computer
@@ -283,10 +284,10 @@ func (g *game) update(current board.Point) {
 			g.showValidAndCount(current)
 		}
 	}
+	g.refreshCounter()
 	if g.over {
 		g.gameOver()
 	}
-	g.refreshCounter()
 }
 
 func (g *game) refreshCounter() {

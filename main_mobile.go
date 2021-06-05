@@ -1,9 +1,10 @@
-// +build android
+// +build android ios
 
 package main
 
 import (
 	"othello/board"
+	"othello/builtinai"
 	"othello/game"
 	"othello/othellotheme"
 
@@ -22,7 +23,14 @@ const (
 	cardTextSize  = 30
 )
 
+var (
+	initWinSize      = fyne.NewSize(500, 450)
+	selectDialogSize = fyne.NewSize(250, 1)
+)
+
 func main() {
+	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
+
 	a := app.New()
 	customTheme := othellotheme.Theme{}
 	a.Settings().SetTheme(&customTheme)
@@ -52,27 +60,44 @@ func main() {
 		menu *fyne.Container
 	)
 
+	levels := []string{
+		builtinai.BEGINNER.String(),
+		builtinai.AMATEUR.String(),
+		builtinai.PROFESSIONAL.String(),
+		builtinai.EXPERT.String(),
+		builtinai.MASTER.String(),
+	}
 	aiLevelSelection1 = widget.NewSelect(
-		[]string{"beginner", "amateur", "professional", "expert", "master"},
-
+		levels,
 		func(s string) {
-			params.BlackInternalAILevel = s
+			params.BlackInternalAILevel = builtinai.Level(aiLevelSelection1.SelectedIndex())
 		},
 	)
-
 	aiLevelSelection2 = widget.NewSelect(
-		[]string{"beginner", "amateur", "professional", "expert", "master"},
-
+		levels,
 		func(s string) {
-			params.WhiteInternalAILevel = s
+			params.WhiteInternalAILevel = builtinai.Level(aiLevelSelection2.SelectedIndex())
 		},
 	)
 
 	selection1 = widget.NewSelect(
-		[]string{"human", "AI"},
+		[]string{"human", "built-in AI", "external AI"},
 
 		func(s string) {
-			if s == "human" {
+			if s == "external AI" {
+				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
+					if e == nil && uc != nil {
+						params.BlackPath = uc.URI().Path()
+						params.BlackAgent = game.AgentExternal
+						if params.AllSelected() {
+							playButton.Enable()
+						}
+					}
+				}, ui)
+				d.Resize(initWinSize)
+				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
+				d.Show()
+			} else if s == "human" {
 				params.BlackAgent = game.AgentHuman
 			} else {
 				params.BlackAgent = game.AgentBuiltIn
@@ -92,10 +117,23 @@ func main() {
 	blackCard = widget.NewCard("", "", container.NewVBox(subTitle1, container.NewCenter(selection1)))
 
 	selection2 = widget.NewSelect(
-		[]string{"human", "AI"},
+		[]string{"human", "built-in AI", "external AI"},
 
 		func(s string) {
-			if s == "human" {
+			if s == "external AI" {
+				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
+					if e == nil && uc != nil {
+						params.WhitePath = uc.URI().Path()
+						params.WhiteAgent = game.AgentExternal
+						if params.AllSelected() {
+							playButton.Enable()
+						}
+					}
+				}, ui)
+				d.Resize(initWinSize)
+				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
+				d.Show()
+			} else if s == "human" {
 				params.WhiteAgent = game.AgentHuman
 			} else {
 				params.WhiteAgent = game.AgentBuiltIn
