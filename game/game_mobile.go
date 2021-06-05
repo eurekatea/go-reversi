@@ -39,6 +39,9 @@ const (
 	counterTextSize = 24
 	nameTextSize    = 13
 	maxNameLen      = 20
+
+	unitSize6x6 float32 = 54.0
+	unitSize8x8 float32 = 40.0
 )
 
 var (
@@ -46,8 +49,7 @@ var (
 	winSize6x6 = fyne.NewSize(316, 426)
 	winSize8x8 = fyne.NewSize(420, 530)
 
-	unitSize6x6 float32 = 54.0
-	unitSize8x8 float32 = 40.0
+	unitSize = fyne.NewSize(48, 48)
 )
 
 func NewAgents() Parameter {
@@ -180,7 +182,8 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	if g.com1 != nil || g.com2 != nil {
 		go g.round()
 	}
-	g.haveHuman = (g.com1 == nil && g.com2 != nil) || (g.com1 != nil && g.com2 == nil)
+	g.haveHuman = g.com1 == nil || g.com2 == nil
+	fmt.Println(g.haveHuman)
 
 	g.counterBlack, g.counterWhite = newCounterText()
 	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
@@ -271,7 +274,7 @@ func (g *game) update(current board.Point) {
 	if count == 0 && !g.over {
 		if g.haveHuman {
 			// current side is human
-			if g.now == board.BLACK && g.com1 == nil || g.now == board.WHITE && g.com2 == nil {
+			if (g.now == board.BLACK && g.com1 == nil) || (g.now == board.WHITE && g.com2 == nil) {
 				dialog.NewInformation("info", "you have to pass", g.window).Show()
 				g.passBtn.Enable()
 			} else { // current is computer
