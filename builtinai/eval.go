@@ -78,6 +78,14 @@ func (bd aiboard) mobility(cl color) int {
 	return count
 }
 
+func (bd aiboard) flipCount(cl color, op color, p point) int {
+	count := 0
+	for i := 0; i < 8; i++ {
+		count += bd.countFlipPieces(cl, op, p, DIRECTION[i])
+	}
+	return count
+}
+
 func (ai *AI) changedValue(bd aiboard, cl color, p point, dir [2]int) int {
 	delta := 0
 	x, y := p.x, p.y

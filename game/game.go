@@ -39,14 +39,14 @@ const (
 	counterTextSize = 24
 	nameTextSize    = 13
 	maxNameLen      = 20
-
-	unitSize = 48
 )
 
 var (
 	nullPoint  = board.NewPoint(-1, -1)
 	winSize6x6 = fyne.NewSize(316, 426)
 	winSize8x8 = fyne.NewSize(420, 530)
+
+	unitSize = fyne.NewSize(48, 48)
 )
 
 func NewAgents() Parameter {
@@ -72,9 +72,11 @@ type game struct {
 	units        [][]*unit
 	counterBlack *canvas.Text
 	counterWhite *canvas.Text
+	passBtn      *widget.Button
 	com1         computer
 	com2         computer
 	now          board.Color
+	haveHuman    bool
 	over         bool
 	closeRoutine bool
 }
@@ -177,10 +179,20 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	if g.com1 != nil || g.com2 != nil {
 		go g.round()
 	}
+	g.haveHuman = (g.com1 == nil && g.com2 != nil) || (g.com1 != nil && g.com2 == nil)
 
 	g.counterBlack, g.counterWhite = newCounterText()
 	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
 	nameText := newNameText(window.Canvas().Size(), params)
+
+	g.passBtn = widget.NewButtonWithIcon(
+		"pass",
+		theme.ContentRedoIcon(),
+		func() {
+			g.passBtn.Disable()
+		},
+	)
+	g.passBtn.Disable()
 
 	restart := widget.NewButtonWithIcon(
 		"restart",
@@ -213,7 +225,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 
 	g.update(nullPoint)
 
-	return container.NewVBox(counterTile, nameText, grid, restart, mainMenu)
+	return container.NewVBox(counterTile, nameText, grid, g.passBtn, restart, mainMenu)
 }
 
 func (g *game) isBot(cl board.Color) bool {
@@ -251,12 +263,25 @@ func (g *game) round() {
 }
 
 func (g *game) update(current board.Point) {
+	g.over = g.bd.IsOver()
 	count := g.showValidAndCount(current)
-	if count == 0 {
-		g.now = g.now.Opponent()
-		g.showValidAndCount(current)
+	if count == 0 && !g.over {
+		if g.haveHuman {
+			// current side is human
+			if g.now == board.BLACK && g.com1 == nil || g.now == board.WHITE && g.com2 == nil {
+				dialog.NewInformation("info", "you have to pass", g.window).Show()
+				g.passBtn.Enable()
+			} else { // current is computer
+				dialog.NewInformation("info", "computer have to pass\n it's your turn", g.window).Show()
+			}
+			g.now = g.now.Opponent()
+			g.update(nullPoint)
+		} else {
+			g.now = g.now.Opponent()
+			g.showValidAndCount(current)
+		}
 	}
-	if g.over = g.bd.IsOver(); g.over {
+	if g.over {
 		g.gameOver()
 	}
 	g.refreshCounter()
@@ -337,7 +362,7 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 }
 
 func (u *unit) MinSize() fyne.Size {
-	return fyne.NewSize(unitSize, unitSize)
+	return unitSize
 }
 
 func (u *unit) setColor(cl board.Color) {

@@ -134,3 +134,13 @@ func BenchmarkHs(b *testing.B) {
 		bd.revert(hs)
 	}
 }
+
+func BenchmarkValidNodes(b *testing.B) {
+	ai := New(BLACK, 6, 0)
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	for i := 0; i < b.N; i++ {
+		_ = ai.sortedValidNodes(bd, ai.color)
+	}
+
+}

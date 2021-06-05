@@ -98,11 +98,11 @@ func New(cl color, boardSize int, lv Level) *AI {
 	if boardSize == 6 {
 		ai.valueDisk = VALUE6x6
 		ai.totalValue = TOTAL6x6
-		ai.depth = 4 + ai.level*2
+		ai.depth = 6 + ai.level*2 // highest: 14
 	} else {
 		ai.valueDisk = VALUE8x8
 		ai.totalValue = TOTAL8x8
-		ai.depth = 2 + ai.level*2
+		ai.depth = 2 + ai.level*2 // highest: 10
 	}
 	return &ai
 }
@@ -133,12 +133,10 @@ func (ai *AI) printValue(best node) {
 	}
 }
 
-// step 2 may use mobility order (number of moves possible),
-// maximizing self, minimizing opponent
 func (ai *AI) setStepDepth(bd aiboard) {
 	emptyCount := bd.emptyCount()
 
-	step2Depth := STEP2DEPTH + (ai.level-4)*4
+	step2Depth := STEP2DEPTH + (ai.level-4)*4 // level
 	if emptyCount > step2Depth {
 		ai.step = 1
 	} else {
