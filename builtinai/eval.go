@@ -42,7 +42,7 @@ func (bd aiboard) eval(cl color, opponent color, valueDisk [][]int) int {
 	value := 0
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			p := point{x: i, y: j}
+			p := point{i, j}
 			if bd.at(p) == cl {
 				value += valueDisk[i][j]
 			} else if bd.at(p) == opponent {
@@ -57,7 +57,7 @@ func (bd aiboard) countPieces(cl color) int {
 	count := 0
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			if bd.at(point{x: i, y: j}) == cl {
+			if bd.at(point{i, j}) == cl {
 				count++
 			}
 		}
@@ -70,7 +70,7 @@ func (bd aiboard) mobility(cl color) int {
 	count := 0
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			if bd.isValidPoint(cl, point{x: i, y: j}) {
+			if bd.isValidPoint(cl, point{i, j}) {
 				count++
 			}
 		}
@@ -86,20 +86,20 @@ func (bd aiboard) flipCount(cl color, op color, p point) int {
 	return count
 }
 
-func (ai *AI) changedValue(bd aiboard, cl color, p point, dir [2]int) int {
+func (bd aiboard) changedValue(cl color, p point, dir [2]int, valueDisk [][]int) int {
 	delta := 0
 	x, y := p.x, p.y
 	opponent := cl.reverse()
 
 	x, y = x+dir[0], y+dir[1]
-	if bd.at(point{x: x, y: y}) != opponent {
+	if bd.at(point{x, y}) != opponent {
 		return 0
 	}
-	delta += ai.valueDisk[x][y] * 2 // flip opponent to yours, so double
+	delta += valueDisk[x][y] * 2 // flip opponent to yours, so double
 
 	for {
 		x, y = x+dir[0], y+dir[1]
-		now := bd.at(point{x: x, y: y})
+		now := bd.at(point{x, y})
 		if now != opponent {
 			if now == cl {
 				return delta
@@ -107,31 +107,31 @@ func (ai *AI) changedValue(bd aiboard, cl color, p point, dir [2]int) int {
 				return 0
 			}
 		}
-		delta += ai.valueDisk[x][y] * 2 // same as above
+		delta += valueDisk[x][y] * 2 // same as above
 	}
 }
 
 // don't need to copy
-func (ai *AI) evalAfterPut(bd aiboard, currentValue int, p point, cl color) int {
+func (bd aiboard) evalAfterPut(currentValue int, p point, cl color, valueDisk [][]int) int {
 	for i := 0; i < 8; i++ {
-		currentValue += ai.changedValue(bd, cl, p, DIRECTION[i])
+		currentValue += bd.changedValue(cl, p, DIRECTION[i], valueDisk)
 	}
-	currentValue += ai.valueDisk[p.x][p.y]
+	currentValue += valueDisk[p.x][p.y]
 	return currentValue
 }
 
 // don't need to copy board
-func (ai *AI) countAfterPut(bd aiboard, currentCount int, p point, cl color) int {
-	for i := 0; i < 8; i++ {
-		currentCount += bd.countFlipPieces(cl, cl.reverse(), p, DIRECTION[i])
-	}
-	return currentCount + 1 // include p itself
-}
+// func (ai *AI) countAfterPut(bd aiboard, currentCount int, p point, cl color) int {
+// 	for i := 0; i < 8; i++ {
+// 		currentCount += bd.countFlipPieces(cl, cl.reverse(), p, DIRECTION[i])
+// 	}
+// 	return currentCount + 1 // include p itself
+// }
 
-func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
-	if ai.step == 1 {
-		return ai.evalAfterPut(bd, currentValue, p, cl)
-	} else {
-		return ai.countAfterPut(bd, currentValue, p, ai.color)
-	}
-}
+// func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
+// 	if ai.step == 1 {
+// 		return bd.evalAfterPut(currentValue, p, cl, ai.valueDisk)
+// 	} else {
+// 		return ai.countAfterPut(bd, currentValue, p, ai.color)
+// 	}
+// }

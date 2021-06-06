@@ -9,7 +9,7 @@ func (ai *AI) oldvalidPos(bd aiboard, cl color) (all nodes) {
 	all = make(nodes, 0, 16)
 	for i := 0; i < ai.boardSize; i++ {
 		for j := 0; j < ai.boardSize; j++ {
-			p := point{x: i, y: j}
+			p := point{i, j}
 			if bd.isValidPoint(cl, p) {
 				temp := bd.Copy()
 				temp.put(cl, p)
@@ -64,7 +64,7 @@ func BenchmarkCopy(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		cpy := bd.Copy()
-		cpy.put(WHITE, point{x: 4, y: 0})
+		cpy.put(WHITE, point{4, 0})
 	}
 }
 
@@ -74,7 +74,7 @@ func BenchmarkRevert(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
 	for i := 0; i < b.N; i++ {
-		hs := bd.put(WHITE, point{x: 4, y: 0})
+		hs := bd.put(WHITE, point{4, 0})
 		bd.revert(hs)
 	}
 }
@@ -83,7 +83,7 @@ func BenchmarkRevert(b *testing.B) {
 func BenchmarkAtP(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
-	p := point{x: 4, y: 0}
+	p := point{4, 0}
 	for i := 0; i < b.N; i++ {
 		_ = bd.at(p)
 	}
@@ -92,7 +92,7 @@ func BenchmarkAtP(b *testing.B) {
 func BenchmarkDirect(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
-	p := point{x: 4, y: 0}
+	p := point{4, 0}
 	for i := 0; i < b.N; i++ {
 		_ = bd[p.x+1][p.y+1]
 	}
@@ -130,7 +130,7 @@ func BenchmarkHs(b *testing.B) {
 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
 	for i := 0; i < b.N; i++ {
-		hs := bd.put(WHITE, point{x: 4, y: 0})
+		hs := bd.put(WHITE, point{4, 0})
 		bd.revert(hs)
 	}
 }
@@ -143,4 +143,13 @@ func BenchmarkValidNodes(b *testing.B) {
 		_ = ai.sortedValidNodes(bd, ai.color)
 	}
 
+}
+
+func BenchmarkAB(b *testing.B) {
+	a := New(BLACK, 6, 0)
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+
+	for i := 0; i < b.N; i++ {
+		a.alphaBetaHelper(bd, 0)
+	}
 }

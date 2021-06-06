@@ -2,7 +2,6 @@ package builtinai
 
 import (
 	"math/rand"
-	"sort"
 )
 
 type node struct {
@@ -21,6 +20,10 @@ func (ns nodes) Len() int {
 }
 
 func (ns nodes) Less(i, j int) bool {
+	return ns[i].value < ns[j].value // ascending order
+}
+
+func (ns nodes) Large(i, j int) bool {
 	return ns[i].value > ns[j].value // descending order
 }
 
@@ -36,13 +39,9 @@ func (ns nodes) shuffle() {
 }
 
 func (ns nodes) sortDesc() {
-	sort.Slice(ns, func(i, j int) bool {
-		return ns[i].value > ns[j].value
-	})
+	qsortDesc(ns)
 }
 
 func (ns nodes) sortAsc() {
-	sort.Slice(ns, func(i, j int) bool {
-		return ns[i].value < ns[j].value
-	})
+	qsortAsc(ns)
 }

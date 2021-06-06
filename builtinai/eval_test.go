@@ -19,7 +19,7 @@ func testPartialValueChange(t *testing.T, input string, p point, cl color) {
 	}
 	newV := c.eval(ai.color, ai.opponent, ai.valueDisk)
 
-	aiV := ai.evalAfterPut(bd, currentV, p, cl)
+	aiV := bd.evalAfterPut(currentV, p, cl, ai.valueDisk)
 
 	if newV != aiV {
 		t.Error("error, orig:", currentV, "real:", newV, "but:", aiV)
@@ -29,8 +29,8 @@ func testPartialValueChange(t *testing.T, input string, p point, cl color) {
 
 func TestPartialValueChange(t *testing.T) {
 
-	testPartialValueChange(t, "+++++++++++++XXX++++OXX+++O+++++++++", point{x: 5, y: 3}, WHITE)
-	testPartialValueChange(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", point{x: 1, y: 4}, WHITE)
-	testPartialValueChange(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", point{x: 1, y: 4}, WHITE)
+	testPartialValueChange(t, "+++++++++++++XXX++++OXX+++O+++++++++", point{5, 3}, WHITE)
+	testPartialValueChange(t, "++++++++++++XXOOO++XXOO+O+XXO++XXXO+", point{1, 4}, WHITE)
+	testPartialValueChange(t, "++++++++O+X+XXOOO++XXXXXO+XXO+OOOOO+", point{1, 4}, WHITE)
 
 }

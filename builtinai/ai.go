@@ -6,60 +6,11 @@ import (
 	"othello/board"
 )
 
-type Level int
-
-func (l Level) String() string {
-	switch l {
-	case 0:
-		return "beginner"
-	case 1:
-		return "amateur"
-	case 2:
-		return "professional"
-	case 3:
-		return "expert"
-	case 4:
-		return "master"
-	default:
-		return "unknown"
-	}
-}
-
 const (
-	BEGINNER Level = iota
-	AMATEUR
-	PROFESSIONAL
-	EXPERT
-	MASTER
-
 	STEP2DEPTH = 18
 	MININT     = math.MinInt32
 	MAXINT     = math.MaxInt32
 )
-
-func abs(v int) int {
-	if v > 0 {
-		return v
-	} else {
-		return -v
-	}
-}
-
-func max(a int, b int) int {
-	if a > b {
-		return a
-	} else {
-		return b
-	}
-}
-
-func min(a int, b int) int {
-	if a < b {
-		return a
-	} else {
-		return b
-	}
-}
 
 type AI struct {
 	color    color
@@ -68,6 +19,7 @@ type AI struct {
 	valueDisk  [][]int
 	totalValue int
 
+	// step 1 or step 2
 	step int
 
 	boardSize int
@@ -77,6 +29,7 @@ type AI struct {
 
 	// maximum reached depth
 	reachedDepth int
+
 	// traversed nodes count
 	nodes int
 
@@ -114,7 +67,7 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	best := ai.alphaBetaHelper(aibd, ai.depth)
 	ai.printValue(best)
 
-	bestPoint := point{x: best.x, y: best.y}
+	bestPoint := point{best.x, best.y}
 	if !aibd.putAndCheck(ai.color, bestPoint) {
 		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
 	}
@@ -155,24 +108,25 @@ func (ai *AI) heuristic(bd aiboard) int {
 }
 
 func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
-	all = make(nodes, 0, 16) // usually possible point wont surpass 16
-	if ai.step == 1 {
+	// usually possible point wont surpass 16
+	all = make(nodes, 0, 16)
+	if ai.step == 1 { // step 1 sort by eval
 		origValue := bd.eval(cl, cl.reverse(), ai.valueDisk)
 		for i := 0; i < bd.size(); i++ {
 			for j := 0; j < bd.size(); j++ {
-				p := point{x: i, y: j}
+				p := point{i, j}
 				if bd.isValidPoint(cl, p) {
-					newValue := ai.evalAfterPut(bd, origValue, p, cl)
+					newValue := bd.evalAfterPut(origValue, p, cl, ai.valueDisk)
 					all = append(all, newNode(i, j, newValue))
 				}
 			}
 		}
 		all.sortDesc()
-	} else {
+	} else { // step 2 sort by mobility
 		opponent := cl.reverse()
 		for i := 0; i < bd.size(); i++ {
 			for j := 0; j < bd.size(); j++ {
-				p := point{x: i, y: j}
+				p := point{i, j}
 				if bd.isValidPoint(cl, p) {
 					hs := bd.put(cl, p)
 					v := bd.mobility(opponent)
@@ -213,7 +167,7 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		}
 
 		for _, n := range aiValid {
-			hs := bd.put(ai.color, point{x: n.x, y: n.y})
+			hs := bd.put(ai.color, point{n.x, n.y})
 			eval := ai.alphaBeta(bd, depth-1, alpha, beta, false).value
 			bd.revert(hs)
 
@@ -238,7 +192,7 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 		}
 
 		for _, n := range opValid {
-			hs := bd.put(ai.opponent, point{x: n.x, y: n.y})
+			hs := bd.put(ai.opponent, point{n.x, n.y})
 			eval := ai.alphaBeta(bd, depth-1, alpha, beta, true).value
 			bd.revert(hs)
 

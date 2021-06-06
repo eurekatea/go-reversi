@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/pkg/profile"
 )
 
 const (
@@ -29,7 +30,7 @@ var (
 )
 
 func main() {
-	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
+	defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
 	a := app.New()
 	customTheme := othellotheme.Theme{}

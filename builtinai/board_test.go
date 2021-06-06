@@ -8,7 +8,7 @@ func testValidPoint(t *testing.T, input string, p point, target int) {
 
 	count := 0
 	for i := 0; i < 8; i++ {
-		count += bd.countFlipPieces(WHITE, BLACK, point{x: 4, y: 3}, DIRECTION[i])
+		count += bd.countFlipPieces(WHITE, BLACK, point{4, 3}, DIRECTION[i])
 	}
 	if count != 1 {
 		t.Error(count, "\n", bd.visualize())
@@ -17,9 +17,9 @@ func testValidPoint(t *testing.T, input string, p point, target int) {
 
 func TestValidPoint(t *testing.T) {
 
-	testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{x: 4, y: 3}, 1)
-	testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{x: 0, y: 5}, 3)
-	// testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{x: 4, y: 3}, 1)
+	testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{4, 3}, 1)
+	testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{0, 5}, 3)
+	// testValidPoint(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", point{ 4,  3}, 1)
 
 }
 
@@ -47,9 +47,9 @@ func testFlip(t *testing.T, input string, cl color, p point, targetState string)
 
 func TestFlip(t *testing.T) {
 
-	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{x: 4, y: 0}, "++++O++++OO++OOOO+++OXOO++X+XX++++++")
-	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{x: 5, y: 2}, "+++++++++XX++OOOOO++OXOO++X+XX++++++")
-	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", BLACK, point{x: 5, y: 2}, "+++++++++XX++OOOXX++OXOX++X+XX++++++")
+	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{4, 0}, "++++O++++OO++OOOO+++OXOO++X+XX++++++")
+	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{5, 2}, "+++++++++XX++OOOOO++OXOO++X+XX++++++")
+	testFlip(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", BLACK, point{5, 2}, "+++++++++XX++OOOXX++OXOX++X+XX++++++")
 
 }
 
@@ -73,8 +73,8 @@ func testRevert(t *testing.T, input string, cl color, p point) {
 
 func TestRevert(t *testing.T) {
 
-	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{x: 4, y: 0})
-	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{x: 5, y: 2})
-	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", BLACK, point{x: 5, y: 2})
+	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{4, 0})
+	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", WHITE, point{5, 2})
+	testRevert(t, "+++++++++XX++OOOX+++OXOO++X+XX++++++", BLACK, point{5, 2})
 
 }

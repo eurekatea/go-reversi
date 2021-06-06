@@ -22,7 +22,7 @@ func newBoardFromStr(str string) aiboard {
 
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			p := point{x: j, y: i}
+			p := point{j, i}
 			switch str[indx] {
 			case '+':
 				bd.assign(NONE, p)
@@ -63,7 +63,7 @@ func (bd aiboard) Copy() aiboard {
 func (bd aiboard) String() (res string) {
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			switch bd.at(point{x: j, y: i}) {
+			switch bd.at(point{j, i}) {
 			case NONE:
 				res += "+"
 			case BLACK:
@@ -71,7 +71,7 @@ func (bd aiboard) String() (res string) {
 			case WHITE:
 				res += "O"
 			default:
-				panic("err: " + bd.at(point{x: j, y: i}).String())
+				panic("err: " + bd.at(point{j, i}).String())
 			}
 		}
 	}
@@ -87,7 +87,7 @@ func (bd aiboard) visualize() (res string) {
 	for i := 0; i < bd.size(); i++ {
 		res += string(rune('A'+i)) + " "
 		for j := 0; j < bd.size(); j++ {
-			switch bd.at(point{x: j, y: i}) {
+			switch bd.at(point{j, i}) {
 			case NONE:
 				res += "+ "
 			case BLACK:
@@ -134,7 +134,7 @@ func (bd aiboard) revert(hs history) {
 	for i := range hs.dirs {
 		x, y := hs.place.x+hs.dirs[i][0], hs.place.y+hs.dirs[i][1]
 		for j := 0; j < hs.flips[i]; j++ {
-			bd.assign(hs.origColor, point{x: x, y: y})
+			bd.assign(hs.origColor, point{x, y})
 			x, y = x+hs.dirs[i][0], y+hs.dirs[i][1]
 		}
 	}
@@ -160,14 +160,14 @@ func (bd aiboard) isValidPoint(cl color, p point) bool {
 func (bd aiboard) countFlipPieces(cl color, opponent color, p point, dir [2]int) int {
 	count := 0
 	x, y := p.x+dir[0], p.y+dir[1]
-	if bd.at(point{x: x, y: y}) != opponent {
+	if bd.at(point{x, y}) != opponent {
 		return 0
 	}
 	count++
 
 	for {
 		x, y = x+dir[0], y+dir[1]
-		now := bd.at(point{x: x, y: y})
+		now := bd.at(point{x, y})
 		if now == opponent {
 			count++
 		} else {
@@ -187,7 +187,7 @@ func (bd aiboard) flip(cl color, p point) history {
 		if count := bd.countFlipPieces(cl, op, p, DIRECTION[i]); count > 0 {
 			x, y := p.x+DIRECTION[i][0], p.y+DIRECTION[i][1]
 			for j := 0; j < count; j++ {
-				bd.assign(cl, point{x: x, y: y})
+				bd.assign(cl, point{x, y})
 				x, y = x+DIRECTION[i][0], y+DIRECTION[i][1]
 			}
 			hs.dirs = append(hs.dirs, DIRECTION[i])
@@ -204,7 +204,7 @@ func (bd aiboard) emptyCount() int {
 func (bd aiboard) isOver() bool {
 	for i := 0; i < bd.size(); i++ {
 		for j := 0; j < bd.size(); j++ {
-			p := point{x: i, y: j}
+			p := point{i, j}
 			if bd.isValidPoint(BLACK, p) || bd.isValidPoint(WHITE, p) {
 				return false
 			}
