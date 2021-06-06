@@ -9,15 +9,7 @@ type node struct {
 	value int
 }
 
-func newNode(x, y, value int) node {
-	return node{x: x, y: y, value: value}
-}
-
 type nodes []node
-
-func (ns nodes) Len() int {
-	return len(ns)
-}
 
 func (ns nodes) Less(i, j int) bool {
 	return ns[i].value < ns[j].value // ascending order
@@ -38,10 +30,25 @@ func (ns nodes) shuffle() {
 	})
 }
 
+// on smaller slices, insertion sort is faster
 func (ns nodes) sortDesc() {
-	qsortDesc(ns)
+	length := len(ns)
+	if length > 1 {
+		for i := 1; i < length; i++ {
+			for j := i; j > 0 && ns.Large(j, j-1); j-- {
+				ns.Swap(j, j-1)
+			}
+		}
+	}
 }
 
 func (ns nodes) sortAsc() {
-	qsortAsc(ns)
+	length := len(ns)
+	if length > 1 {
+		for i := 1; i < length; i++ {
+			for j := i; j > 0 && ns.Less(j, j-1); j-- {
+				ns.Swap(j, j-1)
+			}
+		}
+	}
 }

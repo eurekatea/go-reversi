@@ -117,7 +117,7 @@ func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 				p := point{i, j}
 				if bd.isValidPoint(cl, p) {
 					newValue := bd.evalAfterPut(origValue, p, cl, ai.valueDisk)
-					all = append(all, newNode(i, j, newValue))
+					all = append(all, node{i, j, newValue})
 				}
 			}
 		}
@@ -130,7 +130,7 @@ func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 				if bd.isValidPoint(cl, p) {
 					hs := bd.put(cl, p)
 					v := bd.mobility(opponent)
-					all = append(all, newNode(i, j, v))
+					all = append(all, node{i, j, v})
 					bd.revert(hs)
 				}
 			}
@@ -150,16 +150,16 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 
 	if depth == 0 {
 		ai.reachedDepth = ai.depth
-		return newNode(-1, -1, ai.heuristic(bd))
+		return node{-1, -1, ai.heuristic(bd)}
 	}
 	if bd.isOver() {
 		ai.reachedDepth = ai.depth - depth
-		return newNode(-1, -1, ai.heuristic(bd))
+		return node{-1, -1, ai.heuristic(bd)}
 	}
 
 	if maxLayer {
 		maxValue := MININT
-		bestNode := newNode(-1, -1, maxValue)
+		bestNode := node{-1, -1, maxValue}
 
 		aiValid := ai.sortedValidNodes(bd, ai.color)
 		if len(aiValid) == 0 { // 沒地方下，換邊
@@ -181,10 +181,10 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 			}
 		}
 
-		return newNode(bestNode.x, bestNode.y, maxValue)
+		return node{bestNode.x, bestNode.y, maxValue}
 	} else {
 		minValue := MAXINT
-		bestNode := newNode(-1, -1, minValue)
+		bestNode := node{-1, -1, minValue}
 
 		opValid := ai.sortedValidNodes(bd, ai.opponent)
 		if len(opValid) == 0 { // 對手沒地方下，換邊
@@ -207,6 +207,6 @@ func (ai *AI) alphaBeta(bd aiboard, depth int, alpha int, beta int, maxLayer boo
 			}
 		}
 
-		return newNode(bestNode.x, bestNode.y, minValue)
+		return node{bestNode.x, bestNode.y, minValue}
 	}
 }

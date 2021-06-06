@@ -2,7 +2,9 @@ package builtinai
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func (ai *AI) oldvalidPos(bd aiboard, cl color) (all nodes) {
@@ -13,7 +15,7 @@ func (ai *AI) oldvalidPos(bd aiboard, cl color) (all nodes) {
 			if bd.isValidPoint(cl, p) {
 				temp := bd.Copy()
 				temp.put(cl, p)
-				all = append(all, newNode(i, j, ai.heuristic(temp)))
+				all = append(all, node{i, j, ai.heuristic(temp)})
 			}
 		}
 	}
@@ -151,5 +153,25 @@ func BenchmarkAB(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		a.alphaBetaHelper(bd, 0)
+	}
+}
+
+func BenchmarkShuffle(b *testing.B) {
+	n := make(nodes, 10)
+	rand.Seed(time.Now().Unix())
+	for i := range n {
+		n[i] = node{rand.Int(), rand.Int(), rand.Intn(10)}
+	}
+
+	for i := 0; i < b.N; i++ {
+		shuffle(n)
+	}
+}
+
+func shuffle(ns nodes) {
+	l := len(ns)
+	for i := range ns {
+		j := rand.Intn(l)
+		ns[i], ns[j] = ns[j], ns[i]
 	}
 }
