@@ -1,28 +1,17 @@
 package builtinai
 
+import "fmt"
+
 type Level int
 
 func (l Level) String() string {
-	switch l {
-	case 0:
-		return "beginner"
-	case 1:
-		return "amateur"
-	case 2:
-		return "professional"
-	case 3:
-		return "expert"
-	case 4:
-		return "master"
-	default:
-		return "unknown"
-	}
+	return fmt.Sprintf("%d", l+1)
 }
 
 const (
-	BEGINNER Level = iota
-	AMATEUR
-	PROFESSIONAL
-	EXPERT
-	MASTER
+	LV_ONE Level = iota
+	LV_TWO
+	LV_THREE
+	LV_FOUR
+	LV_FIVE
 )

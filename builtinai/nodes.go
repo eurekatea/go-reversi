@@ -31,6 +31,7 @@ func (ns nodes) shuffle() {
 }
 
 // on smaller slices, insertion sort is faster
+// since it has lower overhead
 func (ns nodes) sortDesc() {
 	length := len(ns)
 	if length > 1 {
