@@ -5,7 +5,7 @@ import "fmt"
 type Level int
 
 func (l Level) String() string {
-	return fmt.Sprintf("%d", l+1)
+	return fmt.Sprintf("level %d", l+1)
 }
 
 const (
