@@ -129,7 +129,7 @@ func (bd aiboard) at(p point) color {
 	return bd[p.x+1][p.y+1]
 }
 
-// undo step
+// undo a move
 func (bd aiboard) revert(hs history) {
 	for i := range hs.dirs {
 		x, y := hs.place.x+hs.dirs[i][0], hs.place.y+hs.dirs[i][1]

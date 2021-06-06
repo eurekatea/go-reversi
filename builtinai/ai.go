@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	STEP2DEPTH = 18
-	MININT     = math.MinInt32
-	MAXINT     = math.MaxInt32
+	PHASE2DEPTH = 18
+	MININT      = math.MinInt32
+	MAXINT      = math.MaxInt32
 )
 
 type AI struct {
@@ -19,8 +19,8 @@ type AI struct {
 	valueDisk  [][]int
 	totalValue int
 
-	// step 1 or step 2
-	step int
+	// phase 1 or phase 2
+	phase int
 
 	boardSize int
 
@@ -75,7 +75,7 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 }
 
 func (ai *AI) printValue(best node) {
-	if ai.step == 1 {
+	if ai.phase == 1 {
 		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.boardSize*ai.boardSize)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
@@ -87,22 +87,22 @@ func (ai *AI) printValue(best node) {
 func (ai *AI) setStepDepth(bd aiboard) {
 	emptyCount := bd.emptyCount()
 
-	step2Depth := STEP2DEPTH + (ai.level-4)*4 // level
+	step2Depth := PHASE2DEPTH + (ai.level-4)*4 // level
 	if ai.boardSize == 6 {
 		step2Depth += 2
 	}
 	if emptyCount > step2Depth {
-		ai.step = 1
+		ai.phase = 1
 	} else {
-		ai.step = 2
+		ai.phase = 2
 		ai.depth = MAXINT // until end of game
 	}
 }
 
 func (ai *AI) heuristic(bd aiboard) int {
-	if ai.step == 1 { // step 1
+	if ai.phase == 1 { // phase 1
 		return bd.eval(ai.color, ai.opponent, ai.valueDisk)
-	} else { // step 2
+	} else { // phase 2
 		return bd.countPieces(ai.color) - bd.countPieces(ai.opponent)
 	}
 }
@@ -110,7 +110,7 @@ func (ai *AI) heuristic(bd aiboard) int {
 func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 	// usually possible point wont surpass 16
 	all = make(nodes, 0, 16)
-	if ai.step == 1 { // step 1 sort by eval
+	if ai.phase == 1 { // phase 1 sort by eval
 		origValue := bd.eval(cl, cl.reverse(), ai.valueDisk)
 		for i := 0; i < bd.size(); i++ {
 			for j := 0; j < bd.size(); j++ {
@@ -122,7 +122,7 @@ func (ai *AI) sortedValidNodes(bd aiboard, cl color) (all nodes) {
 			}
 		}
 		all.sortDesc()
-	} else { // step 2 sort by mobility
+	} else { // phase 2 sort by mobility
 		opponent := cl.reverse()
 		for i := 0; i < bd.size(); i++ {
 			for j := 0; j < bd.size(); j++ {

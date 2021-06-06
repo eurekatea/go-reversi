@@ -129,7 +129,7 @@ func (bd aiboard) evalAfterPut(currentValue int, p point, cl color, valueDisk []
 // }
 
 // func (ai *AI) heuristicAfterPut(bd aiboard, currentValue int, p point, cl color) int {
-// 	if ai.step == 1 {
+// 	if ai.phase == 1 {
 // 		return bd.evalAfterPut(currentValue, p, cl, ai.valueDisk)
 // 	} else {
 // 		return ai.countAfterPut(bd, currentValue, p, ai.color)
