@@ -61,11 +61,11 @@ func main() {
 	)
 
 	levels := []string{
-		builtinai.BEGINNER.String(),
-		builtinai.AMATEUR.String(),
-		builtinai.PROFESSIONAL.String(),
-		builtinai.EXPERT.String(),
-		builtinai.MASTER.String(),
+		builtinai.LV_ONE.String(),
+		builtinai.LV_TWO.String(),
+		builtinai.LV_THREE.String(),
+		builtinai.LV_FOUR.String(),
+		builtinai.LV_FIVE.String(),
 	}
 	aiLevelSelection1 = widget.NewSelect(
 		levels,
