@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	PHASE2DEPTH = 18
-	MININT      = math.MinInt32
-	MAXINT      = math.MaxInt32
+	MININT = math.MinInt32
+	MAXINT = math.MaxInt32
+
+	PHASE1DEPTH = 16 // 6x6
+	PHASE2DEPTH = 20 // 6x6
 )
 
 type AI struct {
@@ -21,8 +23,6 @@ type AI struct {
 
 	// phase 1 or phase 2
 	phase int
-
-	boardSize int
 
 	// currently limit depth
 	depth int
@@ -39,9 +39,8 @@ type AI struct {
 
 func New(cl color, boardSize int, lv Level) *AI {
 	ai := AI{
-		color:     cl,
-		opponent:  cl.reverse(),
-		boardSize: boardSize,
+		color:    cl,
+		opponent: cl.reverse(),
 	}
 
 	ai.level = int(lv)
@@ -49,52 +48,65 @@ func New(cl color, boardSize int, lv Level) *AI {
 	if boardSize == 6 {
 		ai.valueDisk = VALUE6x6
 		ai.totalValue = TOTAL6x6
-		ai.depth = 8 + ai.level*2 // highest: 16
 	} else {
 		ai.valueDisk = VALUE8x8
 		ai.totalValue = TOTAL8x8
-		ai.depth = 2 + ai.level*2 // highest: 10
 	}
 	return &ai
 }
 
 func (ai *AI) Move(bd board.Board) (board.Point, error) {
 	aibd := newBoardFromStr(bd.String())
+	boardSize := aibd.size()
 	ai.nodes = 0
 
-	ai.setStepDepth(aibd)
+	ai.setPhase(aibd, boardSize)
+	ai.setDepth(boardSize)
 
 	best := ai.alphaBetaHelper(aibd, ai.depth)
-	ai.printValue(best)
+	ai.printValue(best, boardSize)
 
 	bestPoint := point{best.x, best.y}
 	if !aibd.putAndCheck(ai.color, bestPoint) {
-		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, i'm %v", bestPoint, ai.color)
+		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
 	return bestPoint.toBoardPoint(), nil
 }
 
-func (ai *AI) printValue(best node) {
+func (ai *AI) printValue(best node, boardSize int) {
 	if ai.phase == 1 {
-		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.boardSize*ai.boardSize)
-		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)
+		finValue := float64(best.value) / float64(ai.totalValue) * float64(boardSize*boardSize)
+		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
 		finValue := best.value
-		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %d}\n", ai.reachedDepth, ai.nodes, finValue)
+		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+d}\n", ai.reachedDepth, ai.nodes, finValue)
 	}
 }
 
-func (ai *AI) setStepDepth(bd aiboard) {
+func (ai *AI) setPhase(bd aiboard, boardSize int) {
 	emptyCount := bd.emptyCount()
-
-	step2Depth := PHASE2DEPTH + (ai.level-4)*4 // level
-	if ai.boardSize == 6 {
-		step2Depth += 2
+	phase2 := PHASE2DEPTH + (ai.level-4)*4 // level
+	if boardSize == 8 {
+		phase2 -= 2
 	}
-	if emptyCount > step2Depth {
+	if emptyCount > phase2 {
 		ai.phase = 1
 	} else {
 		ai.phase = 2
+	}
+}
+
+func (ai *AI) setDepth(boardSize int) {
+	if ai.phase == 1 {
+		if boardSize == 8 {
+			ai.depth = PHASE1DEPTH + (ai.level-4)*2 - 4
+		} else {
+			ai.depth = PHASE1DEPTH + (ai.level-4)*4
+		}
+		if ai.depth <= 0 {
+			ai.depth = 1
+		}
+	} else {
 		ai.depth = MAXINT // until end of game
 	}
 }

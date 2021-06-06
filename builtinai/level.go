@@ -4,8 +4,8 @@ import "fmt"
 
 type Level int
 
-func (l Level) String() string {
-	return fmt.Sprintf("level %d", l+1)
+func (lv Level) String() string {
+	return fmt.Sprintf("level %d", lv+1)
 }
 
 const (

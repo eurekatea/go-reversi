@@ -9,8 +9,8 @@ import (
 
 func (ai *AI) oldvalidPos(bd aiboard, cl color) (all nodes) {
 	all = make(nodes, 0, 16)
-	for i := 0; i < ai.boardSize; i++ {
-		for j := 0; j < ai.boardSize; j++ {
+	for i := 0; i < bd.size(); i++ {
+		for j := 0; j < bd.size(); j++ {
 			p := point{i, j}
 			if bd.isValidPoint(cl, p) {
 				temp := bd.Copy()
