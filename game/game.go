@@ -64,6 +64,7 @@ func (params Parameter) AllSelected() bool {
 
 type computer interface {
 	Move(string) (string, error)
+	Close()
 }
 
 type game struct {
@@ -261,6 +262,12 @@ func (g *game) round() {
 		} else {
 			time.Sleep(time.Millisecond * 30)
 		}
+	}
+	if g.com1 != nil {
+		g.com1.Close()
+	}
+	if g.com2 != nil {
+		g.com2.Close()
 	}
 }
 

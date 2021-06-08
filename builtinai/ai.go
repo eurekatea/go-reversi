@@ -72,6 +72,8 @@ func (ai *AI) Move(input string) (string, error) {
 	return bestPoint.String(), nil
 }
 
+func (ai AI) Close() {}
+
 func (ai *AI) printValue(best node, boardSize int) {
 	if ai.phase == 1 {
 		finValue := float64(best.value) / float64(ai.totalValue) * float64(boardSize*boardSize)

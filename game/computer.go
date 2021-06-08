@@ -1,25 +1,39 @@
 package game
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"othello/board"
-	"strings"
 	"time"
 )
 
 type com struct {
-	color   board.Color
-	id      string
-	program string
+	color board.Color
+	id    string
+	cmd   *exec.Cmd
+	in    io.WriteCloser
+	out   io.ReadCloser
 }
 
 func newCom(cl board.Color, name string) *com {
+	var err error
 	c := &com{
-		color:   cl,
-		program: name,
+		color: cl,
+		cmd:   exec.Command(name, ""),
 	}
+	c.cmd = modifyCmd(c.cmd)
+	c.in, err = c.cmd.StdinPipe()
+	if err != nil {
+		panic(err)
+	}
+	c.out, err = c.cmd.StdoutPipe()
+	if err != nil {
+		panic(err)
+	}
+	c.cmd.Start()
 	if cl == board.BLACK {
 		c.id = " 1"
 	} else {
@@ -42,16 +56,28 @@ func (c *com) Move(input string) (string, error) {
 	return output, nil
 }
 
-func (c com) execute(input string) (string, error) {
-	cmd := exec.Command(c.program, "")
-	cmd = modifyCmd(cmd)
-	cmd.Stdin = strings.NewReader(input + c.id)
-	out, err := cmd.Output()
+func (c com) Close() {
+	err := c.in.Close()
 	if err != nil {
-		return "", c.fatal(input, err.Error())
+		panic(err)
+	}
+	err = c.cmd.Wait()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (c com) execute(input string) (string, error) {
+
+	c.in.Write([]byte(input + c.id + "\n"))
+	r := bufio.NewReader(c.out)
+
+	var output string
+	x, _ := r.ReadString('\n')
+	if x != "" {
+		output = string(x)
 	}
 
-	output := string(out)
 	if len(output) == 0 {
 		return "", c.fatal(input, "unknown output: (no output)")
 	}
@@ -88,7 +114,7 @@ func (c com) fatal(input string, text string) error {
 	year, month, day := now.Date()
 	hour, minute, second := now.Clock()
 	t := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d", year, month, day, hour, minute, second)
-	text = t + "\n" + c.program + "\n\n" + text
+	text = t + "\n" + c.cmd.Path + "\n\n" + text
 	if len(text) > 500 {
 		text = text[:500]
 		text += "\n...skipped"
