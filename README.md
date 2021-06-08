@@ -14,11 +14,11 @@ othello(reversi) arena for humans and AIs
 範例：  
 ```
 int main() {  
-    std::string board;
+    string board;
     int color;
-    while(std::cin >> board >> color) {
+    while(cin >> board >> color) {
         ...
-        std::cout << answer << std::endl;
+        cout << answer << endl;
     }
 }
 ```
