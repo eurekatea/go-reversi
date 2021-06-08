@@ -37,6 +37,7 @@ const (
 	AgentExternal
 
 	counterTextSize = 24
+	timerTextSize   = 13
 	nameTextSize    = 13
 	maxNameLen      = 20
 )
@@ -73,6 +74,8 @@ type game struct {
 	units        [][]*unit
 	counterBlack *canvas.Text
 	counterWhite *canvas.Text
+	timerText    *canvas.Text
+	timer        time.Time
 	passBtn      *widget.Button
 	com1         computer
 	com2         computer
@@ -124,7 +127,7 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	return container.NewGridWithColumns(2, left, right)
 }
 
-func newCounterText() (*canvas.Text, *canvas.Text) {
+func newCounterText() (*canvas.Text, *canvas.Text, *canvas.Text) {
 	counter1 := canvas.NewText("", theme.ForegroundColor())
 	counter1.TextSize = counterTextSize
 	counter1.Alignment = fyne.TextAlignLeading
@@ -133,7 +136,11 @@ func newCounterText() (*canvas.Text, *canvas.Text) {
 	counter2.TextSize = counterTextSize
 	counter2.Alignment = fyne.TextAlignTrailing
 
-	return counter1, counter2
+	timerText := canvas.NewText("0.0", theme.ForegroundColor())
+	timerText.TextSize = timerTextSize
+	timerText.Alignment = fyne.TextAlignCenter
+
+	return counter1, counter2, timerText
 }
 
 func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter, size int) *fyne.Container {
@@ -165,6 +172,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	g.bd = bd
 	g.over = false
 	g.closeRoutine = false
+	g.timer = time.Now()
 
 	if params.BlackAgent == AgentBuiltIn {
 		g.com1 = builtinai.New(builtinai.BLACK, size, params.BlackInternalAILevel)
@@ -182,8 +190,11 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	}
 	g.haveHuman = g.com1 == nil || g.com2 == nil
 
-	g.counterBlack, g.counterWhite = newCounterText()
-	counterTile := container.NewGridWithColumns(2, g.counterBlack, g.counterWhite)
+	g.counterBlack, g.counterWhite, g.timerText = newCounterText()
+
+	go g.timerUpdate()
+
+	counterTile := container.NewGridWithColumns(3, g.counterBlack, g.timerText, g.counterWhite)
 	nameText := newNameText(window.Canvas().Size(), params)
 
 	g.passBtn = widget.NewButtonWithIcon(
@@ -303,6 +314,19 @@ func (g *game) refreshCounter() {
 	g.counterBlack.Refresh()
 	g.counterWhite.Text = fmt.Sprintf("white: %2d", whites)
 	g.counterWhite.Refresh()
+	g.timer = time.Now()
+}
+
+func (g *game) timerUpdate() {
+	for {
+		now := time.Since(g.timer).Seconds()
+		if now > 999999.9 {
+			now = 999999.9
+		}
+		g.timerText.Text = fmt.Sprintf("%.1f", now)
+		g.timerText.Refresh()
+		time.Sleep(time.Millisecond * 90)
+	}
 }
 
 func (g *game) gameOver() {
