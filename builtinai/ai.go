@@ -69,7 +69,7 @@ func (ai *AI) Move(input string) (string, error) {
 	if !aibd.putAndCheck(ai.color, bestPoint) {
 		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.toBoardPoint().PointToStr(), nil
+	return bestPoint.String(), nil
 }
 
 func (ai *AI) printValue(best node, boardSize int) {
