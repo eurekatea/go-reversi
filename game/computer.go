@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type computer interface {
+	Move(string) (string, error)
+	Close()
+}
+
 type com struct {
 	color board.Color
 	id    string

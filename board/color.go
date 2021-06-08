@@ -15,10 +15,10 @@ func (cl Color) Opponent() Color {
 
 func (cl Color) String() string {
 	if cl == BLACK {
-		return "BLACK"
+		return "black"
 	} else if cl == WHITE {
-		return "WHITE"
+		return "white"
 	} else {
-		return "NONE"
+		return "none"
 	}
 }

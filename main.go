@@ -10,7 +10,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
@@ -38,8 +37,8 @@ func main() {
 	ui.SetIcon(game.WindowIcon)
 
 	var (
-		boardSize int            = 0
-		params    game.Parameter = game.NewAgents()
+		boardSize int
+		params    game.Parameter = game.NewParam()
 
 		blackCard *widget.Card
 		whiteCard *widget.Card
@@ -51,8 +50,8 @@ func main() {
 		selection2 *widget.Select
 		selection3 *widget.RadioGroup
 
-		aiLevelSelection1 *widget.Select
-		aiLevelSelection2 *widget.Select
+		levelSelect1 *widget.Select
+		levelSelect2 *widget.Select
 
 		playButton *widget.Button
 
@@ -67,16 +66,16 @@ func main() {
 		builtinai.LV_FOUR.String(),
 		builtinai.LV_FIVE.String(),
 	}
-	aiLevelSelection1 = widget.NewSelect(
+	levelSelect1 = widget.NewSelect(
 		levels,
 		func(s string) {
-			params.BlackInternalAILevel = builtinai.Level(aiLevelSelection1.SelectedIndex())
+			params.BlackAILevel = builtinai.Level(levelSelect1.SelectedIndex())
 		},
 	)
-	aiLevelSelection2 = widget.NewSelect(
+	levelSelect2 = widget.NewSelect(
 		levels,
 		func(s string) {
-			params.WhiteInternalAILevel = builtinai.Level(aiLevelSelection2.SelectedIndex())
+			params.WhiteAILevel = builtinai.Level(levelSelect2.SelectedIndex())
 		},
 	)
 
@@ -101,7 +100,7 @@ func main() {
 				params.BlackAgent = game.AgentHuman
 			} else {
 				params.BlackAgent = game.AgentBuiltIn
-				d := dialog.NewCustom("select AI level", "  ok  ", aiLevelSelection1, ui)
+				d := dialog.NewCustom("select AI level", "  ok  ", levelSelect1, ui)
 				d.Resize(selectDialogSize)
 				d.Show()
 			}
@@ -111,10 +110,15 @@ func main() {
 		},
 	)
 
-	subTitle1 := canvas.NewText("black side", theme.ForegroundColor())
-	subTitle1.TextSize = cardTextSize
-	subTitle1.Alignment = fyne.TextAlignCenter
-	blackCard = widget.NewCard("", "", container.NewVBox(subTitle1, container.NewCenter(selection1)))
+	subtitle1 := game.NewText("black size", cardTextSize, fyne.TextAlignCenter)
+	blackCard = widget.NewCard(
+		"",
+		"",
+		container.NewVBox(
+			subtitle1.CanvasText(),
+			container.NewCenter(selection1),
+		),
+	)
 
 	selection2 = widget.NewSelect(
 		[]string{"human", "built-in AI", "external AI"},
@@ -137,7 +141,7 @@ func main() {
 				params.WhiteAgent = game.AgentHuman
 			} else {
 				params.WhiteAgent = game.AgentBuiltIn
-				d := dialog.NewCustom("select AI level", "  ok  ", aiLevelSelection2, ui)
+				d := dialog.NewCustom("select AI level", "  ok  ", levelSelect2, ui)
 				d.Resize(selectDialogSize)
 				d.Show()
 			}
@@ -147,10 +151,15 @@ func main() {
 		},
 	)
 
-	subtitle2 := canvas.NewText("white side", theme.ForegroundColor())
-	subtitle2.TextSize = cardTextSize
-	subtitle2.Alignment = fyne.TextAlignCenter
-	whiteCard = widget.NewCard("", "", container.NewVBox(subtitle2, container.NewCenter(selection2)))
+	subtitle2 := game.NewText("white size", cardTextSize, fyne.TextAlignCenter)
+	whiteCard = widget.NewCard(
+		"",
+		"",
+		container.NewVBox(
+			subtitle2.CanvasText(),
+			container.NewCenter(selection2),
+		),
+	)
 
 	selection3 = widget.NewRadioGroup(
 		[]string{"6x6", "8x8"},
@@ -168,10 +177,15 @@ func main() {
 
 	top = container.NewGridWithColumns(2, blackCard, whiteCard)
 
-	subtitle3 := canvas.NewText("board size", theme.ForegroundColor())
-	subtitle3.TextSize = cardTextSize
-	subtitle3.Alignment = fyne.TextAlignCenter
-	center = widget.NewCard("", "", container.NewVBox(subtitle3, container.NewCenter(selection3)))
+	subtitle3 := game.NewText("board size", cardTextSize, fyne.TextAlignCenter)
+	center = widget.NewCard(
+		"",
+		"",
+		container.NewVBox(
+			subtitle3.CanvasText(),
+			container.NewCenter(selection3),
+		),
+	)
 
 	cont := widget.NewRadioGroup(
 		[]string{"black first", "white first"},
@@ -202,15 +216,13 @@ func main() {
 	)
 	playButton.Disable()
 
-	title := canvas.NewText("othello", theme.ForegroundColor())
-	title.TextSize = titleTextSize
-	title.Alignment = fyne.TextAlignCenter
+	title := game.NewText("othello", titleTextSize, fyne.TextAlignCenter)
 
 	all = widget.NewCard(
 		"",
 		"",
 		container.NewVBox(
-			title,
+			title.CanvasText(),
 			container.NewPadded(),
 			container.NewMax(top),
 			container.NewMax(center),

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
@@ -18,24 +17,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type Agent int
-
-type Parameter struct {
-	BlackAgent           Agent
-	WhiteAgent           Agent
-	BlackPath            string
-	WhitePath            string
-	BlackInternalAILevel builtinai.Level
-	WhiteInternalAILevel builtinai.Level
-	GoesFirst            board.Color
-}
-
 const (
-	AgentNone Agent = iota
-	AgentHuman
-	AgentBuiltIn
-	AgentExternal
-
 	counterTextSize = 24
 	timerTextSize   = 13
 	nameTextSize    = 13
@@ -50,32 +32,17 @@ var (
 	unitSize = fyne.NewSize(48, 48)
 )
 
-func NewAgents() Parameter {
-	return Parameter{
-		BlackAgent: AgentNone,
-		BlackPath:  "",
-		WhiteAgent: AgentNone,
-		WhitePath:  "",
-	}
-}
-
-func (params Parameter) AllSelected() bool {
-	return params.BlackAgent != AgentNone && params.WhiteAgent != AgentNone
-}
-
-type computer interface {
-	Move(string) (string, error)
-	Close()
-}
-
 type game struct {
-	window       fyne.Window
-	bd           board.Board
-	units        [][]*unit
-	counterBlack *canvas.Text
-	counterWhite *canvas.Text
-	timerText    *canvas.Text
-	timer        time.Time
+	window fyne.Window
+	bd     board.Board
+	units  [][]*unit
+
+	counterBlack Text
+	counterWhite Text
+	timerText    Text
+	whosTurn     Text
+
+	timer        float64
 	passBtn      *widget.Button
 	com1         computer
 	com2         computer
@@ -88,57 +55,39 @@ type game struct {
 func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	var name string
 
-	left := canvas.NewText("", theme.ForegroundColor())
-	left.TextSize = nameTextSize
-	left.Alignment = fyne.TextAlignLeading
 	if params.BlackAgent == AgentHuman {
 		name = "human"
 	} else if params.BlackAgent == AgentBuiltIn {
-		name = "AI: " + params.BlackInternalAILevel.String()
+		name = "AI: " + params.BlackAILevel.String()
 	} else {
 		path := strings.Split(params.BlackPath, "/")
 		if len(path) != 0 {
 			name = "AI: " + path[len(path)-1]
 		}
 	}
-	left.Text = name
-	for left.MinSize().Width > winSize.Width/2 {
-		left.Text = left.Text[:len(left.Text)-1]
-	}
+	left := NewText(name, nameTextSize, fyne.TextAlignLeading)
+	left.SetMaxSize(winSize.Width / 2)
 
-	right := canvas.NewText("", theme.ForegroundColor())
-	right.TextSize = nameTextSize
-	right.Alignment = fyne.TextAlignTrailing
 	if params.WhiteAgent == AgentHuman {
 		name = "human"
 	} else if params.WhiteAgent == AgentBuiltIn {
-		name = "AI: " + params.WhiteInternalAILevel.String()
+		name = "AI: " + params.WhiteAILevel.String()
 	} else {
 		path := strings.Split(params.WhitePath, "/")
 		if len(path) != 0 {
 			name = "AI: " + path[len(path)-1]
 		}
 	}
-	right.Text = name
-	for right.MinSize().Width > winSize.Width/2 {
-		right.Text = right.Text[:len(right.Text)-1]
-	}
+	right := NewText(name, nameTextSize, fyne.TextAlignTrailing)
+	right.SetMaxSize(winSize.Width / 2)
 
-	return container.NewGridWithColumns(2, left, right)
+	return container.NewGridWithColumns(2, left.CanvasText(), right.CanvasText())
 }
 
-func newCounterText() (*canvas.Text, *canvas.Text, *canvas.Text) {
-	counter1 := canvas.NewText("", theme.ForegroundColor())
-	counter1.TextSize = counterTextSize
-	counter1.Alignment = fyne.TextAlignLeading
-
-	counter2 := canvas.NewText("", theme.ForegroundColor())
-	counter2.TextSize = counterTextSize
-	counter2.Alignment = fyne.TextAlignTrailing
-
-	timerText := canvas.NewText("0.0", theme.ForegroundColor())
-	timerText.TextSize = timerTextSize
-	timerText.Alignment = fyne.TextAlignCenter
+func newCounterText() (Text, Text, Text) {
+	counter1 := NewText("", counterTextSize, fyne.TextAlignLeading)
+	counter2 := NewText("", counterTextSize, fyne.TextAlignTrailing)
+	timerText := NewText("0.0", timerTextSize, fyne.TextAlignCenter)
 
 	return counter1, counter2, timerText
 }
@@ -151,7 +100,6 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	}
 
 	g := &game{}
-	bd := board.NewBoard(size)
 
 	units := make([][]*unit, size)
 	for i := range units {
@@ -166,35 +114,33 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		}
 	}
 
-	g.window = window
-	g.units = units
-	g.now = params.GoesFirst
-	g.bd = bd
-	g.over = false
-	g.closeRoutine = false
-	g.timer = time.Now()
-
 	if params.BlackAgent == AgentBuiltIn {
-		g.com1 = builtinai.New(builtinai.BLACK, size, params.BlackInternalAILevel)
+		g.com1 = builtinai.New(builtinai.BLACK, size, params.BlackAILevel)
 	} else if params.BlackAgent == AgentExternal {
 		g.com1 = newCom(board.BLACK, params.BlackPath)
 	}
 	if params.WhiteAgent == AgentBuiltIn {
-		g.com2 = builtinai.New(builtinai.WHITE, size, params.WhiteInternalAILevel)
+		g.com2 = builtinai.New(builtinai.WHITE, size, params.WhiteAILevel)
 	} else if params.WhiteAgent == AgentExternal {
 		g.com2 = newCom(board.WHITE, params.WhitePath)
 	}
 
-	if g.com1 != nil || g.com2 != nil {
-		go g.round()
-	}
+	g.window = window
+	g.units = units
+	g.now = params.GoesFirst
+	g.bd = board.NewBoard(size)
+	g.over = false
+	g.closeRoutine = false
 	g.haveHuman = g.com1 == nil || g.com2 == nil
-
 	g.counterBlack, g.counterWhite, g.timerText = newCounterText()
 
-	go g.timerUpdate()
+	if g.now == board.BLACK {
+		g.whosTurn = NewText("black's turn", counterTextSize, fyne.TextAlignCenter)
+	} else {
+		g.whosTurn = NewText("white's turn", counterTextSize, fyne.TextAlignCenter)
+	}
 
-	counterTile := container.NewGridWithColumns(3, g.counterBlack, g.timerText, g.counterWhite)
+	counterTile := container.NewGridWithColumns(2, g.counterBlack.CanvasText(), g.counterWhite.CanvasText())
 	nameText := newNameText(window.Canvas().Size(), params)
 
 	g.passBtn = widget.NewButtonWithIcon(
@@ -237,9 +183,22 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		},
 	)
 
+	if g.com1 != nil || g.com2 != nil {
+		go g.round()
+	}
+	go g.timerUpdate()
 	g.update(nullPoint)
 
-	return container.NewVBox(counterTile, nameText, grid, g.passBtn, restart, mainMenu)
+	return container.NewVBox(
+		g.whosTurn.CanvasText(),
+		g.timerText.CanvasText(),
+		counterTile,
+		nameText,
+		grid,
+		g.passBtn,
+		restart,
+		mainMenu,
+	)
 }
 
 func (g *game) isBot(cl board.Color) bool {
@@ -255,15 +214,13 @@ func (g *game) round() {
 	var err error
 	for !g.closeRoutine && !g.over {
 		if g.isBot(g.now) {
+			start := time.Now()
 			if g.now == board.BLACK {
-				start := time.Now()
 				out, err = g.com1.Move(g.bd.String())
-				fmt.Println("black side spent:", time.Since(start))
 			} else {
-				start := time.Now()
 				out, err = g.com2.Move(g.bd.String())
-				fmt.Println("white side spent:", time.Since(start))
 			}
+			fmt.Println(g.now, "side spent:", time.Since(start))
 			if err != nil {
 				g.aiError(err)
 			}
@@ -305,27 +262,29 @@ func (g *game) update(current board.Point) {
 	if g.over {
 		g.gameOver()
 	}
+	if g.now == board.BLACK {
+		g.whosTurn.Update("black's turn")
+	} else {
+		g.whosTurn.Update("white's turn")
+	}
 }
 
 func (g *game) refreshCounter() {
 	blacks := g.bd.CountPieces(board.BLACK)
 	whites := g.bd.CountPieces(board.WHITE)
-	g.counterBlack.Text = fmt.Sprintf("black: %2d", blacks)
-	g.counterBlack.Refresh()
-	g.counterWhite.Text = fmt.Sprintf("white: %2d", whites)
-	g.counterWhite.Refresh()
-	g.timer = time.Now()
+	g.counterBlack.Update(fmt.Sprintf("black: %2d", blacks))
+	g.counterWhite.Update(fmt.Sprintf("white: %2d", whites))
+	g.timerText.Update("0.0")
+	g.timer = 0.0
 }
 
 func (g *game) timerUpdate() {
-	for {
-		now := time.Since(g.timer).Seconds()
-		if now > 999999.9 {
-			now = 999999.9
+	for g.timer = 0.0; !g.over && !g.closeRoutine; g.timer += 0.1 {
+		if g.timer > 999999.9 {
+			g.timer = 999999.9
 		}
-		g.timerText.Text = fmt.Sprintf("%.1f", now)
-		g.timerText.Refresh()
-		time.Sleep(time.Millisecond * 90)
+		g.timerText.Update(fmt.Sprintf("%.1f", g.timer))
+		time.Sleep(time.Second / 10)
 	}
 }
 
@@ -347,10 +306,11 @@ func (g *game) showValidAndCount(current board.Point) int {
 	for i, line := range g.units {
 		for j, u := range line {
 			cl := g.bd.AtXY(i, j)
-			u.setColor(cl)
 			if g.bd.IsValidPoint(g.now, board.NewPoint(i, j)) {
 				u.SetResource(possible)
 				count++
+			} else {
+				u.setColor(cl)
 			}
 			if current.X == i && current.Y == j {
 				u.setColorCurrent(cl)
