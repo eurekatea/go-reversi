@@ -10,12 +10,21 @@ othello(reversi) arena for humans and AIs
 雙方皆無處可下時遊戲結束，依棋子數目決定輸贏或平手  
 
 # 使用外部AI
-程式可以導入外部AI，外部的AI程式須接收input，並輸出結果  
-如：輸入```++++++++++++++OX++++XO++++++++++++++ 1```，輸出```Bc```  
+程式可以導入外部AI，外部的AI程式須使用while input，並輸出結果  
+範例：  
+```
+int main() {  
+    std::string board;
+    int color;
+    while(std::cin >> board >> color) {
+        ...
+        std::cout << answer << std::endl;
+    }
+}
+```
+輸入```++++++++++++++OX++++XO++++++++++++++ 1```，輸出```Bc```  
 (X表示黑方，O表示白方；1表示為黑方，2為白方)  
-AI程式須為while input  
-例(c++)： ```while(std::cin >> board >> color) {...}```  
-程式接收回傳值時，若回傳值不合法，GUI會顯示外部AI出錯，並將錯誤內容輸出至log file內  
+若顯示外部AI出錯，請到error.log查看詳細訊息  
 
 # 下載
 https://github.com/lemon37564/othello-board/releases
