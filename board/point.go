@@ -10,6 +10,9 @@ func NewPoint(x, y int) Point {
 }
 
 func StrToPoint(s string) Point {
+	if len(s) < 2 {
+		return Point{-1, -1}
+	}
 	col, row := int(s[0]-'A'), int(s[1]-'a')
 	return Point{row, col}
 }
