@@ -23,6 +23,16 @@ func NewBoard(size int) Board {
 	return bd
 }
 
+func NewBoardFromStr(s string) Board {
+	size := 8
+	if len(s) == 6*6 {
+		size = 6
+	}
+	bd := NewBoard(size)
+	bd.AssignBoard(s)
+	return bd
+}
+
 func (bd Board) Size() int {
 	return len(bd) - 2
 }
@@ -34,14 +44,6 @@ func (bd Board) Copy() Board {
 		copy(nbd[i], bd[i])
 	}
 	return nbd
-}
-
-func (bd Board) CopyFromBoard(another Board) {
-	for i := range bd {
-		for j := range bd[i] {
-			bd[i][j] = another[i][j]
-		}
-	}
 }
 
 func (bd Board) AssignBoard(bd2 string) {
@@ -116,7 +118,15 @@ func (bd Board) Assign(cl Color, x, y int) {
 	bd[x+1][y+1] = cl
 }
 
-func (bd Board) Put(cl Color, p Point) bool {
+func (bd Board) PutStr(cl Color, s string) bool {
+	if len(s) < 2 {
+		return false
+	}
+	p := StrToPoint(s)
+	return bd.PutPoint(cl, p)
+}
+
+func (bd Board) PutPoint(cl Color, p Point) bool {
 	if p.X < 0 || p.X >= bd.Size() || p.Y < 0 || p.Y >= bd.Size() {
 		return false
 	}

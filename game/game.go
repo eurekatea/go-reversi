@@ -63,7 +63,7 @@ func (params Parameter) AllSelected() bool {
 }
 
 type computer interface {
-	Move(board.Board) (board.Point, error)
+	Move(string) (string, error)
 }
 
 type game struct {
@@ -239,25 +239,25 @@ func (g *game) isBot(cl board.Color) bool {
 }
 
 func (g *game) round() {
-	var p board.Point
+	var out string
 	var err error
 	for !g.closeRoutine && !g.over {
 		if g.isBot(g.now) {
 			if g.now == board.BLACK {
 				start := time.Now()
-				p, err = g.com1.Move(g.bd.Copy())
+				out, err = g.com1.Move(g.bd.String())
 				fmt.Println("black side spent:", time.Since(start))
 			} else {
 				start := time.Now()
-				p, err = g.com2.Move(g.bd.Copy())
+				out, err = g.com2.Move(g.bd.String())
 				fmt.Println("white side spent:", time.Since(start))
 			}
 			if err != nil {
 				g.aiError(err)
 			}
-			g.bd.Put(g.now, p)
+			g.bd.PutStr(g.now, out)
 			g.now = g.now.Opponent()
-			g.update(p)
+			g.update(board.StrToPoint(out))
 		} else {
 			time.Sleep(time.Millisecond * 30)
 		}
@@ -355,7 +355,7 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 		return
 	}
 	p := board.NewPoint(u.x, u.y)
-	if !u.g.bd.Put(u.g.now, p) {
+	if !u.g.bd.PutPoint(u.g.now, p) {
 		return
 	}
 

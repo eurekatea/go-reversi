@@ -28,51 +28,56 @@ func newCom(cl board.Color, name string) *com {
 	return c
 }
 
-func (c *com) Move(bd board.Board) (board.Point, error) {
-	output, err := c.execute(bd)
+func (c *com) Move(input string) (string, error) {
+	output, err := c.execute(input)
 	if err != nil {
-		return board.Point{}, err
+		return "", err
 	}
-	col, row := int(output[0]-'A'), int(output[1]-'a')
-	p := board.NewPoint(row, col)
-	if !bd.Put(c.color, p) {
+
+	bd := board.NewBoardFromStr(input)
+	if !bd.PutStr(c.color, output) {
 		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
-		return board.Point{}, c.fatal(bd, r)
+		return "", c.fatal(input, r)
 	}
-	return p, nil
+	return output, nil
 }
 
-func (c com) execute(bd board.Board) (string, error) {
+func (c com) execute(input string) (string, error) {
 	cmd := exec.Command(c.program, "")
 	cmd = modifyCmd(cmd)
-	cmd.Stdin = strings.NewReader(bd.String() + c.id)
+	cmd.Stdin = strings.NewReader(input + c.id)
 	out, err := cmd.Output()
 	if err != nil {
-		return "", c.fatal(bd, err.Error())
+		return "", c.fatal(input, err.Error())
 	}
 
 	output := string(out)
 	if len(output) == 0 {
-		return "", c.fatal(bd, "unknown output: (no output)")
+		return "", c.fatal(input, "unknown output: (no output)")
 	}
-	if c.invalid(bd, output) {
-		return "", c.fatal(bd, "unknown output: "+output)
+	if c.invalid(input, output) {
+		return "", c.fatal(input, "unknown output: "+output)
 	}
 
 	return output, nil
 }
 
-func (c com) invalid(bd board.Board, output string) bool {
-	l := len(output) < 2
-	if l {
+func (c com) invalid(input string, output string) bool {
+	if len(output) < 2 {
 		return true
 	}
-	first := output[0] < 'A' || output[0] > byte('A'+bd.Size())
-	second := output[1] < 'a' || output[1] > byte('a'+bd.Size())
+	size := 8
+	if len(input) == 6*6 {
+		size = 6
+	}
+	first := output[0] < 'A' || output[0] > byte('A'+size)
+	second := output[1] < 'a' || output[1] > byte('a'+size)
 	return first || second
 }
 
-func (c com) fatal(bd board.Board, text string) error {
+func (c com) fatal(input string, text string) error {
+	bd := board.NewBoardFromStr(input)
+
 	f, err := os.Create("error.log")
 	if err != nil {
 		return err

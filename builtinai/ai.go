@@ -3,7 +3,6 @@ package builtinai
 import (
 	"fmt"
 	"math"
-	"othello/board"
 )
 
 const (
@@ -55,8 +54,8 @@ func New(cl color, boardSize int, lv Level) *AI {
 	return &ai
 }
 
-func (ai *AI) Move(bd board.Board) (board.Point, error) {
-	aibd := newBoardFromStr(bd.String())
+func (ai *AI) Move(input string) (string, error) {
+	aibd := newBoardFromStr(input)
 	boardSize := aibd.size()
 	ai.nodes = 0
 
@@ -68,9 +67,9 @@ func (ai *AI) Move(bd board.Board) (board.Point, error) {
 
 	bestPoint := point{best.x, best.y}
 	if !aibd.putAndCheck(ai.color, bestPoint) {
-		return bestPoint.toBoardPoint(), fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
+		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.toBoardPoint(), nil
+	return bestPoint.toBoardPoint().PointToStr(), nil
 }
 
 func (ai *AI) printValue(best node, boardSize int) {
