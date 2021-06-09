@@ -61,17 +61,6 @@ func (c *com) Move(input string) (string, error) {
 	return output, nil
 }
 
-func (c com) Close() {
-	err := c.in.Close()
-	if err != nil {
-		panic(err)
-	}
-	err = c.cmd.Wait()
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (c com) execute(input string) (string, error) {
 
 	c.in.Write([]byte(input + c.id + "\n"))

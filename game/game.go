@@ -26,8 +26,8 @@ const (
 
 var (
 	nullPoint  = board.NewPoint(-1, -1)
-	winSize6x6 = fyne.NewSize(316, 426)
-	winSize8x8 = fyne.NewSize(420, 530)
+	winSize6x6 = fyne.NewSize(316, 479)
+	winSize8x8 = fyne.NewSize(420, 583)
 
 	unitSize = fyne.NewSize(48, 48)
 )
@@ -40,13 +40,12 @@ type game struct {
 	counterBlack Text
 	counterWhite Text
 
-	passBtn      *widget.Button
-	com1         computer
-	com2         computer
-	now          board.Color
-	haveHuman    bool
-	over         bool
-	closeRoutine bool
+	passBtn   *widget.Button
+	com1      computer
+	com2      computer
+	now       board.Color
+	haveHuman bool
+	over      bool
 }
 
 func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
@@ -126,7 +125,6 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	g.now = params.GoesFirst
 	g.bd = board.NewBoard(size)
 	g.over = false
-	g.closeRoutine = false
 	g.haveHuman = g.com1 == nil || g.com2 == nil
 	g.counterBlack, g.counterWhite = newCounterText()
 
@@ -150,9 +148,9 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		func() {
 			dialog.NewConfirm("confirm", "restart?", func(b bool) {
 				if b {
-					g.closeRoutine = true
-					newContent := New(a, window, menu, params, size)
-					window.SetContent(newContent)
+					g.cleanAndExit()
+					newGame := New(a, window, menu, params, size)
+					window.SetContent(newGame)
 				}
 			}, window).Show()
 		},
@@ -164,7 +162,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		func() {
 			dialog.NewConfirm("confirm", "return to menu?", func(b bool) {
 				if b {
-					g.closeRoutine = true
+					g.cleanAndExit()
 					menu.Show()
 					window.SetContent(menu)
 					window.Resize(fyne.NewSize(500, 450))
@@ -199,7 +197,9 @@ func (g *game) isBot(cl board.Color) bool {
 func (g *game) round() {
 	var out string
 	var err error
-	for !g.closeRoutine && !g.over {
+	defer g.cleanAndExit()
+	for !g.over {
+		fmt.Println(g.window.Canvas().Size())
 		if g.isBot(g.now) {
 			start := time.Now()
 			if g.now == board.BLACK {
@@ -210,6 +210,7 @@ func (g *game) round() {
 			fmt.Println(g.now, "side spent:", time.Since(start))
 			if err != nil {
 				g.aiError(err)
+				break
 			}
 			g.bd.PutStr(g.now, out)
 			g.now = g.now.Opponent()
@@ -217,12 +218,6 @@ func (g *game) round() {
 		} else {
 			time.Sleep(time.Millisecond * 30)
 		}
-	}
-	if g.com1 != nil {
-		g.com1.Close()
-	}
-	if g.com2 != nil {
-		g.com2.Close()
 	}
 }
 
@@ -291,10 +286,21 @@ func (g *game) showValidAndCount(current board.Point) int {
 }
 
 func (g *game) aiError(err error) {
-	g.closeRoutine = true
-	d := dialog.NewError(err, g.window)
-	d.SetOnClosed(func() { panic(err) })
-	d.Show()
+	if !g.over {
+		d := dialog.NewError(err, g.window)
+		d.SetOnClosed(func() { panic(err) })
+		d.Show()
+	}
+}
+
+func (g *game) cleanAndExit() {
+	g.over = true
+	if g.com1 != nil {
+		g.com1.Close()
+	}
+	if g.com2 != nil {
+		g.com2.Close()
+	}
 }
 
 type unit struct {
