@@ -39,10 +39,7 @@ type game struct {
 
 	counterBlack Text
 	counterWhite Text
-	timerText    Text
-	whosTurn     Text
 
-	timer        float64
 	passBtn      *widget.Button
 	com1         computer
 	com2         computer
@@ -84,12 +81,11 @@ func newNameText(winSize fyne.Size, params Parameter) *fyne.Container {
 	return container.NewGridWithColumns(2, left.CanvasText(), right.CanvasText())
 }
 
-func newCounterText() (Text, Text, Text) {
+func newCounterText() (Text, Text) {
 	counter1 := NewText("", counterTextSize, fyne.TextAlignLeading)
 	counter2 := NewText("", counterTextSize, fyne.TextAlignTrailing)
-	timerText := NewText("0.0", timerTextSize, fyne.TextAlignCenter)
 
-	return counter1, counter2, timerText
+	return counter1, counter2
 }
 
 func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter, size int) *fyne.Container {
@@ -132,13 +128,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	g.over = false
 	g.closeRoutine = false
 	g.haveHuman = g.com1 == nil || g.com2 == nil
-	g.counterBlack, g.counterWhite, g.timerText = newCounterText()
-
-	if g.now == board.BLACK {
-		g.whosTurn = NewText("black's turn", counterTextSize, fyne.TextAlignCenter)
-	} else {
-		g.whosTurn = NewText("white's turn", counterTextSize, fyne.TextAlignCenter)
-	}
+	g.counterBlack, g.counterWhite = newCounterText()
 
 	counterTile := container.NewGridWithColumns(2, g.counterBlack.CanvasText(), g.counterWhite.CanvasText())
 	nameText := newNameText(window.Canvas().Size(), params)
@@ -186,12 +176,9 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	if g.com1 != nil || g.com2 != nil {
 		go g.round()
 	}
-	go g.timerUpdate()
 	g.update(nullPoint)
 
 	return container.NewVBox(
-		g.whosTurn.CanvasText(),
-		g.timerText.CanvasText(),
 		counterTile,
 		nameText,
 		grid,
@@ -262,11 +249,6 @@ func (g *game) update(current board.Point) {
 	if g.over {
 		g.gameOver()
 	}
-	if g.now == board.BLACK {
-		g.whosTurn.Update("black's turn")
-	} else {
-		g.whosTurn.Update("white's turn")
-	}
 }
 
 func (g *game) refreshCounter() {
@@ -274,18 +256,6 @@ func (g *game) refreshCounter() {
 	whites := g.bd.CountPieces(board.WHITE)
 	g.counterBlack.Update(fmt.Sprintf("black: %2d", blacks))
 	g.counterWhite.Update(fmt.Sprintf("white: %2d", whites))
-	g.timerText.Update("0.0")
-	g.timer = 0.0
-}
-
-func (g *game) timerUpdate() {
-	for g.timer = 0.0; !g.over && !g.closeRoutine; g.timer += 0.1 {
-		if g.timer > 999999.9 {
-			g.timer = 999999.9
-		}
-		g.timerText.Update(fmt.Sprintf("%.1f", g.timer))
-		time.Sleep(time.Second / 10)
-	}
 }
 
 func (g *game) gameOver() {

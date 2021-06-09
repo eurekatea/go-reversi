@@ -38,7 +38,8 @@ func main() {
 
 	var (
 		boardSize int
-		params    game.Parameter = game.NewParam()
+
+		params game.Parameter = game.NewParam()
 
 		blackCard *widget.Card
 		whiteCard *widget.Card
@@ -48,7 +49,9 @@ func main() {
 
 		selection1 *widget.Select
 		selection2 *widget.Select
-		selection3 *widget.RadioGroup
+
+		sizeSelect *widget.RadioGroup
+		order      *widget.RadioGroup
 
 		levelSelect1 *widget.Select
 		levelSelect2 *widget.Select
@@ -161,7 +164,9 @@ func main() {
 		),
 	)
 
-	selection3 = widget.NewRadioGroup(
+	top = container.NewGridWithColumns(2, blackCard, whiteCard)
+
+	sizeSelect = widget.NewRadioGroup(
 		[]string{"6x6", "8x8"},
 
 		func(s string) {
@@ -172,10 +177,8 @@ func main() {
 			}
 		},
 	)
-	selection3.SetSelected("6x6")
-	selection3.Required = true
-
-	top = container.NewGridWithColumns(2, blackCard, whiteCard)
+	sizeSelect.SetSelected("6x6")
+	sizeSelect.Required = true
 
 	subtitle3 := game.NewText("board size", cardTextSize, fyne.TextAlignCenter)
 	center = widget.NewCard(
@@ -183,11 +186,11 @@ func main() {
 		"",
 		container.NewVBox(
 			subtitle3.CanvasText(),
-			container.NewCenter(selection3),
+			container.NewCenter(sizeSelect),
 		),
 	)
 
-	cont := widget.NewRadioGroup(
+	order = widget.NewRadioGroup(
 		[]string{"black first", "white first"},
 		func(s string) {
 			if s == "black first" {
@@ -197,12 +200,13 @@ func main() {
 			}
 		},
 	)
-	cont.SetSelected("black first")
-	cont.Required = true
+	order.SetSelected("black first")
+	order.Required = true
+
 	goesFirst = widget.NewCard(
 		"",
 		"",
-		container.NewCenter(cont),
+		container.NewCenter(order),
 	)
 
 	playButton = widget.NewButtonWithIcon(
