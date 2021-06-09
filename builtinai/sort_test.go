@@ -1,21 +1,20 @@
 package builtinai
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 	"testing"
 	"time"
 )
 
-const size = 10
+const size = 24
 
 // avg: 180 ns/op 96 B/op 3 allocs/op
 func BenchmarkSortBuiltIn(b *testing.B) {
 	ns := make(nodes, size)
 	rand.Seed(time.Now().Unix())
 	for i := range ns {
-		ns[i] = node{rand.Int(), rand.Int(), rand.Intn(size)}
+		ns[i] = node{rand.Int(), rand.Intn(size)}
 	}
 
 	for i := 0; i < b.N; i++ {
@@ -23,10 +22,6 @@ func BenchmarkSortBuiltIn(b *testing.B) {
 			return ns[i].value < ns[j].value
 		})
 	}
-	for i := 0; i < size; i++ {
-		fmt.Print(ns[i].value, " ")
-	}
-	fmt.Println()
 }
 
 // 2 times faster than standard libary sort (on small slices)
@@ -36,16 +31,12 @@ func BenchmarkQSortSimple(b *testing.B) {
 	n := make(nodes, size)
 	rand.Seed(time.Now().Unix())
 	for i := range n {
-		n[i] = node{rand.Int(), rand.Int(), rand.Intn(size)}
+		n[i] = node{rand.Int(), rand.Intn(size)}
 	}
 
 	for i := 0; i < b.N; i++ {
 		qsortSimple(n)
 	}
-	for i := 0; i < size; i++ {
-		fmt.Print(n[i].value, " ")
-	}
-	fmt.Println()
 }
 
 // modified from standard libary
@@ -54,16 +45,12 @@ func BenchmarkQSortModified(b *testing.B) {
 	n := make(nodes, size)
 	rand.Seed(time.Now().Unix())
 	for i := range n {
-		n[i] = node{rand.Int(), rand.Int(), rand.Intn(size)}
+		n[i] = node{rand.Int(), rand.Intn(size)}
 	}
 
 	for i := 0; i < b.N; i++ {
 		qsort(n)
 	}
-	for i := 0; i < size; i++ {
-		fmt.Print(n[i].value, " ")
-	}
-	fmt.Println()
 }
 
 // avg: 7.2 ns/op
@@ -71,16 +58,12 @@ func BenchmarkInsertionSort(b *testing.B) {
 	n := make(nodes, size)
 	rand.Seed(time.Now().Unix())
 	for i := range n {
-		n[i] = node{rand.Int(), rand.Int(), rand.Intn(size)}
+		n[i] = node{rand.Int(), rand.Intn(size)}
 	}
 
 	for i := 0; i < b.N; i++ {
 		n.sortAsc()
 	}
-	for i := 0; i < size; i++ {
-		fmt.Print(n[i].value, " ")
-	}
-	fmt.Println()
 }
 
 func qsortSimple(s []node) {

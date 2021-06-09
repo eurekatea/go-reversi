@@ -1,5 +1,12 @@
 package builtinai
 
+import "math"
+
+const (
+	MININT = math.MinInt32
+	MAXINT = math.MaxInt32
+)
+
 func abs(v int) int {
 	if v > 0 {
 		return v

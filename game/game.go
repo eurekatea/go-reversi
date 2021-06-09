@@ -110,12 +110,20 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	}
 
 	if params.BlackAgent == AgentBuiltIn {
-		g.com1 = builtinai.New(builtinai.BLACK, size, params.BlackAILevel)
+		if size == 6 {
+			g.com1 = builtinai.NewAI6(builtinai.BLACK, params.BlackAILevel)
+		} else {
+			g.com1 = builtinai.NewAI8(builtinai.BLACK, params.BlackAILevel)
+		}
 	} else if params.BlackAgent == AgentExternal {
 		g.com1 = newCom(board.BLACK, params.BlackPath)
 	}
 	if params.WhiteAgent == AgentBuiltIn {
-		g.com2 = builtinai.New(builtinai.WHITE, size, params.WhiteAILevel)
+		if size == 6 {
+			g.com2 = builtinai.NewAI6(builtinai.WHITE, params.WhiteAILevel)
+		} else {
+			g.com2 = builtinai.NewAI8(builtinai.WHITE, params.WhiteAILevel)
+		}
 	} else if params.WhiteAgent == AgentExternal {
 		g.com2 = newCom(board.WHITE, params.WhitePath)
 	}
@@ -199,7 +207,6 @@ func (g *game) round() {
 	var err error
 	defer g.cleanAndExit()
 	for !g.over {
-		fmt.Println(g.window.Canvas().Size())
 		if g.isBot(g.now) {
 			start := time.Now()
 			if g.now == board.BLACK {
@@ -231,7 +238,7 @@ func (g *game) update(current board.Point) {
 				dialog.NewInformation("info", "you have to pass", g.window).Show()
 				g.passBtn.Enable()
 			} else { // current is computer
-				dialog.NewInformation("info", "computer have to pass\n it's your turn", g.window).Show()
+				dialog.NewInformation("info", "computer have to pass\nit's your turn", g.window).Show()
 				g.now = g.now.Opponent()
 				g.update(nullPoint)
 			}
@@ -254,8 +261,8 @@ func (g *game) refreshCounter() {
 }
 
 func (g *game) gameOver() {
-	winner := g.bd.Winner()
 	var text string
+	winner := g.bd.Winner()
 	if winner == board.NONE {
 		text = "draw"
 	} else {

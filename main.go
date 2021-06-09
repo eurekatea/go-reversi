@@ -31,8 +31,7 @@ func main() {
 	// defer profile.Start(profile.BlockProfile, profile.CPUProfile).Stop()
 
 	a := app.New()
-	customTheme := othellotheme.Theme{}
-	a.Settings().SetTheme(&customTheme)
+	a.Settings().SetTheme(&othellotheme.Theme{})
 	ui := a.NewWindow("othello")
 	ui.SetIcon(game.WindowIcon)
 

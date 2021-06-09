@@ -5,7 +5,7 @@ import (
 )
 
 type node struct {
-	x, y  int
+	loc   int
 	value int
 }
 
