@@ -181,43 +181,55 @@ func (bd bboard6) isValidLoc(cl color, loc int) bool {
 	return bd.allValidLoc(cl)&mask != 0
 }
 
-var (
-	masks6 = []uint64{
-		0x7DF7DF7DF, // e
-		0x01F7DF7DF, // se
-		0xFFFFFFFFF, // s
-		0x03EFBEFBE, // sw
-		0xFBEFBEFBE, // w
-		0xFBEFBEF80, // nw
-		0xFFFFFFFFF, // n
-		0x7DF7DF7C0,
-	}
+// var (
+// 	masks6 = []uint64{
+// 		0x7DF7DF7DF, // e
+// 		0x01F7DF7DF, // se
+// 		0xFFFFFFFFF, // s
+// 		0x03EFBEFBE, // sw
+// 		0xFBEFBEFBE, // w
+// 		0xFBEFBEF80, // nw
+// 		0xFFFFFFFFF, // n
+// 		0x7DF7DF7C0,
+// 	}
 
-	lshift6 = []uint64{
-		0, 0, 0, 0, 1, 7, 6, 5,
-	}
+// 	lshift6 = []uint64{
+// 		0, 0, 0, 0, 1, 7, 6, 5,
+// 	}
 
-	rshift6 = []uint64{
-		1, 7, 6, 5, 0, 0, 0, 0,
-	}
-)
+// 	rshift6 = []uint64{
+// 		1, 7, 6, 5, 0, 0, 0, 0,
+// 	}
+// )
 
 func (bd bboard6) shift(disk uint64, dir int) uint64 {
-	if dir < 8/2 {
-		return (disk >> rshift6[dir]) & masks6[dir]
-	} else {
-		return (disk << lshift6[dir]) & masks6[dir]
+	switch dir {
+	case 0:
+		return (disk >> 1) & 0x7DF7DF7DF // e
+	case 1:
+		return (disk >> 7) & 0x01F7DF7DF // se
+	case 2:
+		return (disk >> 6) & 0xFFFFFFFFF // s
+	case 3:
+		return (disk >> 5) & 0x03EFBEFBE // sw
+	case 4:
+		return (disk << 1) & 0xFBEFBEFBE // w
+	case 5:
+		return (disk << 7) & 0xFBEFBEF80 // nw
+	case 6:
+		return (disk << 6) & 0xFFFFFFFFF // n
+	case 7:
+		return (disk << 5) & 0x7DF7DF7C0 // ne
 	}
+	panic("dir error")
 }
 
 func (bd bboard6) count(cl color) int {
-	var n uint64
 	if cl == BLACK {
-		n = bd.black
+		return hammingWeight(bd.black)
 	} else {
-		n = bd.white
+		return hammingWeight(bd.white)
 	}
-	return hammingWeight(n)
 }
 
 func (bd bboard6) emptyCount() int {

@@ -191,43 +191,55 @@ func (bd bboard8) isValidLoc(cl color, loc int) bool {
 	return bd.allValidLoc(cl)&mask != 0
 }
 
-var (
-	masks = []uint64{
-		0x7F7F7F7F7F7F7F7F,
-		0x007F7F7F7F7F7F7F,
-		0xFFFFFFFFFFFFFFFF,
-		0x00FEFEFEFEFEFEFE,
-		0xFEFEFEFEFEFEFEFE,
-		0xFEFEFEFEFEFEFE00,
-		0xFFFFFFFFFFFFFFFF,
-		0x7F7F7F7F7F7F7F00,
-	}
+// var (
+// 	masks = []uint64{
+// 		0x7F7F7F7F7F7F7F7F,
+// 		0x007F7F7F7F7F7F7F,
+// 		0xFFFFFFFFFFFFFFFF,
+// 		0x00FEFEFEFEFEFEFE,
+// 		0xFEFEFEFEFEFEFEFE,
+// 		0xFEFEFEFEFEFEFE00,
+// 		0xFFFFFFFFFFFFFFFF,
+// 		0x7F7F7F7F7F7F7F00,
+// 	}
 
-	lshift = []uint64{
-		0, 0, 0, 0, 1, 9, 8, 7,
-	}
+// 	lshift = []uint64{
+// 		0, 0, 0, 0, 1, 9, 8, 7,
+// 	}
 
-	rshift = []uint64{
-		1, 9, 8, 7, 0, 0, 0, 0,
-	}
-)
+// 	rshift = []uint64{
+// 		1, 9, 8, 7, 0, 0, 0, 0,
+// 	}
+// )
 
 func (bd bboard8) shift(disk uint64, dir int) uint64 {
-	if dir < 8/2 {
-		return (disk >> rshift[dir]) & masks[dir]
-	} else {
-		return (disk << lshift[dir]) & masks[dir]
+	switch dir {
+	case 0:
+		return (disk >> 1) & 0x7F7F7F7F7F7F7F7F
+	case 1:
+		return (disk >> 9) & 0x007F7F7F7F7F7F7F
+	case 2:
+		return (disk >> 8) & 0xFFFFFFFFFFFFFFFF
+	case 3:
+		return (disk >> 7) & 0x00FEFEFEFEFEFEFE
+	case 4:
+		return (disk << 1) & 0xFEFEFEFEFEFEFEFE
+	case 5:
+		return (disk << 9) & 0xFEFEFEFEFEFEFE00
+	case 6:
+		return (disk << 8) & 0xFFFFFFFFFFFFFFFF
+	case 7:
+		return (disk << 7) & 0x7F7F7F7F7F7F7F00
 	}
+	panic("dir error")
 }
 
 func (bd bboard8) count(cl color) int {
-	var n uint64
 	if cl == BLACK {
-		n = bd.black
+		return hammingWeight(bd.black)
 	} else {
-		n = bd.white
+		return hammingWeight(bd.white)
 	}
-	return hammingWeight(n)
 }
 
 func (bd bboard8) emptyCount() int {
@@ -236,16 +248,6 @@ func (bd bboard8) emptyCount() int {
 
 func (bd bboard8) isOver() bool {
 	return !(bd.hasValidMove(BLACK) || bd.hasValidMove(WHITE))
-}
-
-func hammingWeight(n uint64) int {
-	n = (n & 0x5555555555555555) + ((n >> 1) & 0x5555555555555555)
-	n = (n & 0x3333333333333333) + ((n >> 2) & 0x3333333333333333)
-	n = (n & 0x0F0F0F0F0F0F0F0F) + ((n >> 4) & 0x0F0F0F0F0F0F0F0F)
-	n = (n & 0x00FF00FF00FF00FF) + ((n >> 8) & 0x00FF00FF00FF00FF)
-	n = (n & 0x0000FFFF0000FFFF) + ((n >> 16) & 0x0000FFFF0000FFFF)
-	n = (n & 0x00000000FFFFFFFF) + ((n >> 32) & 0x00000000FFFFFFFF)
-	return int(n)
 }
 
 // var (

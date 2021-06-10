@@ -1,170 +1,109 @@
 package builtinai
 
-// func (ai *AI) oldvalidPos(bd aiboard, cl color) (all nodes) {
-// 	all = make(nodes, 0, 16)
-// 	for i := 0; i < bd.size(); i++ {
-// 		for j := 0; j < bd.size(); j++ {
-// 			p := point{i, j}
-// 			if bd.isValidPoint(cl, p) {
-// 				temp := bd.Copy()
-// 				temp.put(cl, p)
-// 				all = append(all, node{i, j, ai.heuristic(temp)})
-// 			}
-// 		}
-// 	}
-// 	return
-// }
+import (
+	"math/rand"
+	"testing"
+)
 
-// func BenchmarkOrig(b *testing.B) {
-// 	ai := New(BLACK, 6, 0)
+// avg: 91.04 ns/op
+func BenchmarkEvalNorm(b *testing.B) {
+	bd := newBoardFromStr("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		bd.eval(BLACK, WHITE, VALUE8x8)
+	}
+}
 
-// 	bd := newBoardFromStr("+++X++++X++++XOOO+++OOX+++O+++++++++")
+// avg: 56.4 ns/op
+func BenchmarkEvalB(b *testing.B) {
+	bd := newBboard8("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		bd.eval(BLACK)
+	}
+}
 
-// 	for i := 0; i < b.N; i++ {
-// 		ai.oldvalidPos(bd, ai.color)
-// 	}
-// }
+// avg: 82 ns/op
+func BenchmarkCountNorm(b *testing.B) {
+	bd := newBoardFromStr("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		_ = bd.countPieces(BLACK) - bd.countPieces(WHITE)
+	}
+}
 
-// func BenchmarkNewone(b *testing.B) {
-// 	ai := New(BLACK, 6, 0)
+// avg: 8.4 ns/op
+func BenchmarkCountB(b *testing.B) {
+	bd := newBboard8("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		_ = bd.count(BLACK) - bd.count(WHITE)
+	}
+}
 
-// 	bd := newBoardFromStr("+++X++++X++++XOOO+++OOX+++O+++++++++")
+// avg: 564 ns/op 496 B/op 13 allocs/op
+func BenchmarkCpy(b *testing.B) {
+	bd := newBoardFromStr("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		bd.put(WHITE, point{4, 0})
+		_ = bd.Copy()
+	}
+}
 
-// 	for i := 0; i < b.N; i++ {
-// 		ai.sortedValidNodes(bd, ai.color)
-// 	}
-// }
+// avg: 170 ns/op 96 B/op 2 allocs/op
+func BenchmarkRevertbd(b *testing.B) {
+	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
 
-// func BenchmarkHeuristic(b *testing.B) {
-// 	ai := New(BLACK, 6, 0)
+	for i := 0; i < b.N; i++ {
+		hs := bd.put(WHITE, point{4, 0})
+		bd.revert(hs)
+	}
+}
 
-// 	bd := newBoardFromStr("+++X++++X++++XOOO+++OOX+++O+++++++++")
+// avg: 40 ns/op 0 B/op 0 allocs/op
+func BenchmarkCpyb(b *testing.B) {
+	bd := newBboard8("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	for i := 0; i < b.N; i++ {
+		bd.put(WHITE, 32)
+		_ = bd.cpy()
+	}
+}
 
-// 	for i := 0; i < b.N; i++ {
-// 		ai.heuristic(bd)
-// 	}
-// }
+func BenchmarkAccessNorm(b *testing.B) {
+	bd := newBoardFromStr("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	p := point{4, 3}
+	for i := 0; i < b.N; i++ {
+		_ = bd.at(p)
+	}
+}
 
-// func BenchmarkPlus(b *testing.B) {
-// 	k := 0
-// 	for i := 0; i < b.N; i++ {
-// 		k++
-// 	}
-// 	fmt.Println(k)
-// }
+// almost the same ↑↓ (0.5 ns/op)
 
-// // vs revert, avg: 500 ns/op, 352 B/op, 11 allocs/op
-// func BenchmarkCopy(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+func BenchmarkAccessB(b *testing.B) {
+	bd := newBboard8("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	loc := 28
+	for i := 0; i < b.N; i++ {
+		_ = bd.at(loc)
+	}
+}
 
-// 	for i := 0; i < b.N; i++ {
-// 		cpy := bd.Copy()
-// 		cpy.put(WHITE, point{4, 0})
-// 	}
-// }
+// avg: 0.677 ns/op
+func BenchmarkAssignNorm(b *testing.B) {
+	bd := newBoardFromStr("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	p := point{4, 3}
+	for i := 0; i < b.N; i++ {
+		bd.assign(WHITE, p)
+	}
+}
 
-// // vs copy, avg: 235 ns/op (history pass by pointer)
-// // after history pass by value: 170 ns/op, 96 B/op, 2 allocs/op
-// func BenchmarkRevert(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
+// avg: 1.372 ns/op
+func BenchmarkAssignB(b *testing.B) {
+	bd := newBboard8("+++++++++++XO++++++OOX+++OOOOXO+++OOOOOO+OXOOXXX+++OOXX++++XO+++")
+	loc := 28
+	for i := 0; i < b.N; i++ {
+		bd.assign(WHITE, loc)
+	}
+}
 
-// 	for i := 0; i < b.N; i++ {
-// 		hs := bd.put(WHITE, point{4, 0})
-// 		bd.revert(hs)
-// 	}
-// }
-
-// // compiler will inline aiboard.at() so it is no problem
-// func BenchmarkAtP(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	p := point{4, 0}
-// 	for i := 0; i < b.N; i++ {
-// 		_ = bd.at(p)
-// 	}
-// }
-
-// func BenchmarkDirect(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	p := point{4, 0}
-// 	for i := 0; i < b.N; i++ {
-// 		_ = bd[p.x+1][p.y+1]
-// 	}
-// }
-
-// func BenchmarkAccessTwoDimSlice(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	x, y := 5, 3
-// 	for i := 0; i < b.N; i++ {
-// 		_ = bd[x][y]
-// 	}
-// }
-
-// func BenchmarkAccessOneDimSlice(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-// 	oneDim := make([]color, 36)
-// 	cnt := 0
-// 	for i := 0; i < bd.size(); i++ {
-// 		for j := 0; j < bd.size(); j++ {
-// 			oneDim[cnt] = bd[i][j]
-// 			cnt++
-// 		}
-// 	}
-
-// 	x := 33
-// 	for i := 0; i < b.N; i++ {
-// 		_ = oneDim[x]
-// 	}
-// }
-
-// // if history pass by pointer: avg 255 ns/op
-// // but pass by value: avg 160 ns/op
-// func BenchmarkHs(b *testing.B) {
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	for i := 0; i < b.N; i++ {
-// 		hs := bd.put(WHITE, point{4, 0})
-// 		bd.revert(hs)
-// 	}
-// }
-
-// func BenchmarkValidNodes(b *testing.B) {
-// 	ai := New(BLACK, 6, 0)
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	for i := 0; i < b.N; i++ {
-// 		_ = ai.sortedValidNodes(bd, ai.color)
-// 	}
-
-// }
-
-// func BenchmarkAB(b *testing.B) {
-// 	a := New(BLACK, 6, 0)
-// 	bd := newBoardFromStr("+++++++++XX++OOOX+++OXOO++X+XX++++++")
-
-// 	for i := 0; i < b.N; i++ {
-// 		a.alphaBetaHelper(bd, 0)
-// 	}
-// }
-
-// func BenchmarkShuffle(b *testing.B) {
-// 	n := make(nodes, 10)
-// 	rand.Seed(time.Now().Unix())
-// 	for i := range n {
-// 		n[i] = node{rand.Int(), rand.Int(), rand.Intn(10)}
-// 	}
-
-// 	for i := 0; i < b.N; i++ {
-// 		shuffle(n)
-// 	}
-// }
-
-// func shuffle(ns nodes) {
-// 	l := len(ns)
-// 	for i := range ns {
-// 		j := rand.Intn(l)
-// 		ns[i], ns[j] = ns[j], ns[i]
-// 	}
-// }
+func BenchmarkHw(b *testing.B) {
+	num := rand.Uint64()
+	for i := 0; i < b.N; i++ {
+		hammingWeight(num)
+	}
+}
