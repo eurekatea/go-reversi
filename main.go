@@ -3,6 +3,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"othello/board"
 	"othello/builtinai"
 	"othello/game"
@@ -97,6 +99,15 @@ func main() {
 				}, ui)
 				d.Resize(initWinSize)
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
+				dir, err := os.Getwd()
+				if err != nil {
+					fmt.Println(err)
+				}
+				loc, err := storage.ListerForURI(storage.NewFileURI(dir))
+				if err != nil {
+					fmt.Println(err)
+				}
+				d.SetLocation(loc)
 				d.Show()
 			} else if s == "human" {
 				params.BlackAgent = game.AgentHuman
@@ -138,6 +149,15 @@ func main() {
 				}, ui)
 				d.Resize(initWinSize)
 				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
+				dir, err := os.Getwd()
+				if err != nil {
+					fmt.Println(err)
+				}
+				loc, err := storage.ListerForURI(storage.NewFileURI(dir))
+				if err != nil {
+					fmt.Println(err)
+				}
+				d.SetLocation(loc)
 				d.Show()
 			} else if s == "human" {
 				params.WhiteAgent = game.AgentHuman
