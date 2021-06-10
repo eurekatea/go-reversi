@@ -112,13 +112,13 @@ func (bd *bboard6) flip(cl color, loc int) {
 
 		for dir := 0; dir < 8; dir++ {
 			// find opponent disk adjacent to the new disk.
-			x = bd.shift(new_disk, dir) & bd.white
+			x = shift6(new_disk, dir) & bd.white
 			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= bd.shift(x, dir) & bd.white
-			x |= bd.shift(x, dir) & bd.white
-			x |= bd.shift(x, dir) & bd.white
+			x |= shift6(x, dir) & bd.white
+			x |= shift6(x, dir) & bd.white
+			x |= shift6(x, dir) & bd.white
 			/* Determine whether the disks were captured. */
-			bounding_disk = bd.shift(x, dir) & bd.black
+			bounding_disk = shift6(x, dir) & bd.black
 
 			if bounding_disk != 0 {
 				captured_disks |= x
@@ -131,13 +131,13 @@ func (bd *bboard6) flip(cl color, loc int) {
 
 		for dir := 0; dir < 8; dir++ {
 			/* Find opponent disk adjacent to the new disk. */
-			x = bd.shift(new_disk, dir) & bd.black
+			x = shift6(new_disk, dir) & bd.black
 			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= bd.shift(x, dir) & bd.black
-			x |= bd.shift(x, dir) & bd.black
-			x |= bd.shift(x, dir) & bd.black
+			x |= shift6(x, dir) & bd.black
+			x |= shift6(x, dir) & bd.black
+			x |= shift6(x, dir) & bd.black
 			/* Determine whether the disks were captured. */
-			bounding_disk = bd.shift(x, dir) & bd.white
+			bounding_disk = shift6(x, dir) & bd.white
 
 			if bounding_disk != 0 {
 				captured_disks |= x
@@ -162,12 +162,12 @@ func (bd bboard6) allValidLoc(cl color) uint64 {
 	empty := ^(self | opp)
 
 	for dir := 0; dir < 8; dir++ {
-		x := bd.shift(self, dir) & opp
-		x |= bd.shift(x, dir) & opp
-		x |= bd.shift(x, dir) & opp
-		x |= bd.shift(x, dir) & opp
+		x := shift6(self, dir) & opp
+		x |= shift6(x, dir) & opp
+		x |= shift6(x, dir) & opp
+		x |= shift6(x, dir) & opp
 
-		legal |= bd.shift(x, dir) & empty
+		legal |= shift6(x, dir) & empty
 	}
 	return legal
 }
@@ -202,7 +202,7 @@ func (bd bboard6) isValidLoc(cl color, loc int) bool {
 // 	}
 // )
 
-func (bd bboard6) shift(disk uint64, dir int) uint64 {
+func shift6(disk uint64, dir int) uint64 {
 	switch dir {
 	case 0:
 		return (disk >> 1) & 0x7DF7DF7DF // e
