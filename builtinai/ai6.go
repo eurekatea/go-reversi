@@ -112,7 +112,7 @@ func (ai *AI6) heuristic(bd bboard6) int {
 }
 
 func (ai *AI6) sortedValidNodes(bd bboard6, cl color) (all nodes) {
-	// usually possible point wont surpass 16
+	// capacity can't be too big, it will cause GC latency
 	all = make(nodes, 0, 16)
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
