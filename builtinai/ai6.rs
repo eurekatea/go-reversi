@@ -370,7 +370,6 @@ pub struct AI {
 
     phase: i32,
     depth: i32,
-    node: i32,
 }
 
 impl AI {
@@ -380,7 +379,6 @@ impl AI {
             opp: color.reverse(),
             phase: 1,
             depth: 0,
-            node: 0,
         };
         ai
     }
@@ -389,8 +387,6 @@ impl AI {
         let bd = BBoard::new(input);
         self.set_phase(&bd);
         self.set_depth();
-
-        self.node = 0;
 
         let best = self.alpha_beta_helper(&bd, self.depth);
         best.to_string()
@@ -455,8 +451,6 @@ impl AI {
     }
 
     fn alpha_beta(&mut self, bd: &BBoard, depth: i32, mut alpha: i32, mut beta: i32, max_layer: bool) -> Node {
-        self.node += 1;
-
         if depth == 0 || bd.is_over() {
             return Node::new(-1, self.heuristic(bd));
         }
