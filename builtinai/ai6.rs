@@ -20,7 +20,6 @@ const MASKS: [u64; 8] = [
 ];
 
 const LSHIFT: [u64; 8] = [0, 0, 0, 0, 1, 7, 6, 5];
-
 const RSHIFT: [u64; 8] = [1, 7, 6, 5, 0, 0, 0, 0];
 
 fn shift(disk: u64, dir: usize) -> u64 {
@@ -86,9 +85,9 @@ pub struct Nodes {
 }
 
 impl Nodes {
-    pub fn new() -> Nodes {
+    pub fn new(cap: usize) -> Nodes {
         Nodes {
-            nodes: Vec::with_capacity(32),
+            nodes: Vec::with_capacity(cap),
         }
     }
 
@@ -334,6 +333,35 @@ impl BBoard {
         let allv = self.all_valid_loc(cl);
         hamming_wgt(allv)
     }
+
+    // pub fn corner_and_edge(&self, cl: Color) -> i32 {
+    //     let mut cnt = 0;
+    //     let s: u64;
+    //     if cl == Color::Black {
+    //         s = self.black;
+    //     } else {
+    //         s = self.white;
+    //     }
+
+    //     if (s & 0x800000000) != 0 {
+    //         cnt += hamming_wgt(s & 0xFC0000000);
+    //         cnt += hamming_wgt(s & 0x820820820);
+    //     }
+    //     if (s & 0x040000000) != 0 {
+    //         cnt += hamming_wgt(s & 0xFC0000000);
+    //         cnt += hamming_wgt(s & 0x041041041);
+    //     }
+    //     if (s & 0x000000020) != 0 {
+    //         cnt += hamming_wgt(s & 0x820820820);
+    //         cnt += hamming_wgt(s & 0x00000003F);
+    //     }
+    //     if (s & 0x000000001) != 0 {
+    //         cnt += hamming_wgt(s & 0x00000003F);
+    //         cnt += hamming_wgt(s & 0x041041041);
+    //     }
+
+    //     cnt
+    // }
 }
 
 pub struct AI {
@@ -341,9 +369,7 @@ pub struct AI {
     opp: Color,
 
     phase: i32,
-
     depth: i32,
-
     node: i32,
 }
 
@@ -367,8 +393,6 @@ impl AI {
         self.node = 0;
 
         let best = self.alpha_beta_helper(&bd, self.depth);
-        // eprintln!("{}, {:.2}", self.node, best.value as f64 * ((SIZE*SIZE) as f64) / 1476.0);
-
         best.to_string()
     }
 
@@ -392,14 +416,17 @@ impl AI {
     fn heuristic(&self, bd: &BBoard) -> i32 {
         if self.phase == 1 {
             bd.eval(self.color)
+            //  /10- bd.mobility(self.opp) * 10 + bd.mobility(self.color) * 20 + bd.count(self.color) * 5
+            // bd.mobility(self.color) - bd.mobility(self.opp) + bd.count(self.color) // 1
+            // bd.corner_and_edge(self.color) + bd.mobility(self.color) // 4
         } else {
             bd.count(self.color) - bd.count(self.opp)
         }
     }
 
     fn sorted_valid_nodes(&self, bd: &BBoard, cl: Color) -> Nodes {
-        let mut all: Nodes = Nodes::new();
         let all_valid: u64 = bd.all_valid_loc(cl);
+        let mut all: Nodes = Nodes::new(hamming_wgt(all_valid) as usize);
         if self.phase == 1 {
             for loc in 0..SIZE * SIZE {
                 if (U1 << loc) & all_valid != 0 {
