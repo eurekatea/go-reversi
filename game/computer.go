@@ -55,7 +55,7 @@ func (c *com) Move(input string) (string, error) {
 
 	bd := board.NewBoardFromStr(input)
 	if !bd.PutStr(c.color, output) {
-		r := fmt.Sprintf("this place <%s> was not valid\n", output[:2])
+		r := fmt.Sprintf("output: \"%s\" was not valid\n", output[:2])
 		return "", c.fatal(input, r)
 	}
 	return output, nil
