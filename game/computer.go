@@ -55,7 +55,7 @@ func (c *com) Move(input string) (string, error) {
 
 	bd := board.NewBoardFromStr(input)
 	if !bd.PutStr(c.color, output) {
-		r := fmt.Sprintf("output: \"%s\" was not valid\n", output[:2])
+		r := fmt.Sprintf("output \"%s\" was not valid\n", output[:2])
 		return "", c.fatal(input, r)
 	}
 	return output, nil
@@ -76,7 +76,7 @@ func (c com) execute(input string) (string, error) {
 		return "", c.fatal(input, "unknown output: (no output)")
 	}
 	if c.invalid(input, output) {
-		return "", c.fatal(input, "unknown output: "+output)
+		return "", c.fatal(input, "unknown output: \""+output+"\"")
 	}
 
 	return output, nil
@@ -113,7 +113,7 @@ func (c com) fatal(input string, text string) error {
 		text = text[:500]
 		text += "\n...skipped"
 	}
-	text += "\n\n"
+	text += "\n"
 
 	text += "last state of board:\n"
 	text += bd.Visualize() + "\n"
