@@ -1,5 +1,5 @@
 [package]
-name = "othello-ai"
+name = "ai6-rs"
 version = "0.1.0"
 authors = ["lemon37564 <stonydragon0701@gmail.com>"]
 edition = "2018"

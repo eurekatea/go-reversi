@@ -2,7 +2,7 @@ use arrayvec::ArrayVec;
 use std::io;
 
 const SIZE: i32 = 8;
-const PHASE1_DEPTH: i32 = 12;
+const PHASE1_DEPTH: i32 = 10;
 const PHASE2_DEPTH: i32 = 20;
 const U1: u64 = 1;
 
