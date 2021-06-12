@@ -1,3 +1,4 @@
+use arrayvec::ArrayVec;
 use std::io;
 
 const SIZE: i32 = 6;
@@ -7,6 +8,8 @@ const U1: u64 = 1;
 
 const MAX_I32: i32 = i32::MAX;
 const MIN_I32: i32 = i32::MIN;
+
+const CAP: usize = 18;
 
 const MASKS: [u64; 8] = [
     0x7DF7DF7DF, // e
@@ -81,13 +84,13 @@ impl Node {
 
 #[derive(Debug)]
 pub struct Nodes {
-    nodes: Vec<Node>,
+    nodes: ArrayVec::<Node, CAP>,
 }
 
 impl Nodes {
-    pub fn new(cap: usize) -> Nodes {
+    pub fn new() -> Nodes {
         Nodes {
-            nodes: Vec::with_capacity(cap),
+            nodes: ArrayVec::<Node, CAP>::new(),
         }
     }
 
@@ -422,7 +425,7 @@ impl AI {
 
     fn sorted_valid_nodes(&self, bd: &BBoard, cl: Color) -> Nodes {
         let all_valid: u64 = bd.all_valid_loc(cl);
-        let mut all: Nodes = Nodes::new(hamming_wgt(all_valid) as usize);
+        let mut all: Nodes = Nodes::new();
         if self.phase == 1 {
             for loc in 0..SIZE * SIZE {
                 if (U1 << loc) & all_valid != 0 {
@@ -531,7 +534,7 @@ fn main() {
         } else {
             ai = AI::new(Color::White);
         }
-        
+
         println!("{}", ai.next_move(board.to_string()));
     }
 }

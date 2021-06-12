@@ -124,7 +124,7 @@ func (c com) fatal(input string, text string) error {
 	text += "stderr:\n"
 	errMsg, err := ioutil.ReadAll(c.err)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	text += string(errMsg) + "\n"
 

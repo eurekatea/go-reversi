@@ -1,3 +1,4 @@
+use arrayvec::ArrayVec;
 use std::io;
 
 const SIZE: i32 = 8;
@@ -7,6 +8,8 @@ const U1: u64 = 1;
 
 const MAX_I32: i32 = i32::MAX;
 const MIN_I32: i32 = i32::MIN;
+
+const CAP: usize = 28;
 
 const MASKS: [u64; 8] = [
     0x7F7F7F7F7F7F7F7F,
@@ -81,13 +84,13 @@ impl Node {
 
 #[derive(Debug)]
 pub struct Nodes {
-    nodes: Vec<Node>,
+    nodes: ArrayVec::<Node, CAP>,
 }
 
 impl Nodes {
-    pub fn new(cap: usize) -> Nodes {
+    pub fn new() -> Nodes {
         Nodes {
-            nodes: Vec::with_capacity(cap),
+            nodes: ArrayVec::<Node, CAP>::new(),
         }
     }
 
@@ -362,7 +365,10 @@ pub struct AI {
     opp: Color,
 
     phase: i32,
+
     depth: i32,
+
+    node: i32,
 }
 
 impl AI {
@@ -372,6 +378,7 @@ impl AI {
             opp: color.reverse(),
             phase: 1,
             depth: 0,
+            node: 0,
         };
         ai
     }
@@ -381,7 +388,11 @@ impl AI {
         self.set_phase(&bd);
         self.set_depth();
 
+        self.node = 0;
+
         let best = self.alpha_beta_helper(&bd, self.depth);
+        eprintln!("{}, {:.2}", self.node, best.value as f64 * ((SIZE*SIZE) as f64) / 1476.0);
+
         best.to_string()
     }
 
@@ -411,8 +422,8 @@ impl AI {
     }
 
     fn sorted_valid_nodes(&self, bd: &BBoard, cl: Color) -> Nodes {
+        let mut all: Nodes = Nodes::new();
         let all_valid: u64 = bd.all_valid_loc(cl);
-        let mut all: Nodes = Nodes::new(hamming_wgt(all_valid) as usize);
         if self.phase == 1 {
             for loc in 0..SIZE * SIZE {
                 if (U1 << loc) & all_valid != 0 {
@@ -441,6 +452,8 @@ impl AI {
     }
 
     fn alpha_beta(&mut self, bd: &BBoard, depth: i32, mut alpha: i32, mut beta: i32, max_layer: bool) -> Node {
+        self.node += 1;
+
         if depth == 0 || bd.is_over() {
             return Node::new(-1, self.heuristic(bd));
         }
