@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"othello/board"
@@ -21,6 +22,7 @@ type com struct {
 	cmd   *exec.Cmd
 	in    io.WriteCloser
 	out   io.ReadCloser
+	err   io.ReadCloser
 }
 
 func newCom(cl board.Color, name string) *com {
@@ -35,6 +37,10 @@ func newCom(cl board.Color, name string) *com {
 		panic(err)
 	}
 	c.out, err = c.cmd.StdoutPipe()
+	if err != nil {
+		panic(err)
+	}
+	c.err, err = c.cmd.StderrPipe()
 	if err != nil {
 		panic(err)
 	}
@@ -113,7 +119,14 @@ func (c com) fatal(input string, text string) error {
 		text = text[:500]
 		text += "\n...skipped"
 	}
-	text += "\n"
+	text += "\n\n"
+
+	text += "stderr:\n"
+	errMsg, err := ioutil.ReadAll(c.err)
+	if err != nil {
+		fmt.Println(err)
+	}
+	text += string(errMsg) + "\n"
 
 	text += "last state of board:\n"
 	text += bd.Visualize() + "\n"
