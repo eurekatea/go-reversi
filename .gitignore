@@ -1,12 +1,9 @@
-AI1
-AI2
 error.log
 othello
-othello.exe
-othello-board.exe
+othello-board-main.exe
 fyne-cross
 Icon.png
 cross_build
-standard
-builtinai/backup.go
 target
+ai6-rs.exe
+ai8-rs.exe

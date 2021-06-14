@@ -75,7 +75,7 @@ func (ai AI6) Close() {}
 func (ai *AI6) printValue(best node) {
 	if ai.phase == 1 {
 		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.size*ai.size)
-		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+.2f}\n", ai.reachedDepth, ai.nodes, finValue)
+		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
 		finValue := best.value
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+d}\n", ai.reachedDepth, ai.nodes, finValue)

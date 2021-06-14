@@ -40,10 +40,14 @@ type game struct {
 	counterBlack Text
 	counterWhite Text
 
-	passBtn   *widget.Button
-	com1      computer
-	com2      computer
-	now       board.Color
+	passBtn *widget.Button
+	com1    computer
+	com2    computer
+	now     board.Color
+
+	blackSpent time.Duration
+	whiteSpent time.Duration
+
 	haveHuman bool
 	over      bool
 }
@@ -214,7 +218,13 @@ func (g *game) round() {
 			} else {
 				out, err = g.com2.Move(g.bd.String())
 			}
-			fmt.Println(g.now, "side spent:", time.Since(start))
+			spent := time.Since(start)
+			fmt.Println(g.now, "side spent:", spent)
+			if g.now == board.BLACK {
+				g.blackSpent += spent
+			} else {
+				g.whiteSpent += spent
+			}
 			if err != nil {
 				g.aiError(err)
 				break
@@ -271,6 +281,8 @@ func (g *game) gameOver() {
 	d := dialog.NewInformation("Game Over", text, g.window)
 	d.Resize(fyne.NewSize(250, 0))
 	d.Show()
+	fmt.Println("\ngame over")
+	fmt.Println("black total:", g.blackSpent, ", white total:", g.whiteSpent)
 }
 
 func (g *game) showValidAndCount(current board.Point) int {
