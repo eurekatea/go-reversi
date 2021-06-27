@@ -103,9 +103,7 @@ impl Nodes {
     }
 
     fn swap(&mut self, i: usize, j: usize) {
-        let tmp = self.nodes[i];
-        self.nodes[i] = self.nodes[j];
-        self.nodes[j] = tmp;
+        self.nodes.swap(i, j);
     }
 
     pub fn size(&self) -> usize {
