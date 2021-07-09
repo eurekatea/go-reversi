@@ -55,7 +55,7 @@ impl Color {
         match self {
             Color::Black => Color::White,
             Color::White => Color::Black,
-            Color::None => Color::None,
+            _ => panic!("Color::None cannot reverse"),
         }
     }
 }
