@@ -142,11 +142,6 @@ func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
 	return
 }
 
-// func (ai *AI8) searchTable(bd bboard8) int {
-
-// 	return v
-// }
-
 func (ai *AI8) alphaBetaHelper(bd bboard8, depth int) node {
 	return ai.alphaBeta(bd, depth, MININT, MAXINT, true)
 }
@@ -156,20 +151,12 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 
 	if depth == 0 {
 		ai.reachedDepth = ai.depth
-		// if v, exi := ai.table[bd]; exi {
-		// 	return node{-1, v}
-		// }
 		v := ai.heuristic(bd)
-		// ai.table[bd] = v
 		return node{-1, v}
 	}
 	if bd.isOver() {
 		ai.reachedDepth = ai.depth - depth
-		// if v, exi := ai.table[bd]; exi {
-		// 	return node{-1, v}
-		// }
 		v := ai.heuristic(bd)
-		// ai.table[bd] = v
 		return node{-1, v}
 	}
 
@@ -182,14 +169,14 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
 
-		for _, n := range aiValid {
+		for i := range aiValid {
 			tmp := bd.cpy()
-			tmp.put(ai.color, n.loc)
+			tmp.put(ai.color, aiValid[i].loc)
 			eval := ai.alphaBeta(tmp, depth-1, alpha, beta, false).value
 
 			if eval > maxValue {
 				maxValue = eval
-				bestNode = n
+				bestNode = aiValid[i]
 			}
 			alpha = max(alpha, maxValue)
 			if beta <= alpha {
@@ -207,14 +194,14 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
 
-		for _, n := range opValid {
+		for i := range opValid {
 			tmp := bd.cpy()
-			tmp.put(ai.opponent, n.loc)
+			tmp.put(ai.opponent, opValid[i].loc)
 			eval := ai.alphaBeta(tmp, depth-1, alpha, beta, true).value
 
 			if eval < minValue {
 				minValue = eval
-				bestNode = n
+				bestNode = opValid[i]
 			}
 
 			beta = min(beta, minValue)
