@@ -110,39 +110,157 @@ func (bd *bboard6) flip(cl color, loc int) {
 	if cl == BLACK {
 		bd.black |= new_disk
 
-		for dir := 0; dir < 8; dir++ {
-			// find opponent disk adjacent to the new disk.
-			x = shift6(new_disk, dir) & bd.white
-			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= shift6(x, dir) & bd.white
-			x |= shift6(x, dir) & bd.white
-			x |= shift6(x, dir) & bd.white
-			/* Determine whether the disks were captured. */
-			bounding_disk = shift6(x, dir) & bd.black
-
-			if bounding_disk != 0 {
-				captured_disks |= x
-			}
+		x = (new_disk >> 1) & 0x7DF7DF7DF & bd.white
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.white
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.white
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.white
+		bounding_disk = (x >> 1) & 0x7DF7DF7DF & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
 		}
+
+		x = (new_disk >> 7) & 0x01F7DF7DF & bd.white
+		x |= (x >> 7) & 0x01F7DF7DF & bd.white
+		x |= (x >> 7) & 0x01F7DF7DF & bd.white
+		x |= (x >> 7) & 0x01F7DF7DF & bd.white
+		bounding_disk = (x >> 7) & 0x01F7DF7DF & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 6) & 0xFFFFFFFFF & bd.white
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.white
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.white
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.white
+		bounding_disk = (x >> 6) & 0xFFFFFFFFF & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 5) & 0x03EFBEFBE & bd.white
+		x |= (x >> 5) & 0x03EFBEFBE & bd.white
+		x |= (x >> 5) & 0x03EFBEFBE & bd.white
+		x |= (x >> 5) & 0x03EFBEFBE & bd.white
+		bounding_disk = (x >> 5) & 0x03EFBEFBE & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 1) & 0xFBEFBEFBE & bd.white
+		x |= (x << 1) & 0xFBEFBEFBE & bd.white
+		x |= (x << 1) & 0xFBEFBEFBE & bd.white
+		x |= (x << 1) & 0xFBEFBEFBE & bd.white
+		bounding_disk = (x << 1) & 0xFBEFBEFBE & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 7) & 0xFBEFBEF80 & bd.white
+		x |= (x << 7) & 0xFBEFBEF80 & bd.white
+		x |= (x << 7) & 0xFBEFBEF80 & bd.white
+		x |= (x << 7) & 0xFBEFBEF80 & bd.white
+		bounding_disk = (x << 7) & 0xFBEFBEF80 & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 6) & 0xFFFFFFFFF & bd.white
+		x |= (x << 6) & 0xFFFFFFFFF & bd.white
+		x |= (x << 6) & 0xFFFFFFFFF & bd.white
+		x |= (x << 6) & 0xFFFFFFFFF & bd.white
+		bounding_disk = (x << 6) & 0xFFFFFFFFF & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 5) & 0x7DF7DF7C0 & bd.white
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.white
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.white
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.white
+		bounding_disk = (x << 5) & 0x7DF7DF7C0 & bd.black
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
 		bd.black ^= captured_disks
 		bd.white ^= captured_disks
+
 	} else {
+
 		bd.white |= new_disk
 
-		for dir := 0; dir < 8; dir++ {
-			/* Find opponent disk adjacent to the new disk. */
-			x = shift6(new_disk, dir) & bd.black
-			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= shift6(x, dir) & bd.black
-			x |= shift6(x, dir) & bd.black
-			x |= shift6(x, dir) & bd.black
-			/* Determine whether the disks were captured. */
-			bounding_disk = shift6(x, dir) & bd.white
-
-			if bounding_disk != 0 {
-				captured_disks |= x
-			}
+		x = (new_disk >> 1) & 0x7DF7DF7DF & bd.black
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.black
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.black
+		x |= (x >> 1) & 0x7DF7DF7DF & bd.black
+		bounding_disk = (x >> 1) & 0x7DF7DF7DF & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
 		}
+
+		x = (new_disk >> 7) & 0x01F7DF7DF & bd.black
+		x |= (x >> 7) & 0x01F7DF7DF & bd.black
+		x |= (x >> 7) & 0x01F7DF7DF & bd.black
+		x |= (x >> 7) & 0x01F7DF7DF & bd.black
+		bounding_disk = (x >> 7) & 0x01F7DF7DF & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 6) & 0xFFFFFFFFF & bd.black
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.black
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.black
+		x |= (x >> 6) & 0xFFFFFFFFF & bd.black
+		bounding_disk = (x >> 6) & 0xFFFFFFFFF & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 5) & 0x03EFBEFBE & bd.black
+		x |= (x >> 5) & 0x03EFBEFBE & bd.black
+		x |= (x >> 5) & 0x03EFBEFBE & bd.black
+		x |= (x >> 5) & 0x03EFBEFBE & bd.black
+		bounding_disk = (x >> 5) & 0x03EFBEFBE & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 1) & 0xFBEFBEFBE & bd.black
+		x |= (x << 1) & 0xFBEFBEFBE & bd.black
+		x |= (x << 1) & 0xFBEFBEFBE & bd.black
+		x |= (x << 1) & 0xFBEFBEFBE & bd.black
+		bounding_disk = (x << 1) & 0xFBEFBEFBE & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 7) & 0xFBEFBEF80 & bd.black
+		x |= (x << 7) & 0xFBEFBEF80 & bd.black
+		x |= (x << 7) & 0xFBEFBEF80 & bd.black
+		x |= (x << 7) & 0xFBEFBEF80 & bd.black
+		bounding_disk = (x << 7) & 0xFBEFBEF80 & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 6) & 0xFFFFFFFFF & bd.black
+		x |= (x << 6) & 0xFFFFFFFFF & bd.black
+		x |= (x << 6) & 0xFFFFFFFFF & bd.black
+		x |= (x << 6) & 0xFFFFFFFFF & bd.black
+		bounding_disk = (x << 6) & 0xFFFFFFFFF & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 5) & 0x7DF7DF7C0 & bd.black
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.black
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.black
+		x |= (x << 5) & 0x7DF7DF7C0 & bd.black
+		bounding_disk = (x << 5) & 0x7DF7DF7C0 & bd.white
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
 		bd.white ^= captured_disks
 		bd.black ^= captured_disks
 	}
@@ -161,14 +279,54 @@ func (bd bboard6) allValidLoc(cl color) uint64 {
 	}
 	empty := ^(self | opp)
 
-	for dir := 0; dir < 8; dir++ {
-		x := shift6(self, dir) & opp
-		x |= shift6(x, dir) & opp
-		x |= shift6(x, dir) & opp
-		x |= shift6(x, dir) & opp
+	x := (self >> 1) & 0x7DF7DF7DF & opp
+	x |= (x >> 1) & 0x7DF7DF7DF & opp
+	x |= (x >> 1) & 0x7DF7DF7DF & opp
+	x |= (x >> 1) & 0x7DF7DF7DF & opp
+	legal |= (x >> 1) & 0x7DF7DF7DF & empty
 
-		legal |= shift6(x, dir) & empty
-	}
+	x = (self >> 7) & 0x01F7DF7DF & opp
+	x |= (x >> 7) & 0x01F7DF7DF & opp
+	x |= (x >> 7) & 0x01F7DF7DF & opp
+	x |= (x >> 7) & 0x01F7DF7DF & opp
+	legal |= (x >> 7) & 0x01F7DF7DF & empty
+
+	x = (self >> 6) & 0xFFFFFFFFF & opp
+	x |= (x >> 6) & 0xFFFFFFFFF & opp
+	x |= (x >> 6) & 0xFFFFFFFFF & opp
+	x |= (x >> 6) & 0xFFFFFFFFF & opp
+	legal |= (x >> 6) & 0xFFFFFFFFF & empty
+
+	x = (self >> 5) & 0x03EFBEFBE & opp
+	x |= (x >> 5) & 0x03EFBEFBE & opp
+	x |= (x >> 5) & 0x03EFBEFBE & opp
+	x |= (x >> 5) & 0x03EFBEFBE & opp
+	legal |= (x >> 5) & 0x03EFBEFBE & empty
+
+	x = (self << 1) & 0xFBEFBEFBE & opp
+	x |= (x << 1) & 0xFBEFBEFBE & opp
+	x |= (x << 1) & 0xFBEFBEFBE & opp
+	x |= (x << 1) & 0xFBEFBEFBE & opp
+	legal |= (x << 1) & 0xFBEFBEFBE & empty
+
+	x = (self << 7) & 0xFBEFBEF80 & opp
+	x |= (x << 7) & 0xFBEFBEF80 & opp
+	x |= (x << 7) & 0xFBEFBEF80 & opp
+	x |= (x << 7) & 0xFBEFBEF80 & opp
+	legal |= (x << 7) & 0xFBEFBEF80 & empty
+
+	x = (self << 6) & 0xFFFFFFFFF & opp
+	x |= (x << 6) & 0xFFFFFFFFF & opp
+	x |= (x << 6) & 0xFFFFFFFFF & opp
+	x |= (x << 6) & 0xFFFFFFFFF & opp
+	legal |= (x << 6) & 0xFFFFFFFFF & empty
+
+	x = (self << 5) & 0x7DF7DF7C0 & opp
+	x |= (x << 5) & 0x7DF7DF7C0 & opp
+	x |= (x << 5) & 0x7DF7DF7C0 & opp
+	x |= (x << 5) & 0x7DF7DF7C0 & opp
+	legal |= (x << 5) & 0x7DF7DF7C0 & empty
+
 	return legal
 }
 
@@ -179,49 +337,6 @@ func (bd bboard6) hasValidMove(cl color) bool {
 func (bd bboard6) isValidLoc(cl color, loc int) bool {
 	mask := u1 << loc
 	return bd.allValidLoc(cl)&mask != 0
-}
-
-// var (
-// 	masks6 = []uint64{
-// 		0x7DF7DF7DF, // e
-// 		0x01F7DF7DF, // se
-// 		0xFFFFFFFFF, // s
-// 		0x03EFBEFBE, // sw
-// 		0xFBEFBEFBE, // w
-// 		0xFBEFBEF80, // nw
-// 		0xFFFFFFFFF, // n
-// 		0x7DF7DF7C0,
-// 	}
-
-// 	lshift6 = []uint64{
-// 		0, 0, 0, 0, 1, 7, 6, 5,
-// 	}
-
-// 	rshift6 = []uint64{
-// 		1, 7, 6, 5, 0, 0, 0, 0,
-// 	}
-// )
-
-func shift6(disk uint64, dir int) uint64 {
-	switch dir {
-	case 0:
-		return (disk >> 1) & 0x7DF7DF7DF // e
-	case 1:
-		return (disk >> 7) & 0x01F7DF7DF // se
-	case 2:
-		return (disk >> 6) & 0xFFFFFFFFF // s
-	case 3:
-		return (disk >> 5) & 0x03EFBEFBE // sw
-	case 4:
-		return (disk << 1) & 0xFBEFBEFBE // w
-	case 5:
-		return (disk << 7) & 0xFBEFBEF80 // nw
-	case 6:
-		return (disk << 6) & 0xFFFFFFFFF // n
-	case 7:
-		return (disk << 5) & 0x7DF7DF7C0 // ne
-	}
-	panic("dir error")
 }
 
 func (bd bboard6) count(cl color) int {

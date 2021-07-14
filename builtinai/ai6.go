@@ -6,7 +6,8 @@ import (
 
 const (
 	PHASE1DEPTH6 = 16 // 6x6
-	PHASE2DEPTH6 = 20 // 6x6
+	PHASE2DEPTH6 = 22 // 6x6
+	SIZE6        = 6
 )
 
 type AI6 struct {
@@ -16,9 +17,6 @@ type AI6 struct {
 	totalValue int
 
 	// table map[bboard6]int
-
-	// board size
-	size int
 
 	// phase 1 or phase 2
 	phase int
@@ -44,7 +42,6 @@ func NewAI6(cl color, lv Level) *AI6 {
 
 	ai.level = int(lv)
 	ai.totalValue = 1476
-	ai.size = 6
 
 	return &ai
 }
@@ -56,13 +53,10 @@ func (ai *AI6) Move(input string) (string, error) {
 	ai.setPhase(aibd)
 	ai.setDepth()
 
-	var best node
-	// for depth := 2; depth <= ai.depth; depth += 2 {
-	best = ai.alphaBetaHelper(aibd, ai.depth)
-	// }
+	best := ai.alphaBetaHelper(aibd, ai.depth)
 	ai.printValue(best)
 
-	bestPoint := point{best.loc % ai.size, best.loc / ai.size}
+	bestPoint := point{best.loc % SIZE6, best.loc / SIZE6}
 	if !aibd.putAndCheck(ai.color, best.loc) {
 		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
@@ -73,7 +67,7 @@ func (ai AI6) Close() {}
 
 func (ai *AI6) printValue(best node) {
 	if ai.phase == 1 {
-		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.size*ai.size)
+		finValue := float64(best.value) / float64(ai.totalValue) * float64(SIZE6*SIZE6)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
 		finValue := best.value
@@ -115,7 +109,7 @@ func (ai *AI6) sortedValidNodes(bd bboard6, cl color) (all nodes) {
 	all = make(nodes, 0, 16)
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE6*SIZE6; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
@@ -126,7 +120,7 @@ func (ai *AI6) sortedValidNodes(bd bboard6, cl color) (all nodes) {
 	} else { // phase 2 sort by mobility
 		op := cl.reverse()
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE6*SIZE6; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
