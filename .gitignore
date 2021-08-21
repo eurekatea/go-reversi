@@ -7,3 +7,5 @@ cross_build
 target
 ai6-rs.exe
 ai8-rs.exe
+ai6-rs
+ai8-rs

@@ -1,4 +1,4 @@
-// +build android ios
+//go:build android || ios
 
 package main
 
