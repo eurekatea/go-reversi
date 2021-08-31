@@ -34,7 +34,7 @@ type AI6 struct {
 	// the larger the stronger, level is between 0~4
 	level int
 
-	nodesPool sync.Pool
+	nodesPool *sync.Pool
 }
 
 func NewAI6(cl color, lv Level) *AI6 {
@@ -45,7 +45,7 @@ func NewAI6(cl color, lv Level) *AI6 {
 
 	ai.level = int(lv)
 	ai.totalValue = 1476
-	ai.nodesPool = sync.Pool{
+	ai.nodesPool = &sync.Pool{
 		New: func() interface{} {
 			return make(nodes, 0, 16)
 		},
