@@ -72,7 +72,7 @@ func (ai *AI8) Move(input string) (string, error) {
 
 func (ai AI8) Close() {}
 
-func (ai *AI8) printValue(best node) {
+func (ai AI8) printValue(best node) {
 	if ai.phase == 1 {
 		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.size*ai.size)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+.2f}\n", ai.reachedDepth, ai.nodes, finValue)
@@ -112,7 +112,7 @@ func (ai *AI8) heuristic(bd bboard8) int {
 	}
 }
 
-func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
+func (ai AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
 	// capacity can't be too big, it will cause GC latency
 	all = make(nodes, 0, 16)
 	if ai.phase == 1 { // phase 1 sort by eval
