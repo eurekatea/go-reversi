@@ -34,6 +34,8 @@ type AI8 struct {
 
 	// the larger the stronger, level is between 0~4
 	level int
+
+	nodesPool pool
 }
 
 func NewAI8(cl color, lv Level) *AI8 {
@@ -46,6 +48,7 @@ func NewAI8(cl color, lv Level) *AI8 {
 	ai.level = int(lv)
 	ai.totalValue = 13752
 	ai.size = 8
+	ai.nodesPool = newPool(32)
 
 	return &ai
 }
@@ -113,8 +116,7 @@ func (ai *AI8) heuristic(bd bboard8) int {
 }
 
 func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
-	// capacity can't be too big, it will cause GC latency
-	all = make(nodes, 0, 16)
+	all = ai.nodesPool.getClearOne()
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
 		for loc := 0; loc < ai.size*ai.size; loc++ {
@@ -166,6 +168,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 
 		aiValid := ai.sortedValidNodes(bd, ai.color)
 		if len(aiValid) == 0 { // 沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
 
@@ -184,6 +187,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			}
 		}
 
+		ai.nodesPool.freeOne()
 		return node{bestNode.loc, maxValue}
 	} else {
 		minValue := MAXINT
@@ -191,6 +195,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 
 		opValid := ai.sortedValidNodes(bd, ai.opponent)
 		if len(opValid) == 0 { // 對手沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
 
@@ -210,6 +215,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			}
 		}
 
+		ai.nodesPool.freeOne()
 		return node{bestNode.loc, minValue}
 	}
 }
