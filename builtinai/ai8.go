@@ -7,6 +7,7 @@ import (
 const (
 	PHASE1DEPTH8 = 10 // 8x8
 	PHASE2DEPTH8 = 20 // 8x8
+	SIZE8        = 8
 )
 
 type AI8 struct {
@@ -16,9 +17,6 @@ type AI8 struct {
 	totalValue int
 
 	// table map[bboard8]int
-
-	// board size
-	size int
 
 	// phase 1 or phase 2
 	phase int
@@ -47,7 +45,6 @@ func NewAI8(cl color, lv Level) *AI8 {
 
 	ai.level = int(lv)
 	ai.totalValue = 13752
-	ai.size = 8
 	ai.nodesPool = newPool(32)
 
 	return &ai
@@ -76,7 +73,7 @@ func (ai *AI8) move(input string, c chan string) {
 	// }
 	ai.printValue(best)
 
-	bestPoint := point{best.loc % ai.size, best.loc / ai.size}
+	bestPoint := point{best.loc % SIZE8, best.loc / SIZE8}
 	if !aibd.putAndCheck(ai.color, best.loc) {
 		c <- fmt.Sprintf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
@@ -87,7 +84,7 @@ func (ai AI8) Close() {}
 
 func (ai *AI8) printValue(best node) {
 	if ai.phase == 1 {
-		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.size*ai.size)
+		finValue := float64(best.value) / float64(ai.totalValue) * float64(SIZE8*SIZE8)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
 		finValue := best.value
@@ -129,7 +126,7 @@ func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
 	all = ai.nodesPool.getClearOne()
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE8*SIZE8; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
@@ -140,7 +137,7 @@ func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
 	} else { // phase 2 sort by mobility
 		op := cl.reverse()
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE8*SIZE8; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
