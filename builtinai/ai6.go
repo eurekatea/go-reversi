@@ -78,7 +78,7 @@ func (ai *AI6) move(input string, c chan string) {
 
 func (ai AI6) Close() {}
 
-func (ai *AI6) printValue(best node) {
+func (ai AI6) printValue(best node) {
 	if ai.phase == 1 {
 		finValue := float64(best.value) / float64(ai.totalValue) * float64(SIZE6*SIZE6)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %.2f}\n", ai.reachedDepth, ai.nodes, finValue)

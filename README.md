@@ -26,9 +26,6 @@ int main() {
 (X表示黑方，O表示白方；1表示為黑方，2為白方)  
 若顯示外部AI出錯，請到error.log查看詳細訊息  
 
-# 下載
-https://github.com/lemon37564/othello-board/releases
-
 # 自行編譯
 require go 1.16+  
 ### windows
