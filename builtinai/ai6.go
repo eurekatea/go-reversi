@@ -32,6 +32,8 @@ type AI6 struct {
 
 	// the larger the stronger, level is between 0~4
 	level int
+
+	nodesPool pool
 }
 
 func NewAI6(cl color, lv Level) *AI6 {
@@ -42,11 +44,22 @@ func NewAI6(cl color, lv Level) *AI6 {
 
 	ai.level = int(lv)
 	ai.totalValue = 1476
+	ai.nodesPool = newPool(32)
 
 	return &ai
 }
 
 func (ai *AI6) Move(input string) (string, error) {
+	c := make(chan string)
+	go ai.move(input, c)
+	res := <-c
+	if len(res) > 3 {
+		return "", fmt.Errorf(res)
+	}
+	return res, nil
+}
+
+func (ai *AI6) move(input string, c chan string) {
 	aibd := newBboard6(input)
 	ai.nodes = 0
 
@@ -58,9 +71,9 @@ func (ai *AI6) Move(input string) (string, error) {
 
 	bestPoint := point{best.loc % SIZE6, best.loc / SIZE6}
 	if !aibd.putAndCheck(ai.color, best.loc) {
-		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
+		c <- fmt.Sprintf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.String(), nil
+	c <- bestPoint.String()
 }
 
 func (ai AI6) Close() {}
@@ -104,9 +117,8 @@ func (ai *AI6) heuristic(bd bboard6) int {
 	}
 }
 
-func (ai AI6) sortedValidNodes(bd bboard6, cl color) (all nodes) {
-	// capacity can't be too big, it will cause GC latency
-	all = make(nodes, 0, 16)
+func (ai *AI6) sortedValidNodes(bd bboard6, cl color) (all nodes) {
+	all = ai.nodesPool.getClearOne()
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
 		for loc := 0; loc < SIZE6*SIZE6; loc++ {
@@ -158,6 +170,7 @@ func (ai *AI6) alphaBeta(bd bboard6, depth int, alpha int, beta int, maxLayer bo
 
 		aiValid := ai.sortedValidNodes(bd, ai.color)
 		if len(aiValid) == 0 { // 沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
 
@@ -176,6 +189,8 @@ func (ai *AI6) alphaBeta(bd bboard6, depth int, alpha int, beta int, maxLayer bo
 			}
 		}
 
+		ai.nodesPool.freeOne()
+
 		return node{bestNode.loc, maxValue}
 	} else {
 		minValue := MAXINT
@@ -183,6 +198,7 @@ func (ai *AI6) alphaBeta(bd bboard6, depth int, alpha int, beta int, maxLayer bo
 
 		opValid := ai.sortedValidNodes(bd, ai.opponent)
 		if len(opValid) == 0 { // 對手沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
 
@@ -201,6 +217,8 @@ func (ai *AI6) alphaBeta(bd bboard6, depth int, alpha int, beta int, maxLayer bo
 				break
 			}
 		}
+
+		ai.nodesPool.freeOne()
 
 		return node{bestNode.loc, minValue}
 	}

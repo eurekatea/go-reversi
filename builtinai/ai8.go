@@ -7,6 +7,7 @@ import (
 const (
 	PHASE1DEPTH8 = 10 // 8x8
 	PHASE2DEPTH8 = 20 // 8x8
+	SIZE8        = 8
 )
 
 type AI8 struct {
@@ -16,9 +17,6 @@ type AI8 struct {
 	totalValue int
 
 	// table map[bboard8]int
-
-	// board size
-	size int
 
 	// phase 1 or phase 2
 	phase int
@@ -34,6 +32,8 @@ type AI8 struct {
 
 	// the larger the stronger, level is between 0~4
 	level int
+
+	nodesPool pool
 }
 
 func NewAI8(cl color, lv Level) *AI8 {
@@ -45,12 +45,22 @@ func NewAI8(cl color, lv Level) *AI8 {
 
 	ai.level = int(lv)
 	ai.totalValue = 13752
-	ai.size = 8
+	ai.nodesPool = newPool(32)
 
 	return &ai
 }
 
 func (ai *AI8) Move(input string) (string, error) {
+	c := make(chan string)
+	go ai.move(input, c)
+	res := <-c
+	if len(res) > 3 {
+		return "", fmt.Errorf(res)
+	}
+	return res, nil
+}
+
+func (ai *AI8) move(input string, c chan string) {
 	aibd := newBboard8(input)
 	ai.nodes = 0
 
@@ -63,18 +73,18 @@ func (ai *AI8) Move(input string) (string, error) {
 	// }
 	ai.printValue(best)
 
-	bestPoint := point{best.loc % ai.size, best.loc / ai.size}
+	bestPoint := point{best.loc % SIZE8, best.loc / SIZE8}
 	if !aibd.putAndCheck(ai.color, best.loc) {
-		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
+		c <- fmt.Sprintf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.String(), nil
+	c <- bestPoint.String()
 }
 
 func (ai AI8) Close() {}
 
 func (ai AI8) printValue(best node) {
 	if ai.phase == 1 {
-		finValue := float64(best.value) / float64(ai.totalValue) * float64(ai.size*ai.size)
+		finValue := float64(best.value) / float64(ai.totalValue) * float64(SIZE8*SIZE8)
 		fmt.Printf("built-in AI: {depth: %d, nodes: %d, value: %+.2f}\n", ai.reachedDepth, ai.nodes, finValue)
 	} else {
 		finValue := best.value
@@ -112,12 +122,11 @@ func (ai *AI8) heuristic(bd bboard8) int {
 	}
 }
 
-func (ai AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
-	// capacity can't be too big, it will cause GC latency
-	all = make(nodes, 0, 16)
+func (ai *AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
+	all = ai.nodesPool.getClearOne()
 	if ai.phase == 1 { // phase 1 sort by eval
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE8*SIZE8; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
@@ -128,7 +137,7 @@ func (ai AI8) sortedValidNodes(bd bboard8, cl color) (all nodes) {
 	} else { // phase 2 sort by mobility
 		op := cl.reverse()
 		allValid := bd.allValidLoc(cl)
-		for loc := 0; loc < ai.size*ai.size; loc++ {
+		for loc := 0; loc < SIZE8*SIZE8; loc++ {
 			if (u1<<loc)&allValid != 0 {
 				tmp := bd.cpy()
 				tmp.put(cl, loc)
@@ -166,6 +175,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 
 		aiValid := ai.sortedValidNodes(bd, ai.color)
 		if len(aiValid) == 0 { // 沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, false)
 		}
 
@@ -184,6 +194,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			}
 		}
 
+		ai.nodesPool.freeOne()
 		return node{bestNode.loc, maxValue}
 	} else {
 		minValue := MAXINT
@@ -191,6 +202,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 
 		opValid := ai.sortedValidNodes(bd, ai.opponent)
 		if len(opValid) == 0 { // 對手沒地方下，換邊
+			ai.nodesPool.freeOne()
 			return ai.alphaBeta(bd, depth, alpha, beta, true)
 		}
 
@@ -210,6 +222,7 @@ func (ai *AI8) alphaBeta(bd bboard8, depth int, alpha int, beta int, maxLayer bo
 			}
 		}
 
+		ai.nodesPool.freeOne()
 		return node{bestNode.loc, minValue}
 	}
 }

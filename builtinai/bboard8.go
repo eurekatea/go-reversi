@@ -114,43 +114,203 @@ func (bd *bboard8) flip(cl color, loc int) {
 	if cl == BLACK {
 		bd.black |= new_disk
 
-		for dir := 0; dir < 8; dir++ {
-			/* Find opponent disk adjacent to the new disk. */
-			x = shift8(new_disk, dir) & bd.white
-			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= shift8(x, dir) & bd.white
-			x |= shift8(x, dir) & bd.white
-			x |= shift8(x, dir) & bd.white
-			x |= shift8(x, dir) & bd.white
-			x |= shift8(x, dir) & bd.white
-			/* Determine whether the disks were captured. */
-			bounding_disk = shift8(x, dir) & bd.black
+		x = (new_disk >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
+		bounding_disk = (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
 
-			if bounding_disk != 0 {
-				captured_disks |= x
-			}
+		if bounding_disk != 0 {
+			captured_disks |= x
 		}
+
+		x = (new_disk >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+		bounding_disk = (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		bounding_disk = (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+		bounding_disk = (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+		bounding_disk = (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+		bounding_disk = (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+		bounding_disk = (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+		bounding_disk = (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
 		bd.black ^= captured_disks
 		bd.white ^= captured_disks
 	} else {
 		bd.white |= new_disk
 
-		for dir := 0; dir < 8; dir++ {
-			/* Find opponent disk adjacent to the new disk. */
-			x = shift8(new_disk, dir) & bd.black
-			/* Add any adjacent opponent disk to that one, and so on. */
-			x |= shift8(x, dir) & bd.black
-			x |= shift8(x, dir) & bd.black
-			x |= shift8(x, dir) & bd.black
-			x |= shift8(x, dir) & bd.black
-			x |= shift8(x, dir) & bd.black
-			/* Determine whether the disks were captured. */
-			bounding_disk = shift8(x, dir) & bd.white
+		x = (new_disk >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.black
+		bounding_disk = (x >> 1) & 0x7F7F7F7F7F7F7F7F & bd.white
 
-			if bounding_disk != 0 {
-				captured_disks |= x
-			}
+		if bounding_disk != 0 {
+			captured_disks |= x
 		}
+
+		x = (new_disk >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		x |= (x >> 9) & 0x007F7F7F7F7F7F7F & bd.black
+		bounding_disk = (x >> 9) & 0x007F7F7F7F7F7F7F & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		bounding_disk = (x >> 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.black
+		bounding_disk = (x >> 7) & 0x00FEFEFEFEFEFEFE & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.black
+		bounding_disk = (x << 1) & 0xFEFEFEFEFEFEFEFE & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.black
+		bounding_disk = (x << 9) & 0xFEFEFEFEFEFEFE00 & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.black
+		bounding_disk = (x << 8) & 0xFFFFFFFFFFFFFFFF & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
+		x = (new_disk << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.black
+		bounding_disk = (x << 7) & 0x7F7F7F7F7F7F7F00 & bd.white
+
+		if bounding_disk != 0 {
+			captured_disks |= x
+		}
+
 		bd.white ^= captured_disks
 		bd.black ^= captured_disks
 	}
@@ -169,16 +329,70 @@ func (bd bboard8) allValidLoc(cl color) uint64 {
 	}
 	empty := ^(self | opp)
 
-	for dir := 0; dir < 8; dir++ {
-		x := shift8(self, dir) & opp
-		x |= shift8(x, dir) & opp
-		x |= shift8(x, dir) & opp
-		x |= shift8(x, dir) & opp
-		x |= shift8(x, dir) & opp
-		x |= shift8(x, dir) & opp
+	x := (self >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	x |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & opp
+	legal |= (x >> 1) & 0x7F7F7F7F7F7F7F7F & empty
 
-		legal |= shift8(x, dir) & empty
-	}
+	x = (self >> 9) & 0x007F7F7F7F7F7F7F & opp
+	x |= (x >> 9) & 0x007F7F7F7F7F7F7F & opp
+	x |= (x >> 9) & 0x007F7F7F7F7F7F7F & opp
+	x |= (x >> 9) & 0x007F7F7F7F7F7F7F & opp
+	x |= (x >> 9) & 0x007F7F7F7F7F7F7F & opp
+	x |= (x >> 9) & 0x007F7F7F7F7F7F7F & opp
+	legal |= (x >> 9) & 0x007F7F7F7F7F7F7F & empty
+
+	x = (self >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & opp
+	legal |= (x >> 8) & 0xFFFFFFFFFFFFFFFF & empty
+
+	x = (self >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	x |= (x >> 7) & 0x00FEFEFEFEFEFEFE & opp
+	legal |= (x >> 7) & 0x00FEFEFEFEFEFEFE & empty
+
+	x = (self << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	x |= (x << 1) & 0xFEFEFEFEFEFEFEFE & opp
+	legal |= (x << 1) & 0xFEFEFEFEFEFEFEFE & empty
+
+	x = (self << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	x |= (x << 9) & 0xFEFEFEFEFEFEFE00 & opp
+	legal |= (x << 9) & 0xFEFEFEFEFEFEFE00 & empty
+
+	x = (self << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	x |= (x << 8) & 0xFFFFFFFFFFFFFFFF & opp
+	legal |= (x << 8) & 0xFFFFFFFFFFFFFFFF & empty
+
+	x = (self << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	x |= (x << 7) & 0x7F7F7F7F7F7F7F00 & opp
+	legal |= (x << 7) & 0x7F7F7F7F7F7F7F00 & empty
+
 	return legal
 }
 
@@ -212,27 +426,27 @@ func (bd bboard8) isValidLoc(cl color, loc int) bool {
 // 	}
 // )
 
-func shift8(disk uint64, dir int) uint64 {
-	switch dir {
-	case 0:
-		return (disk >> 1) & 0x7F7F7F7F7F7F7F7F
-	case 1:
-		return (disk >> 9) & 0x007F7F7F7F7F7F7F
-	case 2:
-		return (disk >> 8) & 0xFFFFFFFFFFFFFFFF
-	case 3:
-		return (disk >> 7) & 0x00FEFEFEFEFEFEFE
-	case 4:
-		return (disk << 1) & 0xFEFEFEFEFEFEFEFE
-	case 5:
-		return (disk << 9) & 0xFEFEFEFEFEFEFE00
-	case 6:
-		return (disk << 8) & 0xFFFFFFFFFFFFFFFF
-	case 7:
-		return (disk << 7) & 0x7F7F7F7F7F7F7F00
-	}
-	panic("dir error")
-}
+// func shift8(x uint64, dir int) uint64 {
+// 	switch dir {
+// 	case 0:
+// 		return (x >> 1) & 0x7F7F7F7F7F7F7F7F
+// 	case 1:
+// 		return (x >> 9) & 0x007F7F7F7F7F7F7F
+// 	case 2:
+// 		return (x >> 8) & 0xFFFFFFFFFFFFFFFF
+// 	case 3:
+// 		return (x >> 7) & 0x00FEFEFEFEFEFEFE
+// 	case 4:
+// 		return (x << 1) & 0xFEFEFEFEFEFEFEFE
+// 	case 5:
+// 		return (x << 9) & 0xFEFEFEFEFEFEFE00
+// 	case 6:
+// 		return (x << 8) & 0xFFFFFFFFFFFFFFFF
+// 	case 7:
+// 		return (x << 7) & 0x7F7F7F7F7F7F7F00
+// 	}
+// 	panic("dir error")
+// }
 
 func (bd bboard8) count(cl color) int {
 	if cl == BLACK {
