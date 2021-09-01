@@ -11,7 +11,8 @@ type Theme struct {
 }
 
 func (th Theme) Font(s fyne.TextStyle) fyne.Resource {
-	return resourceJfOpenhuninn10Ttf
+	// instead of resourceDotGothic16RegularTtf
+	return theme.DefaultTextBoldFont()
 }
 
 func (th Theme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
