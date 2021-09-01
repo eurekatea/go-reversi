@@ -54,6 +54,16 @@ func NewAI8(cl color, lv Level) *AI8 {
 }
 
 func (ai *AI8) Move(input string) (string, error) {
+	c := make(chan string)
+	go ai.move(input, c)
+	res := <-c
+	if len(res) > 3 {
+		return "", fmt.Errorf(res)
+	}
+	return res, nil
+}
+
+func (ai *AI8) move(input string, c chan string) {
 	aibd := newBboard8(input)
 	ai.nodes = 0
 
@@ -68,9 +78,9 @@ func (ai *AI8) Move(input string) (string, error) {
 
 	bestPoint := point{best.loc % ai.size, best.loc / ai.size}
 	if !aibd.putAndCheck(ai.color, best.loc) {
-		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
+		c <- fmt.Sprintf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.String(), nil
+	c <- bestPoint.String()
 }
 
 func (ai AI8) Close() {}

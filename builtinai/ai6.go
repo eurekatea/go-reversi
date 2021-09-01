@@ -50,6 +50,16 @@ func NewAI6(cl color, lv Level) *AI6 {
 }
 
 func (ai *AI6) Move(input string) (string, error) {
+	c := make(chan string)
+	go ai.move(input, c)
+	res := <-c
+	if len(res) > 3 {
+		return "", fmt.Errorf(res)
+	}
+	return res, nil
+}
+
+func (ai *AI6) move(input string, c chan string) {
 	aibd := newBboard6(input)
 	ai.nodes = 0
 
@@ -61,9 +71,9 @@ func (ai *AI6) Move(input string) (string, error) {
 
 	bestPoint := point{best.loc % SIZE6, best.loc / SIZE6}
 	if !aibd.putAndCheck(ai.color, best.loc) {
-		return "", fmt.Errorf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
+		c <- fmt.Sprintf("cannot put: %v, builtin ai %v", bestPoint, ai.color)
 	}
-	return bestPoint.String(), nil
+	c <- bestPoint.String()
 }
 
 func (ai AI6) Close() {}
