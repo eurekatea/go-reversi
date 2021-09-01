@@ -1,5 +1,3 @@
-//go:build !android
-
 package game
 
 import (
@@ -25,11 +23,7 @@ const (
 )
 
 var (
-	nullPoint  = board.NewPoint(-1, -1)
-	winSize6x6 = fyne.NewSize(316, 479)
-	winSize8x8 = fyne.NewSize(420, 583)
-
-	unitSize = fyne.NewSize(48, 48)
+	nullPoint = board.NewPoint(-1, -1)
 )
 
 type game struct {
@@ -350,7 +344,11 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 }
 
 func (u *unit) MinSize() fyne.Size {
-	return unitSize
+	if u.g.bd.Size() == 6 {
+		return unitSize6x6
+	} else {
+		return unitSize8x8
+	}
 }
 
 func (u *unit) setColor(cl board.Color) {

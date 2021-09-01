@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	fyne.io/fyne/v2 v2.0.4
-	github.com/pkg/profile v1.6.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
@@ -28,6 +27,7 @@ require (
 	github.com/lucor/goinfo v0.0.0-20200401173949-526b5363a13a // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/profile v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20210519022825-9fc0c575d5fe // indirect
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
