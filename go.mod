@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	fyne.io/fyne/v2 v2.0.4
+	github.com/pkg/profile v1.6.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
