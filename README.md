@@ -31,4 +31,7 @@ require go 1.16+
 ### windows
 ```go build -ldflags="-H windowsgui"```  
 ### linux or macOS
-```go build```  
+```go build```
+
+# Cross Compilation
+https://github.com/fyne-io/fyne-cross
