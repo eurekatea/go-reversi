@@ -121,7 +121,7 @@ func main() {
 		},
 	)
 
-	subtitle1 := game.NewText("black size", cardTextSize, fyne.TextAlignCenter)
+	subtitle1 := game.NewText("black side", cardTextSize, fyne.TextAlignCenter)
 	blackCard = widget.NewCard(
 		"",
 		"",
@@ -171,7 +171,7 @@ func main() {
 		},
 	)
 
-	subtitle2 := game.NewText("white size", cardTextSize, fyne.TextAlignCenter)
+	subtitle2 := game.NewText("white side", cardTextSize, fyne.TextAlignCenter)
 	whiteCard = widget.NewCard(
 		"",
 		"",
