@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	initWinSize      = fyne.NewSize(500, 450)
+	initWinSize      = fyne.NewSize(500, 570)
 	selectDialogSize = fyne.NewSize(250, 1)
 )
 
@@ -107,6 +107,14 @@ func main() {
 				}
 				d.SetLocation(loc)
 				d.Show()
+				// dir, err := fDialog.File().Filter("executable", "exe", "out", "").Load()
+				// if err == nil {
+				// 	params.BlackPath = dir
+				// 	params.BlackAgent = game.AgentExternal
+				// 	if params.AllSelected() {
+				// 		playButton.Enable()
+				// 	}
+				// }
 			} else if s == "human" {
 				params.BlackAgent = game.AgentHuman
 			} else {
@@ -227,7 +235,7 @@ func main() {
 	)
 
 	playButton = widget.NewButtonWithIcon(
-		"start play",
+		"      play      ",
 		theme.MediaPlayIcon(),
 		func() {
 			c := game.New(a, ui, menu, params, boardSize)
@@ -244,13 +252,9 @@ func main() {
 		"",
 		container.NewVBox(
 			title.CanvasText(),
-			container.NewPadded(),
 			container.NewMax(top),
 			container.NewMax(center),
 			container.NewMax(goesFirst),
-			container.NewPadded(),
-			container.NewPadded(),
-			container.NewPadded(),
 			container.NewCenter(playButton),
 		),
 	)

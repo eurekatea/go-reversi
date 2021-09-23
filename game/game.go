@@ -24,6 +24,7 @@ const (
 
 var (
 	nullPoint = board.NewPoint(-1, -1)
+	unitSize  = fyne.NewSize(48, 48)
 )
 
 type game struct {
@@ -86,12 +87,6 @@ func newCounterText() (Text, Text) {
 }
 
 func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter, size int) *fyne.Container {
-	if size == 6 {
-		window.Resize(winSize6x6)
-	} else {
-		window.Resize(winSize8x8)
-	}
-
 	g := &game{}
 
 	units := make([][]*unit, size)
@@ -163,7 +158,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	)
 
 	mainMenu := widget.NewButtonWithIcon(
-		"main menu",
+		"menu",
 		theme.HomeIcon(),
 		func() {
 			dialog.NewConfirm("confirm", "return to menu?", func(b bool) {
@@ -171,7 +166,6 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 					g.cleanAndExit()
 					menu.Show()
 					window.SetContent(menu)
-					window.Resize(fyne.NewSize(500, 450))
 				}
 			}, window).Show()
 		},
@@ -185,9 +179,8 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 	return container.NewVBox(
 		counterTile,
 		nameText,
-		grid,
-		g.passBtn,
-		restart,
+		container.NewCenter(grid),
+		container.NewGridWithColumns(2, g.passBtn, restart),
 		mainMenu,
 	)
 }
@@ -344,11 +337,7 @@ func (u *unit) Tapped(ev *fyne.PointEvent) {
 }
 
 func (u *unit) MinSize() fyne.Size {
-	if u.g.bd.Size() == 6 {
-		return unitSize6x6
-	} else {
-		return unitSize8x8
-	}
+	return unitSize
 }
 
 func (u *unit) setColor(cl board.Color) {
