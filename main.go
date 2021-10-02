@@ -199,6 +199,18 @@ func main() {
 		container.NewCenter(order),
 	)
 
+	infoButton := widget.NewButtonWithIcon(
+		"      info      ",
+		theme.HelpIcon(),
+		func() {
+			dialog.NewInformation(
+				"info",
+				"rules here",
+				ui,
+			).Show()
+		},
+	)
+
 	playButton = widget.NewButtonWithIcon(
 		"      play      ",
 		theme.MediaPlayIcon(),
@@ -220,6 +232,7 @@ func main() {
 			container.NewMax(top),
 			container.NewMax(center),
 			container.NewMax(goesFirst),
+			container.NewCenter(infoButton),
 			container.NewCenter(playButton),
 		),
 	)
