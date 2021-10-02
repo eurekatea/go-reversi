@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"othello/board"
 	"othello/builtinai"
 	"othello/game"
@@ -12,9 +10,10 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	fDialog "github.com/sqweek/dialog"
 )
 
 const (
@@ -86,35 +85,14 @@ func main() {
 
 		func(s string) {
 			if s == "external AI" {
-				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
-					if e == nil && uc != nil {
-						params.BlackPath = uc.URI().Path()
-						params.BlackAgent = game.AgentExternal
-						if params.AllSelected() {
-							playButton.Enable()
-						}
+				dir, err := fDialog.File().Load()
+				if err == nil {
+					params.BlackPath = dir
+					params.BlackAgent = game.AgentExternal
+					if params.AllSelected() {
+						playButton.Enable()
 					}
-				}, ui)
-				d.Resize(initWinSize)
-				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
-				dir, err := os.Getwd()
-				if err != nil {
-					fmt.Println(err)
 				}
-				loc, err := storage.ListerForURI(storage.NewFileURI(dir))
-				if err != nil {
-					fmt.Println(err)
-				}
-				d.SetLocation(loc)
-				d.Show()
-				// dir, err := fDialog.File().Filter("executable", "exe", "out", "").Load()
-				// if err == nil {
-				// 	params.BlackPath = dir
-				// 	params.BlackAgent = game.AgentExternal
-				// 	if params.AllSelected() {
-				// 		playButton.Enable()
-				// 	}
-				// }
 			} else if s == "human" {
 				params.BlackAgent = game.AgentHuman
 			} else {
@@ -144,27 +122,14 @@ func main() {
 
 		func(s string) {
 			if s == "external AI" {
-				d := dialog.NewFileOpen(func(uc fyne.URIReadCloser, e error) {
-					if e == nil && uc != nil {
-						params.WhitePath = uc.URI().Path()
-						params.WhiteAgent = game.AgentExternal
-						if params.AllSelected() {
-							playButton.Enable()
-						}
+				dir, err := fDialog.File().Load()
+				if err == nil {
+					params.WhitePath = dir
+					params.WhiteAgent = game.AgentExternal
+					if params.AllSelected() {
+						playButton.Enable()
 					}
-				}, ui)
-				d.Resize(initWinSize)
-				d.SetFilter(storage.NewExtensionFileFilter([]string{".exe", ".out", ""}))
-				dir, err := os.Getwd()
-				if err != nil {
-					fmt.Println(err)
 				}
-				loc, err := storage.ListerForURI(storage.NewFileURI(dir))
-				if err != nil {
-					fmt.Println(err)
-				}
-				d.SetLocation(loc)
-				d.Show()
 			} else if s == "human" {
 				params.WhiteAgent = game.AgentHuman
 			} else {
