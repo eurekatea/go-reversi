@@ -157,6 +157,14 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		},
 	)
 
+	editBtn := widget.NewButtonWithIcon(
+		"edit",
+		theme.DocumentCreateIcon(),
+		func() {
+
+		},
+	)
+
 	mainMenu := widget.NewButtonWithIcon(
 		"menu",
 		theme.HomeIcon(),
@@ -181,7 +189,7 @@ func New(a fyne.App, window fyne.Window, menu *fyne.Container, params Parameter,
 		nameText,
 		container.NewCenter(grid),
 		container.NewGridWithColumns(2, g.passBtn, restart),
-		mainMenu,
+		container.NewGridWithColumns(2, editBtn, mainMenu),
 	)
 }
 
