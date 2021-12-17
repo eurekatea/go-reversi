@@ -256,6 +256,7 @@ func (g *game) update(current board.Point) {
 	if g.over {
 		g.gameOver()
 	}
+	fmt.Println(g.bd.String())
 }
 
 func (g *game) refreshCounter() {
