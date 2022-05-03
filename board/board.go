@@ -70,7 +70,7 @@ func (bd Board) String() (res string) {
 		for j := 0; j < bd.Size(); j++ {
 			switch bd.AtXY(j, i) {
 			case NONE:
-				res += "_"
+				res += "+"
 			case BLACK:
 				res += "X"
 			case WHITE:

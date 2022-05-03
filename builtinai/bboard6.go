@@ -12,7 +12,7 @@ func newBboard6(input string) bboard6 {
 			bd.assign(BLACK, i)
 		case 'O':
 			bd.assign(WHITE, i)
-		case '_':
+		case '+':
 		default:
 			panic("input err: " + string(input[i]))
 		}
@@ -24,7 +24,7 @@ func (bd bboard6) String() (res string) {
 	for loc := 0; loc < 36; loc++ {
 		switch bd.at(loc) {
 		case NONE:
-			res += "_"
+			res += "+"
 		case BLACK:
 			res += "X"
 		case WHITE:
